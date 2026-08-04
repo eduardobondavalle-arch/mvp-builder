@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CadastrosRouteImport } from './routes/cadastros'
 import { Route as CiclosRouteImport } from './routes/ciclos'
 import { Route as KanbanRouteImport } from './routes/kanban'
 import { Route as RegistroDiarioRouteImport } from './routes/registro-diario'
@@ -17,6 +18,11 @@ import { Route as RegistroDiarioRouteImport } from './routes/registro-diario'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CadastrosRoute = CadastrosRouteImport.update({
+  id: '/cadastros',
+  path: '/cadastros',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CiclosRoute = CiclosRouteImport.update({
@@ -37,12 +43,14 @@ const RegistroDiarioRoute = RegistroDiarioRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/cadastros': typeof CadastrosRoute
   '/ciclos': typeof CiclosRoute
   '/kanban': typeof KanbanRoute
   '/registro-diario': typeof RegistroDiarioRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/cadastros': typeof CadastrosRoute
   '/ciclos': typeof CiclosRoute
   '/kanban': typeof KanbanRoute
   '/registro-diario': typeof RegistroDiarioRoute
@@ -50,20 +58,23 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/cadastros': typeof CadastrosRoute
   '/ciclos': typeof CiclosRoute
   '/kanban': typeof KanbanRoute
   '/registro-diario': typeof RegistroDiarioRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/ciclos' | '/kanban' | '/registro-diario'
+  fullPaths: '/' | '/cadastros' | '/ciclos' | '/kanban' | '/registro-diario'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/ciclos' | '/kanban' | '/registro-diario'
-  id: '__root__' | '/' | '/ciclos' | '/kanban' | '/registro-diario'
+  to: '/' | '/cadastros' | '/ciclos' | '/kanban' | '/registro-diario'
+  id:
+    '__root__' | '/' | '/cadastros' | '/ciclos' | '/kanban' | '/registro-diario'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CadastrosRoute: typeof CadastrosRoute
   CiclosRoute: typeof CiclosRoute
   KanbanRoute: typeof KanbanRoute
   RegistroDiarioRoute: typeof RegistroDiarioRoute
@@ -76,6 +87,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cadastros': {
+      id: '/cadastros'
+      path: '/cadastros'
+      fullPath: '/cadastros'
+      preLoaderRoute: typeof CadastrosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/ciclos': {
@@ -104,6 +122,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CadastrosRoute: CadastrosRoute,
   CiclosRoute: CiclosRoute,
   KanbanRoute: KanbanRoute,
   RegistroDiarioRoute: RegistroDiarioRoute,
