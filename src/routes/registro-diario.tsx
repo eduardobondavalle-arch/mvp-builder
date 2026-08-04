@@ -40,7 +40,7 @@ type Linha = { leads: string; atendimentos: string; agendamentos: string; visita
 const linhaVazia: Linha = { leads: "", atendimentos: "", agendamentos: "", visitas: "" };
 const campos = ["leads", "atendimentos", "agendamentos", "visitas"] as const;
 
-export function RegistroDiarioPage() {
+function RegistroDiarioPage() {
   const qc = useQueryClient();
   const [data, setData] = useState(hoje);
   const [linhas, setLinhas] = useState<Record<string, Linha>>({});
