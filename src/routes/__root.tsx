@@ -79,21 +79,25 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Adim Aluguéis · Inteligência Comercial" },
+      { title: "Inteligência Comercial | Adim Aluguéis" },
       {
         name: "description",
         content:
-          "Plataforma interna de inteligência comercial da Adim Aluguéis: jornada do cliente, funil e indicadores de locação.",
+          "Painel executivo da operação de locação da Adim Aluguéis: VGL, contratos, funil completo, metas, rankings e conversão por canal.",
       },
       { name: "author", content: "Adim Aluguéis" },
-      { property: "og:title", content: "Adim Aluguéis · Inteligência Comercial" },
+      { property: "og:title", content: "Inteligência Comercial | Adim Aluguéis" },
       {
         property: "og:description",
-        content: "Jornada comercial, funil e indicadores da operação de locação.",
+        content: "Painel executivo da operação de locação da Adim Aluguéis: VGL, contratos, funil completo, metas, rankings e conversão por canal.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "Inteligência Comercial | Adim Aluguéis" },
+      { name: "twitter:description", content: "Painel executivo da operação de locação da Adim Aluguéis: VGL, contratos, funil completo, metas, rankings e conversão por canal." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/90a8bc00-1198-4edb-93c4-8f0245494516/id-preview-40448a32--d3ea8d19-10c5-4b09-adc3-58e26e9c9e2a.lovable.app-1785884531411.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/90a8bc00-1198-4edb-93c4-8f0245494516/id-preview-40448a32--d3ea8d19-10c5-4b09-adc3-58e26e9c9e2a.lovable.app-1785884531411.png" },
     ],
     links: [
       {

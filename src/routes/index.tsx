@@ -61,7 +61,7 @@ export const Route = createFileRoute("/")({
       {
         property: "og:description",
         content:
-          "VGL, metas por equipe e consultor, funil de Pré Lead a Contrato, produtividade diária e rankings em um único painel.",
+          "Painel executivo da operação de locação da Adim Aluguéis: VGL, contratos, funil completo, metas, rankings e conversão por canal.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
