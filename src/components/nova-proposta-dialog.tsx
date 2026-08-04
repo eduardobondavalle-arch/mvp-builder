@@ -296,7 +296,7 @@ export function NovaPropostaDialog({
                     <SelectValue placeholder="Selecione" />
                   </SelectTrigger>
                   <SelectContent>
-                    {consultores.map((c) => (
+                    {consultores.filter((c) => c.ativo).map((c) => (
                       <SelectItem key={c.id} value={c.id}>
                         {c.nome}
                       </SelectItem>
@@ -311,7 +311,7 @@ export function NovaPropostaDialog({
                     <SelectValue placeholder="Selecione" />
                   </SelectTrigger>
                   <SelectContent>
-                    {canais.map((c) => (
+                    {canais.filter((c) => c.ativo).map((c) => (
                       <SelectItem key={c.id} value={c.id}>
                         {c.nome}
                       </SelectItem>
