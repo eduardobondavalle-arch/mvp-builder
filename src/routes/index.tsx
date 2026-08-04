@@ -6,26 +6,46 @@ import {
   BarChart,
   CartesianGrid,
   Cell,
+  Line,
+  LineChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
-import { Target, Handshake, Wallet, Percent, Clock, TrendingUp } from "lucide-react";
+import {
+  Target,
+  Handshake,
+  Wallet,
+  Percent,
+  Clock,
+  TrendingUp,
+  Bot,
+  AlertTriangle,
+  RefreshCcw,
+} from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
 import { FiltrosBar } from "@/components/filtros-bar";
 import { Progress } from "@/components/ui/progress";
-import { dataQueries } from "@/lib/data";
-import { brl, pct } from "@/lib/format";
+import { dataQueries, etapaLabel } from "@/lib/data";
+import { brl, dateBR, pct } from "@/lib/format";
 import {
   aplicarFiltros,
   calcularIndicadores,
+  conversaoLais,
   conversaoPorCanal,
+  conversoesPorEtapa,
+  filtrarPreLeads,
+  filtrarRegistros,
   filtrosVazios,
-  funil,
+  funilCompleto,
+  motivosDePerda,
+  negociacoesParadas,
+  produtividadeDiaria,
   rankingConsultores,
   rankingEquipes,
+  somarRegistros,
 } from "@/lib/metrics";
 
 export const Route = createFileRoute("/")({
@@ -35,18 +55,29 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Painel executivo da operação de locação da Adim Aluguéis: VGL, contratos, ticket médio, funil, rankings e conversão por canal.",
+          "Painel executivo da operação de locação da Adim Aluguéis: VGL, contratos, funil completo, metas, rankings e conversão por canal.",
       },
       { property: "og:title", content: "Inteligência Comercial | Adim Aluguéis" },
       {
         property: "og:description",
         content:
-          "VGL, metas por equipe, funil comercial, rankings de consultores e conversão por canal em um único painel.",
+          "VGL, metas por equipe e consultor, funil de Pré Lead a Contrato, produtividade diária e rankings em um único painel.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Dashboard,
 });
+
+const chartTooltip = {
+  contentStyle: {
+    background: "var(--popover)",
+    border: "1px solid var(--border)",
+    borderRadius: 12,
+    color: "var(--popover-foreground)",
+  },
+};
 
 function Dashboard() {
   const [filtros, setFiltros] = useState(filtrosVazios);
@@ -57,6 +88,10 @@ function Dashboard() {
       dataQueries.equipes(),
       dataQueries.canais(),
       dataQueries.ciclos(),
+      dataQueries.motivos(),
+      dataQueries.registros(),
+      dataQueries.preLeads(),
+      dataQueries.metas(),
     ],
   });
 
@@ -65,36 +100,73 @@ function Dashboard() {
   const equipes = results[2].data ?? [];
   const canais = results[3].data ?? [];
   const ciclos = results[4].data ?? [];
+  const motivos = results[5].data ?? [];
+  const registros = results[6].data ?? [];
+  const preLeads = results[7].data ?? [];
+  const metas = results[8].data ?? [];
+
+  const cicloId = filtros.cicloId !== "all" ? filtros.cicloId : (ciclos[0]?.id ?? "");
+  const cicloAtivo = ciclos.find((c) => c.id === cicloId);
 
   const filtradas = useMemo(
     () => aplicarFiltros(jornadas, filtros, consultores, ciclos),
     [jornadas, filtros, consultores, ciclos],
   );
+  const registrosFiltrados = useMemo(
+    () => filtrarRegistros(registros, filtros, consultores, ciclos),
+    [registros, filtros, consultores, ciclos],
+  );
+  const preLeadsFiltrados = useMemo(
+    () => filtrarPreLeads(preLeads, filtros, ciclos),
+    [preLeads, filtros, ciclos],
+  );
 
   const ind = useMemo(() => calcularIndicadores(filtradas), [filtradas]);
-  const dadosFunil = useMemo(() => funil(filtradas), [filtradas]);
+  const op = useMemo(() => somarRegistros(registrosFiltrados), [registrosFiltrados]);
+  const dadosFunil = useMemo(
+    () => funilCompleto(filtradas, registrosFiltrados, preLeadsFiltrados),
+    [filtradas, registrosFiltrados, preLeadsFiltrados],
+  );
+  const conversoes = useMemo(
+    () => conversoesPorEtapa(filtradas, registrosFiltrados, preLeadsFiltrados),
+    [filtradas, registrosFiltrados, preLeadsFiltrados],
+  );
+  const lais = useMemo(
+    () => conversaoLais(preLeadsFiltrados, registrosFiltrados),
+    [preLeadsFiltrados, registrosFiltrados],
+  );
   const equipesRank = useMemo(
-    () => rankingEquipes(filtradas, consultores, equipes),
-    [filtradas, consultores, equipes],
+    () => rankingEquipes(filtradas, registrosFiltrados, consultores, equipes, metas, cicloId),
+    [filtradas, registrosFiltrados, consultores, equipes, metas, cicloId],
   );
   const consultoresRank = useMemo(
-    () => rankingConsultores(filtradas, consultores, equipes),
-    [filtradas, consultores, equipes],
+    () => rankingConsultores(filtradas, registrosFiltrados, consultores, equipes, metas, cicloId),
+    [filtradas, registrosFiltrados, consultores, equipes, metas, cicloId],
   );
   const canaisConv = useMemo(() => conversaoPorCanal(filtradas, canais), [filtradas, canais]);
+  const perdas = useMemo(() => motivosDePerda(filtradas, motivos), [filtradas, motivos]);
+  const paradas = useMemo(() => negociacoesParadas(filtradas), [filtradas]);
+  const serieDiaria = useMemo(() => produtividadeDiaria(registrosFiltrados), [registrosFiltrados]);
+  const nomeConsultor = new Map(consultores.map((c) => [c.id, c.nome]));
 
-  const cicloAtivo = ciclos.find((c) => c.id === filtros.cicloId) ?? ciclos[0];
-  const metaVglEquipe = cicloAtivo && equipes.length ? cicloAtivo.meta_vgl / equipes.length : 0;
-  const metaContratosEquipe =
-    cicloAtivo && equipes.length ? cicloAtivo.meta_contratos / equipes.length : 0;
+  const metaVglTotal = equipesRank.reduce((s, e) => s + e.metaVgl, 0) || cicloAtivo?.meta_vgl || 0;
+  const metaContratosTotal =
+    equipesRank.reduce((s, e) => s + e.metaContratos, 0) || cicloAtivo?.meta_contratos || 0;
 
   const kpis = [
-    { label: "VGL realizado", value: brl(ind.vgl), icon: Wallet, hint: "Valor final dos contratos" },
+    {
+      label: "VGL realizado",
+      value: brl(ind.vgl),
+      icon: Wallet,
+      hint: metaVglTotal ? `${pct((ind.vgl / metaVglTotal) * 100, 0)} da meta` : "Sem meta definida",
+    },
     {
       label: "Contratos assinados",
       value: String(ind.contratos),
       icon: Handshake,
-      hint: `${ind.emNegociacao} em negociação`,
+      hint: metaContratosTotal
+        ? `Meta ${metaContratosTotal} • ${ind.emNegociacao} em negociação`
+        : `${ind.emNegociacao} em negociação`,
     },
     { label: "Ticket médio", value: brl(ind.ticketMedio), icon: Target, hint: "Por contrato" },
     {
@@ -107,20 +179,32 @@ function Dashboard() {
       label: "Conversão proposta → contrato",
       value: pct(ind.conversao),
       icon: Percent,
-      hint: `${ind.perdidos} negócios perdidos`,
+      hint: `${ind.perdidos} perdidos • ${ind.reabertas} reabertas`,
+    },
+    {
+      label: "Conversão Laís (pré lead → lead)",
+      value: pct(lais.conversao),
+      icon: Bot,
+      hint: `${lais.preLeads} pré leads • ${lais.leads} leads`,
     },
     {
       label: "Tempo médio da jornada",
       value: `${ind.tempoMedioJornada.toFixed(1)} dias`,
       icon: Clock,
-      hint: "1º contato até assinatura",
+      hint: `Laís ${ind.tempoMedioLais.toFixed(1)}d • consultor ${ind.tempoMedioConsultor.toFixed(1)}d`,
+    },
+    {
+      label: "Produtividade do período",
+      value: `${op.visitas} visitas`,
+      icon: RefreshCcw,
+      hint: `${op.leads} leads • ${op.atendimentos} atend. • ${op.agendamentos} agend.`,
     },
   ];
 
   return (
     <AppShell
       title="Inteligência Comercial"
-      subtitle="Indicadores consolidados da operação. O VGL considera exclusivamente o valor final da locação na etapa Contrato Assinado."
+      subtitle="Indicadores consolidados da operação. O VGL considera exclusivamente o valor final da locação dos contratos assinados; valores de proposta e de fechamento não entram no cálculo."
     >
       <div className="panel mb-8 p-5">
         <FiltrosBar
@@ -133,12 +217,12 @@ function Dashboard() {
         />
       </div>
 
-      <section className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      <section className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {kpis.map((kpi) => (
           <div key={kpi.label} className="panel p-5">
             <div className="flex items-start justify-between gap-3">
               <span className="label-caps">{kpi.label}</span>
-              <kpi.icon className="size-4 text-primary" />
+              <kpi.icon className="size-4 shrink-0 text-primary" />
             </div>
             <p className="metric-value mt-3">{kpi.value}</p>
             <p className="mt-1 text-xs text-muted-foreground">{kpi.hint}</p>
@@ -148,11 +232,12 @@ function Dashboard() {
 
       <div className="mb-8 grid gap-6 lg:grid-cols-2">
         <section className="panel p-6">
-          <h2 className="text-lg font-semibold">Funil comercial</h2>
+          <h2 className="text-lg font-semibold">Funil comercial completo</h2>
           <p className="mb-4 text-xs text-muted-foreground">
-            Volume por etapa no recorte selecionado.
+            Pré Lead e Lead → Visita vêm do registro diário; Proposta → Contrato vêm da jornada
+            comercial.
           </p>
-          <div className="h-64">
+          <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={dadosFunil} layout="vertical" margin={{ left: 8, right: 24 }}>
                 <CartesianGrid horizontal={false} stroke="var(--border)" />
@@ -162,52 +247,52 @@ function Dashboard() {
                   dataKey="etapa"
                   stroke="var(--muted-foreground)"
                   fontSize={12}
-                  width={86}
+                  width={92}
                 />
-                <Tooltip
-                  contentStyle={{
-                    background: "var(--popover)",
-                    border: "1px solid var(--border)",
-                    borderRadius: 12,
-                    color: "var(--popover-foreground)",
-                  }}
-                />
+                <Tooltip {...chartTooltip} />
                 <Bar dataKey="valor" radius={[0, 6, 6, 0]}>
-                  {dadosFunil.map((_, i) => (
+                  {dadosFunil.map((_item, i) => (
                     <Cell key={i} fill={`var(--chart-${(i % 4) + 1})`} />
                   ))}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
+          <ul className="mt-4 grid gap-1.5 text-xs text-muted-foreground sm:grid-cols-2">
+            {conversoes.map((c) => (
+              <li key={`${c.de}-${c.para}`} className="flex justify-between gap-2">
+                <span>
+                  {c.de} → {c.para}
+                </span>
+                <span className="font-mono text-foreground">{pct(c.conversao, 1)}</span>
+              </li>
+            ))}
+          </ul>
         </section>
 
         <section className="panel p-6">
           <h2 className="text-lg font-semibold">Metas por equipe</h2>
           <p className="mb-4 text-xs text-muted-foreground">
             {cicloAtivo
-              ? `${cicloAtivo.nome} • meta distribuída igualmente entre as equipes`
+              ? `${cicloAtivo.nome} • ${dateBR(cicloAtivo.data_inicio)} a ${dateBR(cicloAtivo.data_fim)}`
               : "Nenhum ciclo cadastrado"}
           </p>
           <div className="space-y-5">
-            {equipesRank.map((e) => {
-              const atingido = metaVglEquipe ? (e.vgl / metaVglEquipe) * 100 : 0;
-              return (
-                <div key={e.id}>
-                  <div className="flex items-baseline justify-between text-sm">
-                    <span className="font-medium">{e.nome}</span>
-                    <span className="font-mono text-xs text-muted-foreground">
-                      {brl(e.vgl)} / {brl(metaVglEquipe)}
-                    </span>
-                  </div>
-                  <Progress value={Math.min(100, atingido)} className="mt-2 h-2" />
-                  <p className="mt-1.5 text-xs text-muted-foreground">
-                    {pct(atingido)} da meta de VGL • {e.contratos} de{" "}
-                    {Math.round(metaContratosEquipe)} contratos
-                  </p>
+            {equipesRank.map((e) => (
+              <div key={e.id}>
+                <div className="flex items-baseline justify-between text-sm">
+                  <span className="font-medium">{e.nome}</span>
+                  <span className="font-mono text-xs text-muted-foreground">
+                    {brl(e.vgl)} / {brl(e.metaVgl)}
+                  </span>
                 </div>
-              );
-            })}
+                <Progress value={Math.min(100, e.pctMetaVgl)} className="mt-2 h-2" />
+                <p className="mt-1.5 text-xs text-muted-foreground">
+                  {pct(e.pctMetaVgl)} da meta de VGL • {e.contratos} de {e.metaContratos} contratos (
+                  {pct(e.pctMetaContratos, 0)}) • {e.visitas} visitas
+                </p>
+              </div>
+            ))}
             {equipesRank.length === 0 && (
               <p className="text-sm text-muted-foreground">Sem dados no recorte selecionado.</p>
             )}
@@ -215,38 +300,94 @@ function Dashboard() {
         </section>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <section className="panel mb-8 p-6">
+        <h2 className="text-lg font-semibold">Produtividade diária</h2>
+        <p className="mb-4 text-xs text-muted-foreground">
+          Evolução de leads, atendimentos, agendamentos e visitas no período.
+        </p>
+        <div className="h-64">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={serieDiaria} margin={{ left: 0, right: 16 }}>
+              <CartesianGrid stroke="var(--border)" vertical={false} />
+              <XAxis
+                dataKey="data"
+                tickFormatter={dateBR}
+                stroke="var(--muted-foreground)"
+                fontSize={12}
+              />
+              <YAxis stroke="var(--muted-foreground)" fontSize={12} />
+              <Tooltip {...chartTooltip} labelFormatter={(v) => dateBR(String(v))} />
+              {(["leads", "atendimentos", "agendamentos", "visitas"] as const).map((k, i) => (
+                <Line
+                  key={k}
+                  type="monotone"
+                  dataKey={k}
+                  stroke={`var(--chart-${i + 1})`}
+                  strokeWidth={2}
+                  dot={false}
+                  name={k[0]!.toUpperCase() + k.slice(1)}
+                />
+              ))}
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+        {serieDiaria.length === 0 && (
+          <p className="text-sm text-muted-foreground">
+            Nenhum registro diário lançado no recorte selecionado.
+          </p>
+        )}
+      </section>
+
+      <div className="mb-8 grid gap-6 lg:grid-cols-2">
         <section className="panel overflow-hidden">
           <div className="border-b border-border p-6 pb-4">
             <h2 className="text-lg font-semibold">Ranking de consultores</h2>
-            <p className="text-xs text-muted-foreground">Ordenado por VGL realizado.</p>
+            <p className="text-xs text-muted-foreground">
+              Ordenado por VGL realizado, com atingimento individual de meta.
+            </p>
           </div>
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border text-left">
-                <th className="label-caps px-6 py-3">Consultor</th>
-                <th className="label-caps px-3 py-3">Prop.</th>
-                <th className="label-caps px-3 py-3">Contr.</th>
-                <th className="label-caps px-3 py-3">Conv.</th>
-                <th className="label-caps px-6 py-3 text-right">VGL</th>
-              </tr>
-            </thead>
-            <tbody>
-              {consultoresRank.map((c, i) => (
-                <tr key={c.id} className="border-b border-border/50 last:border-0">
-                  <td className="px-6 py-3">
-                    <span className="mr-2 font-mono text-xs text-primary">{i + 1}º</span>
-                    {c.nome}
-                    <span className="ml-2 text-xs text-muted-foreground">{c.equipe}</span>
-                  </td>
-                  <td className="px-3 py-3 font-mono text-xs">{c.propostas}</td>
-                  <td className="px-3 py-3 font-mono text-xs">{c.contratos}</td>
-                  <td className="px-3 py-3 font-mono text-xs">{pct(c.conversao, 0)}</td>
-                  <td className="px-6 py-3 text-right font-mono text-xs">{brl(c.vgl)}</td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border text-left">
+                  <th className="label-caps px-6 py-3">Consultor</th>
+                  <th className="label-caps px-3 py-3">Visitas</th>
+                  <th className="label-caps px-3 py-3">Prop.</th>
+                  <th className="label-caps px-3 py-3">Contr.</th>
+                  <th className="label-caps px-3 py-3">Conv.</th>
+                  <th className="label-caps px-3 py-3">% meta</th>
+                  <th className="label-caps px-6 py-3 text-right">VGL</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {consultoresRank.map((c, i) => (
+                  <tr key={c.id} className="border-b border-border/50 last:border-0">
+                    <td className="px-6 py-3 whitespace-nowrap">
+                      <span className="mr-2 font-mono text-xs text-primary">{i + 1}º</span>
+                      {c.nome}
+                      <span className="ml-2 text-xs text-muted-foreground">{c.equipe}</span>
+                      {!c.ativo && (
+                        <span className="ml-2 text-xs text-muted-foreground">(inativo)</span>
+                      )}
+                    </td>
+                    <td className="px-3 py-3 font-mono text-xs">{c.visitas}</td>
+                    <td className="px-3 py-3 font-mono text-xs">{c.propostas}</td>
+                    <td className="px-3 py-3 font-mono text-xs">{c.contratos}</td>
+                    <td className="px-3 py-3 font-mono text-xs">{pct(c.conversao, 0)}</td>
+                    <td className="px-3 py-3 font-mono text-xs">{pct(c.pctMetaVgl, 0)}</td>
+                    <td className="px-6 py-3 text-right font-mono text-xs">{brl(c.vgl)}</td>
+                  </tr>
+                ))}
+                {consultoresRank.length === 0 && (
+                  <tr>
+                    <td colSpan={7} className="px-6 py-6 text-sm text-muted-foreground">
+                      Nenhum consultor cadastrado.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </section>
 
         <section className="panel overflow-hidden">
@@ -254,35 +395,92 @@ function Dashboard() {
             <h2 className="text-lg font-semibold">Conversão por canal de origem</h2>
             <p className="text-xs text-muted-foreground">Propostas convertidas em contrato.</p>
           </div>
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border text-left">
-                <th className="label-caps px-6 py-3">Canal</th>
-                <th className="label-caps px-3 py-3">Prop.</th>
-                <th className="label-caps px-3 py-3">Contr.</th>
-                <th className="label-caps px-3 py-3">Conv.</th>
-                <th className="label-caps px-6 py-3 text-right">VGL</th>
-              </tr>
-            </thead>
-            <tbody>
-              {canaisConv.map((c) => (
-                <tr key={c.nome} className="border-b border-border/50 last:border-0">
-                  <td className="px-6 py-3">{c.nome}</td>
-                  <td className="px-3 py-3 font-mono text-xs">{c.propostas}</td>
-                  <td className="px-3 py-3 font-mono text-xs">{c.contratos}</td>
-                  <td className="px-3 py-3 font-mono text-xs">{pct(c.conversao, 0)}</td>
-                  <td className="px-6 py-3 text-right font-mono text-xs">{brl(c.vgl)}</td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border text-left">
+                  <th className="label-caps px-6 py-3">Canal</th>
+                  <th className="label-caps px-3 py-3">Prop.</th>
+                  <th className="label-caps px-3 py-3">Contr.</th>
+                  <th className="label-caps px-3 py-3">Conv.</th>
+                  <th className="label-caps px-6 py-3 text-right">VGL</th>
                 </tr>
-              ))}
-              {canaisConv.length === 0 && (
-                <tr>
-                  <td colSpan={5} className="px-6 py-6 text-sm text-muted-foreground">
-                    Sem propostas no recorte selecionado.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {canaisConv.map((c) => (
+                  <tr key={c.nome} className="border-b border-border/50 last:border-0">
+                    <td className="px-6 py-3">{c.nome}</td>
+                    <td className="px-3 py-3 font-mono text-xs">{c.propostas}</td>
+                    <td className="px-3 py-3 font-mono text-xs">{c.contratos}</td>
+                    <td className="px-3 py-3 font-mono text-xs">{pct(c.conversao, 0)}</td>
+                    <td className="px-6 py-3 text-right font-mono text-xs">{brl(c.vgl)}</td>
+                  </tr>
+                ))}
+                {canaisConv.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-6 text-sm text-muted-foreground">
+                      Sem propostas no recorte selecionado.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <section className="panel p-6">
+          <h2 className="text-lg font-semibold">Motivos de perda</h2>
+          <p className="mb-4 text-xs text-muted-foreground">
+            Distribuição das jornadas na etapa Negócio Perdido.
+          </p>
+          <ul className="space-y-3">
+            {perdas.map((m) => (
+              <li key={m.nome}>
+                <div className="flex justify-between text-sm">
+                  <span>{m.nome}</span>
+                  <span className="font-mono text-xs text-muted-foreground">{m.total}</span>
+                </div>
+                <Progress
+                  value={(m.total / (perdas[0]?.total || 1)) * 100}
+                  className="mt-1.5 h-1.5"
+                />
+              </li>
+            ))}
+            {perdas.length === 0 && (
+              <li className="text-sm text-muted-foreground">Nenhuma perda no recorte.</li>
+            )}
+          </ul>
+        </section>
+
+        <section className="panel p-6">
+          <h2 className="flex items-center gap-2 text-lg font-semibold">
+            <AlertTriangle className="size-4 text-chart-5" /> Negociações paradas
+          </h2>
+          <p className="mb-4 text-xs text-muted-foreground">
+            Jornadas em Proposta ou Fechamento sem movimentação há mais de 15 dias.
+          </p>
+          <ul className="space-y-3">
+            {paradas.slice(0, 8).map((j) => (
+              <li key={j.id} className="flex justify-between gap-3 text-sm">
+                <span>
+                  {j.cliente_nome}
+                  <span className="ml-2 text-xs text-muted-foreground">
+                    {nomeConsultor.get(j.consultor_id) ?? "—"} • {etapaLabel(j.etapa)}
+                  </span>
+                </span>
+                <span className="font-mono text-xs whitespace-nowrap text-muted-foreground">
+                  {dateBR(j.updated_at)}
+                </span>
+              </li>
+            ))}
+            {paradas.length === 0 && (
+              <li className="text-sm text-muted-foreground">
+                Nenhuma negociação parada no recorte.
+              </li>
+            )}
+          </ul>
         </section>
       </div>
     </AppShell>
