@@ -14,18 +14,63 @@ export type Database = {
   }
   public: {
     Tables: {
+      auditoria: {
+        Row: {
+          acao: string
+          campo: string | null
+          created_at: string
+          entidade: string
+          entidade_id: string | null
+          id: string
+          justificativa: string | null
+          referencia: string | null
+          usuario: string
+          valor_anterior: string | null
+          valor_novo: string | null
+        }
+        Insert: {
+          acao: string
+          campo?: string | null
+          created_at?: string
+          entidade: string
+          entidade_id?: string | null
+          id?: string
+          justificativa?: string | null
+          referencia?: string | null
+          usuario?: string
+          valor_anterior?: string | null
+          valor_novo?: string | null
+        }
+        Update: {
+          acao?: string
+          campo?: string | null
+          created_at?: string
+          entidade?: string
+          entidade_id?: string | null
+          id?: string
+          justificativa?: string | null
+          referencia?: string | null
+          usuario?: string
+          valor_anterior?: string | null
+          valor_novo?: string | null
+        }
+        Relationships: []
+      }
       canais: {
         Row: {
+          ativo: boolean
           created_at: string
           id: string
           nome: string
         }
         Insert: {
+          ativo?: boolean
           created_at?: string
           id?: string
           nome: string
         }
         Update: {
+          ativo?: boolean
           created_at?: string
           id?: string
           nome?: string
@@ -158,6 +203,8 @@ export type Database = {
       }
       jornadas: {
         Row: {
+          atingiu_contrato: boolean
+          atingiu_fechamento: boolean
           canal_id: string
           cliente_nome: string
           consultor_id: string
@@ -167,6 +214,7 @@ export type Database = {
           data_entrada_crm: string
           data_envio_contrato: string | null
           data_fechamento: string | null
+          data_perda: string | null
           data_primeiro_contato: string
           data_proposta: string
           data_visita: string
@@ -176,6 +224,7 @@ export type Database = {
           imovel: string
           justificativa_nova_jornada: string | null
           motivo_perda_id: string | null
+          motivo_reabertura: string | null
           percentual_intermediacao: number
           telefone: string
           updated_at: string
@@ -185,6 +234,8 @@ export type Database = {
           valor_proposta: number
         }
         Insert: {
+          atingiu_contrato?: boolean
+          atingiu_fechamento?: boolean
           canal_id: string
           cliente_nome: string
           consultor_id: string
@@ -194,6 +245,7 @@ export type Database = {
           data_entrada_crm: string
           data_envio_contrato?: string | null
           data_fechamento?: string | null
+          data_perda?: string | null
           data_primeiro_contato: string
           data_proposta: string
           data_visita: string
@@ -203,6 +255,7 @@ export type Database = {
           imovel: string
           justificativa_nova_jornada?: string | null
           motivo_perda_id?: string | null
+          motivo_reabertura?: string | null
           percentual_intermediacao: number
           telefone: string
           updated_at?: string
@@ -212,6 +265,8 @@ export type Database = {
           valor_proposta: number
         }
         Update: {
+          atingiu_contrato?: boolean
+          atingiu_fechamento?: boolean
           canal_id?: string
           cliente_nome?: string
           consultor_id?: string
@@ -221,6 +276,7 @@ export type Database = {
           data_entrada_crm?: string
           data_envio_contrato?: string | null
           data_fechamento?: string | null
+          data_perda?: string | null
           data_primeiro_contato?: string
           data_proposta?: string
           data_visita?: string
@@ -230,6 +286,7 @@ export type Database = {
           imovel?: string
           justificativa_nova_jornada?: string | null
           motivo_perda_id?: string | null
+          motivo_reabertura?: string | null
           percentual_intermediacao?: number
           telefone?: string
           updated_at?: string
@@ -262,23 +319,170 @@ export type Database = {
           },
         ]
       }
+      metas: {
+        Row: {
+          ciclo_id: string
+          consultor_id: string | null
+          created_at: string
+          equipe_id: string | null
+          id: string
+          meta_contratos: number
+          meta_vgl: number
+          updated_at: string
+        }
+        Insert: {
+          ciclo_id: string
+          consultor_id?: string | null
+          created_at?: string
+          equipe_id?: string | null
+          id?: string
+          meta_contratos?: number
+          meta_vgl?: number
+          updated_at?: string
+        }
+        Update: {
+          ciclo_id?: string
+          consultor_id?: string | null
+          created_at?: string
+          equipe_id?: string | null
+          id?: string
+          meta_contratos?: number
+          meta_vgl?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "metas_ciclo_id_fkey"
+            columns: ["ciclo_id"]
+            isOneToOne: false
+            referencedRelation: "ciclos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "metas_consultor_id_fkey"
+            columns: ["consultor_id"]
+            isOneToOne: false
+            referencedRelation: "consultores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "metas_equipe_id_fkey"
+            columns: ["equipe_id"]
+            isOneToOne: false
+            referencedRelation: "equipes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       motivos_perda: {
         Row: {
+          ativo: boolean
           created_at: string
           id: string
           nome: string
         }
         Insert: {
+          ativo?: boolean
           created_at?: string
           id?: string
           nome: string
         }
         Update: {
+          ativo?: boolean
           created_at?: string
           id?: string
           nome?: string
         }
         Relationships: []
+      }
+      motivos_transferencia: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          id: string
+          nome: string
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          id?: string
+          nome: string
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          id?: string
+          nome?: string
+        }
+        Relationships: []
+      }
+      pre_leads_diarios: {
+        Row: {
+          created_at: string
+          data: string
+          id: string
+          quantidade: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          data: string
+          id?: string
+          quantidade?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          data?: string
+          id?: string
+          quantidade?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      registros_diarios: {
+        Row: {
+          agendamentos: number
+          atendimentos: number
+          consultor_id: string
+          created_at: string
+          data: string
+          id: string
+          leads: number
+          updated_at: string
+          visitas: number
+        }
+        Insert: {
+          agendamentos?: number
+          atendimentos?: number
+          consultor_id: string
+          created_at?: string
+          data: string
+          id?: string
+          leads?: number
+          updated_at?: string
+          visitas?: number
+        }
+        Update: {
+          agendamentos?: number
+          atendimentos?: number
+          consultor_id?: string
+          created_at?: string
+          data?: string
+          id?: string
+          leads?: number
+          updated_at?: string
+          visitas?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "registros_diarios_consultor_id_fkey"
+            columns: ["consultor_id"]
+            isOneToOne: false
+            referencedRelation: "consultores"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

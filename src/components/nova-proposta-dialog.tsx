@@ -22,7 +22,15 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
-import { dataQueries, registrarEvento, type Canal, type Consultor, type Jornada } from "@/lib/data";
+import {
+  dataQueries,
+  etapaLabel,
+  registrarAuditoria,
+  registrarEvento,
+  type Canal,
+  type Consultor,
+  type Jornada,
+} from "@/lib/data";
 import { brl, dateBR } from "@/lib/format";
 
 type NovaJornada = {
@@ -124,6 +132,18 @@ export function NovaPropostaDialog({
         etapa_nova: "proposta",
         justificativa: justificativa || null,
       });
+
+      await registrarAuditoria([
+        {
+          entidade: "jornada",
+          entidade_id: (data as { id: string }).id,
+          referencia: `${form.cliente_nome} • CPF ${cpf.trim()}`,
+          acao: justificativa ? "nova_jornada_mesmo_cpf" : "criacao",
+          campo: "etapa",
+          valor_novo: "Proposta",
+          justificativa: justificativa || null,
+        },
+      ]);
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["jornadas"] });
@@ -207,7 +227,7 @@ export function NovaPropostaDialog({
                   <p className="font-medium">{j.cliente_nome}</p>
                   <p className="mt-1 text-xs text-muted-foreground">
                     {j.imovel} • proposta {dateBR(j.data_proposta)} • {brl(j.valor_proposta)} •
-                    etapa atual: {j.etapa.replace("_", " ")}
+                    etapa atual: {etapaLabel(j.etapa)}
                   </p>
                 </div>
               ))}
@@ -217,7 +237,7 @@ export function NovaPropostaDialog({
                   {(historico.data ?? []).map((e) => (
                     <li key={e.id}>
                       {dateBR(e.created_at)} • {e.tipo}
-                      {e.etapa_nova ? ` → ${e.etapa_nova.replace("_", " ")}` : ""}
+                      {e.etapa_nova ? ` → ${etapaLabel(e.etapa_nova)}` : ""}
                     </li>
                   ))}
                   {(historico.data ?? []).length === 0 && <li>Sem eventos registrados.</li>}
@@ -276,7 +296,7 @@ export function NovaPropostaDialog({
                     <SelectValue placeholder="Selecione" />
                   </SelectTrigger>
                   <SelectContent>
-                    {consultores.map((c) => (
+                    {consultores.filter((c) => c.ativo).map((c) => (
                       <SelectItem key={c.id} value={c.id}>
                         {c.nome}
                       </SelectItem>
@@ -291,7 +311,7 @@ export function NovaPropostaDialog({
                     <SelectValue placeholder="Selecione" />
                   </SelectTrigger>
                   <SelectContent>
-                    {canais.map((c) => (
+                    {canais.filter((c) => c.ativo).map((c) => (
                       <SelectItem key={c.id} value={c.id}>
                         {c.nome}
                       </SelectItem>

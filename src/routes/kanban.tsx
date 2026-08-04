@@ -1,12 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQueries, useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { Plus, ArrowRight, History } from "lucide-react";
+import { Plus, ArrowRight, History, Pencil, UserRoundCog } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
+import { EditarJornadaDialog } from "@/components/editar-jornada-dialog";
 import { FiltrosBar } from "@/components/filtros-bar";
 import { MoverEtapaDialog } from "@/components/mover-etapa-dialog";
 import { NovaPropostaDialog } from "@/components/nova-proposta-dialog";
+import { TransferirConsultorDialog } from "@/components/transferir-consultor-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,7 +24,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { dataQueries, ETAPAS, type Etapa, type Jornada } from "@/lib/data";
+import { dataQueries, ETAPAS, etapaLabel, type Etapa, type Jornada } from "@/lib/data";
 import { brl, dateBR, pct } from "@/lib/format";
 import { aplicarFiltros, filtrosVazios } from "@/lib/metrics";
 
@@ -33,14 +35,16 @@ export const Route = createFileRoute("/kanban")({
       {
         name: "description",
         content:
-          "Kanban das jornadas comerciais da Adim Aluguéis: proposta, fechamento, contrato assinado e negócio perdido com histórico completo.",
+          "Kanban das jornadas comerciais da Adim Aluguéis: proposta, fechamento, contrato assinado e negócio perdido com transferências e histórico completo.",
       },
       { property: "og:title", content: "Jornada Comercial | Adim Aluguéis" },
       {
         property: "og:description",
         content:
-          "Cada card é uma jornada comercial completa, com validação por etapa, justificativas e auditoria de movimentações.",
+          "Cada card é uma jornada comercial completa, com validação por etapa, justificativas, transferência de consultor e auditoria.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: KanbanPage,
@@ -57,6 +61,8 @@ function KanbanPage() {
   const [filtros, setFiltros] = useState(filtrosVazios);
   const [novaAberta, setNovaAberta] = useState(false);
   const [mover, setMover] = useState<{ jornada: Jornada; destino: Etapa } | null>(null);
+  const [transferir, setTransferir] = useState<Jornada | null>(null);
+  const [editar, setEditar] = useState<Jornada | null>(null);
   const [detalhe, setDetalhe] = useState<Jornada | null>(null);
 
   const results = useQueries({
@@ -67,6 +73,7 @@ function KanbanPage() {
       dataQueries.canais(),
       dataQueries.ciclos(),
       dataQueries.motivos(),
+      dataQueries.motivosTransferencia(),
     ],
   });
   const jornadas = results[0].data ?? [];
@@ -75,9 +82,11 @@ function KanbanPage() {
   const canais = results[3].data ?? [];
   const ciclos = results[4].data ?? [];
   const motivos = results[5].data ?? [];
+  const motivosTransf = results[6].data ?? [];
 
   const nomeConsultor = new Map(consultores.map((c) => [c.id, c.nome]));
   const nomeCanal = new Map(canais.map((c) => [c.id, c.nome]));
+  const nomeMotivo = new Map(motivos.map((m) => [m.id, m.nome]));
 
   const filtradas = useMemo(
     () => aplicarFiltros(jornadas, filtros, consultores, ciclos),
@@ -92,7 +101,7 @@ function KanbanPage() {
   return (
     <AppShell
       title="Jornada Comercial"
-      subtitle="Cada card representa a jornada completa de um cliente. Nenhuma informação é excluída e toda movimentação exige as informações obrigatórias da etapa."
+      subtitle="Cada card representa a jornada completa de um cliente — pessoa, não proposta. Nenhuma informação é excluída, cada movimentação exige as informações obrigatórias da etapa e correções ficam registradas na auditoria."
       actions={
         <Button onClick={() => setNovaAberta(true)}>
           <Plus className="size-4" /> Nova proposta
@@ -145,32 +154,71 @@ function KanbanPage() {
                       <p className="mt-0.5 text-xs text-muted-foreground">{j.imovel}</p>
                     </button>
                     <dl className="mt-2 space-y-0.5 text-xs text-muted-foreground">
-                      <div className="flex justify-between">
+                      <div className="flex justify-between gap-2">
                         <dt>Consultor</dt>
-                        <dd className="text-foreground">{nomeConsultor.get(j.consultor_id)}</dd>
+                        <dd className="text-right text-foreground">
+                          {nomeConsultor.get(j.consultor_id)}
+                        </dd>
                       </div>
-                      <div className="flex justify-between">
+                      <div className="flex justify-between gap-2">
                         <dt>Canal</dt>
-                        <dd>{nomeCanal.get(j.canal_id)}</dd>
+                        <dd className="text-right">{nomeCanal.get(j.canal_id)}</dd>
                       </div>
-                      <div className="flex justify-between">
+                      <div className="flex justify-between gap-2">
                         <dt>{j.valor_final ? "Locação" : "Proposta"}</dt>
                         <dd className="font-mono text-foreground">
                           {brl(j.valor_final ?? j.valor_atualizado ?? j.valor_proposta)}
                         </dd>
                       </div>
-                      <div className="flex justify-between">
+                      <div className="flex justify-between gap-2">
                         <dt>Intermediação</dt>
                         <dd className="font-mono">{pct(j.percentual_intermediacao, 0)}</dd>
                       </div>
+                      {j.etapa === "negocio_perdido" && j.motivo_perda_id && (
+                        <div className="flex justify-between gap-2">
+                          <dt>Motivo</dt>
+                          <dd className="text-right">{nomeMotivo.get(j.motivo_perda_id)}</dd>
+                        </div>
+                      )}
                     </dl>
-                    <div className="mt-3 flex items-center justify-between">
-                      <button
-                        onClick={() => setDetalhe(j)}
-                        className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
-                      >
-                        <History className="size-3" /> Histórico
-                      </button>
+                    {(j.atingiu_contrato || j.motivo_reabertura) && (
+                      <div className="mt-2 flex flex-wrap gap-1">
+                        {j.atingiu_contrato && j.etapa !== "contrato_assinado" && (
+                          <Badge variant="outline" className="text-[10px]">
+                            já contratou
+                          </Badge>
+                        )}
+                        {j.motivo_reabertura && (
+                          <Badge variant="outline" className="text-[10px]">
+                            reaberta
+                          </Badge>
+                        )}
+                      </div>
+                    )}
+                    <div className="mt-3 flex items-center justify-between gap-2">
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setDetalhe(j)}
+                          className="text-muted-foreground hover:text-foreground"
+                          aria-label={`Histórico de ${j.cliente_nome}`}
+                        >
+                          <History className="size-3.5" />
+                        </button>
+                        <button
+                          onClick={() => setEditar(j)}
+                          className="text-muted-foreground hover:text-foreground"
+                          aria-label={`Corrigir jornada de ${j.cliente_nome}`}
+                        >
+                          <Pencil className="size-3.5" />
+                        </button>
+                        <button
+                          onClick={() => setTransferir(j)}
+                          className="text-muted-foreground hover:text-foreground"
+                          aria-label={`Transferir jornada de ${j.cliente_nome}`}
+                        >
+                          <UserRoundCog className="size-3.5" />
+                        </button>
+                      </div>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button size="sm" variant="secondary" className="h-7 text-xs">
@@ -219,6 +267,19 @@ function KanbanPage() {
         />
       )}
 
+      {transferir && (
+        <TransferirConsultorDialog
+          jornada={transferir}
+          consultores={consultores}
+          motivos={motivosTransf}
+          onClose={() => setTransferir(null)}
+        />
+      )}
+
+      {editar && (
+        <EditarJornadaDialog jornada={editar} canais={canais} onClose={() => setEditar(null)} />
+      )}
+
       <Dialog open={Boolean(detalhe)} onOpenChange={(o) => !o && setDetalhe(null)}>
         <DialogContent className="max-h-[85vh] max-w-xl overflow-y-auto">
           {detalhe && (
@@ -230,52 +291,83 @@ function KanbanPage() {
                 </DialogDescription>
               </DialogHeader>
               <dl className="grid grid-cols-2 gap-3 text-sm">
-                {[
-                  ["Imóvel", detalhe.imovel],
-                  ["Consultor", nomeConsultor.get(detalhe.consultor_id) ?? "—"],
-                  ["Canal", nomeCanal.get(detalhe.canal_id) ?? "—"],
-                  ["Etapa atual", detalhe.etapa.replace("_", " ")],
-                  ["1º contato", dateBR(detalhe.data_primeiro_contato)],
-                  ["Entrada no CRM", dateBR(detalhe.data_entrada_crm)],
-                  ["Visita", dateBR(detalhe.data_visita)],
-                  ["Proposta", dateBR(detalhe.data_proposta)],
-                  ["Valor original", brl(detalhe.valor_original)],
-                  ["Valor da proposta", brl(detalhe.valor_proposta)],
-                  ["Valor atualizado", detalhe.valor_atualizado ? brl(detalhe.valor_atualizado) : "—"],
-                  ["Valor final (VGL)", detalhe.valor_final ? brl(detalhe.valor_final) : "—"],
-                  ["Intermediação", pct(detalhe.percentual_intermediacao, 0)],
+                {(
                   [
-                    "Receita prevista",
-                    detalhe.valor_final
-                      ? brl((detalhe.valor_final * detalhe.percentual_intermediacao) / 100)
-                      : "—",
-                  ],
-                  ["Envio do contrato", dateBR(detalhe.data_envio_contrato)],
-                  ["Assinatura", dateBR(detalhe.data_assinatura)],
-                ].map(([k, v]) => (
-                  <div key={k as string} className="rounded-lg border border-border p-3">
-                    <dt className="label-caps">{k}</dt>
-                    <dd className="mt-1">{v}</dd>
+                    ["Imóvel", detalhe.imovel],
+                    ["Consultor", nomeConsultor.get(detalhe.consultor_id) ?? "—"],
+                    ["Canal", nomeCanal.get(detalhe.canal_id) ?? "—"],
+                    ["Etapa atual", etapaLabel(detalhe.etapa)],
+                    ["1º contato", dateBR(detalhe.data_primeiro_contato)],
+                    ["Entrada no CRM", dateBR(detalhe.data_entrada_crm)],
+                    ["Visita", dateBR(detalhe.data_visita)],
+                    ["Proposta", dateBR(detalhe.data_proposta)],
+                    ["Fechamento", dateBR(detalhe.data_fechamento)],
+                    ["Envio do contrato", dateBR(detalhe.data_envio_contrato)],
+                    ["Assinatura", dateBR(detalhe.data_assinatura)],
+                    ["Data da perda", dateBR(detalhe.data_perda)],
+                    ["Valor original", brl(detalhe.valor_original)],
+                    ["Valor da proposta", brl(detalhe.valor_proposta)],
+                    ["Valor atualizado", brl(detalhe.valor_atualizado)],
+                    ["Valor final (VGL)", brl(detalhe.valor_final)],
+                    ["Intermediação", pct(detalhe.percentual_intermediacao)],
+                    [
+                      "Motivo da perda",
+                      detalhe.motivo_perda_id
+                        ? (nomeMotivo.get(detalhe.motivo_perda_id) ?? "—")
+                        : "—",
+                    ],
+                  ] as [string, string][]
+                ).map(([label, valor]) => (
+                  <div key={label}>
+                    <dt className="label-caps">{label}</dt>
+                    <dd className="mt-0.5">{valor}</dd>
                   </div>
                 ))}
               </dl>
-              {detalhe.descricao_perda && (
-                <p className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm">
-                  Perda: {detalhe.descricao_perda}
-                </p>
+
+              {(detalhe.descricao_perda ||
+                detalhe.motivo_reabertura ||
+                detalhe.justificativa_nova_jornada) && (
+                <div className="space-y-2 rounded-lg border border-border p-4 text-sm">
+                  {detalhe.descricao_perda && (
+                    <p>
+                      <span className="label-caps block">Descrição da perda</span>
+                      {detalhe.descricao_perda}
+                    </p>
+                  )}
+                  {detalhe.motivo_reabertura && (
+                    <p>
+                      <span className="label-caps block">Motivo da reabertura</span>
+                      {detalhe.motivo_reabertura}
+                    </p>
+                  )}
+                  {detalhe.justificativa_nova_jornada && (
+                    <p>
+                      <span className="label-caps block">Justificativa da nova jornada</span>
+                      {detalhe.justificativa_nova_jornada}
+                    </p>
+                  )}
+                </div>
               )}
-              <div>
-                <p className="label-caps mb-2">Auditoria da jornada</p>
+
+              <div className="rounded-lg border border-border p-4">
+                <p className="label-caps mb-2">Histórico da jornada</p>
                 <ul className="space-y-2 text-xs text-muted-foreground">
                   {(historico.data ?? []).map((e) => (
-                    <li key={e.id} className="rounded-lg border border-border p-2.5">
-                      <span className="text-foreground">{e.tipo.replace(/_/g, " ")}</span>{" "}
+                    <li key={e.id}>
+                      <span className="font-mono text-foreground">
+                        {new Date(e.created_at).toLocaleString("pt-BR", {
+                          dateStyle: "short",
+                          timeStyle: "short",
+                        })}
+                      </span>{" "}
+                      • {e.tipo.replace(/_/g, " ")}
                       {e.etapa_anterior && e.etapa_nova
-                        ? `• ${e.etapa_anterior.replace("_", " ")} → ${e.etapa_nova.replace("_", " ")}`
-                        : ""}
-                      <br />
-                      {dateBR(e.created_at)}
-                      {e.justificativa ? ` • ${e.justificativa}` : ""}
+                        ? ` • ${etapaLabel(e.etapa_anterior)} → ${etapaLabel(e.etapa_nova)}`
+                        : e.etapa_nova
+                          ? ` → ${etapaLabel(e.etapa_nova)}`
+                          : ""}
+                      {e.justificativa && <p className="mt-0.5">{e.justificativa}</p>}
                     </li>
                   ))}
                   {(historico.data ?? []).length === 0 && <li>Sem eventos registrados.</li>}
