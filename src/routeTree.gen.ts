@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuditoriaRouteImport } from './routes/auditoria'
 import { Route as CadastrosRouteImport } from './routes/cadastros'
 import { Route as CiclosRouteImport } from './routes/ciclos'
 import { Route as KanbanRouteImport } from './routes/kanban'
@@ -18,6 +19,11 @@ import { Route as RegistroDiarioRouteImport } from './routes/registro-diario'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuditoriaRoute = AuditoriaRouteImport.update({
+  id: '/auditoria',
+  path: '/auditoria',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CadastrosRoute = CadastrosRouteImport.update({
@@ -43,6 +49,7 @@ const RegistroDiarioRoute = RegistroDiarioRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auditoria': typeof AuditoriaRoute
   '/cadastros': typeof CadastrosRoute
   '/ciclos': typeof CiclosRoute
   '/kanban': typeof KanbanRoute
@@ -50,6 +57,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auditoria': typeof AuditoriaRoute
   '/cadastros': typeof CadastrosRoute
   '/ciclos': typeof CiclosRoute
   '/kanban': typeof KanbanRoute
@@ -58,6 +66,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/auditoria': typeof AuditoriaRoute
   '/cadastros': typeof CadastrosRoute
   '/ciclos': typeof CiclosRoute
   '/kanban': typeof KanbanRoute
@@ -65,15 +74,34 @@ export interface FileRoutesById {
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/cadastros' | '/ciclos' | '/kanban' | '/registro-diario'
+  fullPaths:
+    | '/'
+    | '/auditoria'
+    | '/cadastros'
+    | '/ciclos'
+    | '/kanban'
+    | '/registro-diario'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/cadastros' | '/ciclos' | '/kanban' | '/registro-diario'
+  to:
+    | '/'
+    | '/auditoria'
+    | '/cadastros'
+    | '/ciclos'
+    | '/kanban'
+    | '/registro-diario'
   id:
-    '__root__' | '/' | '/cadastros' | '/ciclos' | '/kanban' | '/registro-diario'
+    | '__root__'
+    | '/'
+    | '/auditoria'
+    | '/cadastros'
+    | '/ciclos'
+    | '/kanban'
+    | '/registro-diario'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuditoriaRoute: typeof AuditoriaRoute
   CadastrosRoute: typeof CadastrosRoute
   CiclosRoute: typeof CiclosRoute
   KanbanRoute: typeof KanbanRoute
@@ -87,6 +115,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auditoria': {
+      id: '/auditoria'
+      path: '/auditoria'
+      fullPath: '/auditoria'
+      preLoaderRoute: typeof AuditoriaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cadastros': {
@@ -122,6 +157,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuditoriaRoute: AuditoriaRoute,
   CadastrosRoute: CadastrosRoute,
   CiclosRoute: CiclosRoute,
   KanbanRoute: KanbanRoute,
