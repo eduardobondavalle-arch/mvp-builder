@@ -179,7 +179,10 @@ export function NovaPropostaDialog({
             <DialogFooter>
               <Button
                 onClick={() => {
-                  if (!cpf.trim()) return toast.error("Informe o CPF do cliente.");
+                  if (!cpf.trim()) {
+                    toast.error("Informe o CPF do cliente.");
+                    return;
+                  }
                   setEtapa(existentes.length ? "existente" : "form");
                 }}
               >
@@ -241,8 +244,10 @@ export function NovaPropostaDialog({
               </Button>
               <Button
                 onClick={() => {
-                  if (!justificativa.trim())
-                    return toast.error("A criação de nova jornada exige justificativa.");
+                  if (!justificativa.trim()) {
+                    toast.error("A criação de nova jornada exige justificativa.");
+                    return;
+                  }
                   setEtapa("form");
                 }}
               >

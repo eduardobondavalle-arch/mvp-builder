@@ -25,7 +25,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { registrarEvento, type Etapa, type Jornada, type MotivoPerda } from "@/lib/data";
 import { ETAPAS } from "@/lib/data";
 
-type Patch = Record<string, string | number | null>;
+type Patch = {
+  etapa?: string;
+  data_fechamento?: string;
+  valor_atualizado?: number;
+  data_envio_contrato?: string;
+  data_assinatura?: string;
+  valor_final?: number;
+  motivo_perda_id?: string;
+  descricao_perda?: string;
+};
 
 type CampoForm =
   | "data_fechamento"
