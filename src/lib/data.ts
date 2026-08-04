@@ -255,3 +255,36 @@ export function diffAuditoria<T extends Record<string, unknown>>(
       valor_novo: valor == null ? null : String(valor),
     }));
 }
+
+/** Metas usam índices únicos parciais: gravamos com update por id ou insert. */
+export async function salvarMetas(
+  linhas: {
+    ciclo_id: string;
+    equipe_id: string | null;
+    consultor_id: string | null;
+    meta_vgl: number;
+    meta_contratos: number;
+  }[],
+  existentes: Meta[],
+) {
+  for (const linha of linhas) {
+    const atual = existentes.find((m) =>
+      linha.consultor_id
+        ? m.ciclo_id === linha.ciclo_id && m.consultor_id === linha.consultor_id
+        : m.ciclo_id === linha.ciclo_id &&
+          m.consultor_id === null &&
+          m.equipe_id === linha.equipe_id,
+    );
+    const { error } = atual
+      ? await supabase
+          .from("metas")
+          .update({
+            meta_vgl: linha.meta_vgl,
+            meta_contratos: linha.meta_contratos,
+            equipe_id: linha.equipe_id,
+          } as never)
+          .eq("id", atual.id)
+      : await supabase.from("metas").insert(linha as never);
+    if (error) throw new Error(error.message);
+  }
+}
