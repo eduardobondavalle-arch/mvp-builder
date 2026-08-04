@@ -75,27 +75,27 @@ export function MoverEtapaDialog({
           throw new Error("Informe a data do envio do fechamento e o valor atual da proposta.");
         if (form.data_fechamento < jornada.data_proposta)
           throw new Error("A data do fechamento não pode ser anterior à data da proposta.");
-        patch.data_fechamento = form.data_fechamento;
-        patch.valor_atualizado = Number(form.valor_atualizado);
-        patch.atingiu_fechamento = true;
+        patch["data_fechamento"] = form.data_fechamento;
+        patch["valor_atualizado"] = Number(form.valor_atualizado);
+        patch["atingiu_fechamento"] = true;
       }
       if (destino === "contrato_assinado") {
         if (!form.data_envio_contrato || !form.data_assinatura || !form.valor_final)
           throw new Error("Informe as datas do contrato e o valor final da locação.");
         if (form.data_assinatura < form.data_envio_contrato)
           throw new Error("A assinatura não pode ocorrer antes do envio do contrato.");
-        patch.data_envio_contrato = form.data_envio_contrato;
-        patch.data_assinatura = form.data_assinatura;
-        patch.valor_final = Number(form.valor_final);
-        patch.atingiu_fechamento = true;
-        patch.atingiu_contrato = true;
+        patch["data_envio_contrato"] = form.data_envio_contrato;
+        patch["data_assinatura"] = form.data_assinatura;
+        patch["valor_final"] = Number(form.valor_final);
+        patch["atingiu_fechamento"] = true;
+        patch["atingiu_contrato"] = true;
       }
       if (destino === "negocio_perdido") {
         if (!form.motivo_perda_id || !form.descricao_perda)
           throw new Error("Informe o motivo da perda e a descrição detalhada.");
-        patch.motivo_perda_id = form.motivo_perda_id;
-        patch.descricao_perda = form.descricao_perda;
-        patch.data_perda = form.data_perda || new Date().toISOString().slice(0, 10);
+        patch["motivo_perda_id"] = form.motivo_perda_id;
+        patch["descricao_perda"] = form.descricao_perda;
+        patch["data_perda"] = form.data_perda || new Date().toISOString().slice(0, 10);
       }
       if ((reabertura || retrocesso) && !form.justificativa?.trim())
         throw new Error(
@@ -103,7 +103,7 @@ export function MoverEtapaDialog({
             ? "Toda reabertura de negócio perdido exige justificativa."
             : "O retorno para uma etapa anterior exige justificativa.",
         );
-      if (reabertura) patch.motivo_reabertura = form.justificativa ?? null;
+      if (reabertura) patch["motivo_reabertura"] = form.justificativa ?? null;
 
       const { error } = await supabase.from("jornadas").update(patch as never).eq("id", jornada.id);
       if (error) throw new Error(error.message);
