@@ -25,7 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { dataQueries, registrarAuditoria } from "@/lib/data";
+import { dataQueries, registrarAuditoria, salvarMetas } from "@/lib/data";
 import { brl, dateBR, pct } from "@/lib/format";
 import { calcularIndicadores, metaDe } from "@/lib/metrics";
 
@@ -175,10 +175,7 @@ function CiclosPage() {
         }),
       ];
 
-      const { error } = await supabase
-        .from("metas")
-        .upsert(linhas as never, { onConflict: "ciclo_id,equipe_id,consultor_id" });
-      if (error) throw new Error(error.message);
+      await salvarMetas(linhas, metas);
 
       await registrarAuditoria([
         {
@@ -219,10 +216,7 @@ function CiclosPage() {
         };
       });
 
-      const { error } = await supabase
-        .from("metas")
-        .upsert(linhas as never, { onConflict: "ciclo_id,equipe_id,consultor_id" });
-      if (error) throw new Error(error.message);
+      await salvarMetas(linhas, metas);
 
       await registrarAuditoria(
         entradas.map(([chave, v]) => {
