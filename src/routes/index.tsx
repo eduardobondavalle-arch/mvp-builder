@@ -186,7 +186,7 @@ function Dashboard() {
           <h2 className="text-lg font-semibold">Metas por equipe</h2>
           <p className="mb-4 text-xs text-muted-foreground">
             {cicloAtivo
-              ? `Ciclo ${cicloAtivo.nome} • meta distribuída igualmente entre as equipes`
+              ? `${cicloAtivo.nome} • meta distribuída igualmente entre as equipes`
               : "Nenhum ciclo cadastrado"}
           </p>
           <div className="space-y-5">
