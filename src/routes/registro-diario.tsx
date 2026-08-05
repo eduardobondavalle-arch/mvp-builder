@@ -46,6 +46,8 @@ function RegistroDiarioPage() {
   const [data, setData] = useState(hoje);
   const [linhas, setLinhas] = useState<Record<string, Linha>>({});
   const [preLead, setPreLead] = useState("");
+  const [equipeSel, setEquipeSel] = useState<string | null>(null);
+
 
   const results = useQueries({
     queries: [
