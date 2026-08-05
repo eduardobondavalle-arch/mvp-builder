@@ -162,7 +162,21 @@ function RegistroDiarioPage() {
     {} as Record<(typeof campos)[number], number>,
   );
 
-  const equipeNome = new Map(equipes.map((e) => [e.id, e.nome]));
+  const lancados = new Set(doDia.map((r) => r.consultor_id));
+  const SEM_EQUIPE = "sem-equipe";
+
+  const grupos = [
+    ...equipes.map((e) => ({ id: e.id, nome: e.nome })),
+    ...(consultores.some((c) => !c.equipe_id) ? [{ id: SEM_EQUIPE, nome: "Sem equipe" }] : []),
+  ].map((g) => {
+    const membros = consultores.filter((c) =>
+      g.id === SEM_EQUIPE ? !c.equipe_id : c.equipe_id === g.id,
+    );
+    const pendentes = membros.filter((c) => !lancados.has(c.id));
+    return { ...g, membros, pendentes: pendentes.length };
+  });
+
+  const grupoAtual = grupos.find((g) => g.id === equipeSel) ?? null;
 
   return (
     <AppShell
@@ -202,64 +216,130 @@ function RegistroDiarioPage() {
         </div>
       </div>
 
-      <section className="panel overflow-hidden">
-        <div className="border-b border-border p-6 pb-4">
-          <h2 className="text-lg font-semibold">Produtividade por consultor</h2>
-          <p className="text-xs text-muted-foreground">
-            {dateBR(data)} • {doDia.length ? "registro já lançado, alterações são auditadas" : "novo lançamento"}
-          </p>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border text-left">
-                <th className="label-caps px-6 py-3">Consultor</th>
-                {campos.map((k) => (
-                  <th key={k} className="label-caps px-3 py-3">
-                    {k}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {consultores.map((c) => (
-                <tr key={c.id} className="border-b border-border/50 last:border-0">
-                  <td className="px-6 py-2 whitespace-nowrap">
-                    {c.nome}
-                    <span className="ml-2 text-xs text-muted-foreground">
-                      {c.equipe_id ? (equipeNome.get(c.equipe_id) ?? "—") : "—"}
+      {!grupoAtual ? (
+        <section className="space-y-3">
+          <div>
+            <h2 className="text-lg font-semibold">Selecione a unidade</h2>
+            <p className="text-xs text-muted-foreground">
+              {dateBR(data)} • unidades com pendência aparecem em destaque
+            </p>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {grupos.map((g) => {
+              const pendente = g.pendentes > 0;
+              return (
+                <button
+                  key={g.id}
+                  type="button"
+                  onClick={() => setEquipeSel(g.id)}
+                  className={`panel flex items-center justify-between gap-3 p-5 text-left transition hover:border-primary/60 ${
+                    pendente ? "border-destructive/60 bg-destructive/5" : ""
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    {pendente ? (
+                      <AlertTriangle className="size-5 shrink-0 text-destructive" />
+                    ) : (
+                      <CheckCircle2 className="size-5 shrink-0 text-primary" />
+                    )}
+                    <div>
+                      <p
+                        className={`font-semibold ${pendente ? "text-destructive" : ""}`}
+                      >
+                        Equipe {g.nome}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {g.membros.length} consultor(es) •{" "}
+                        {pendente
+                          ? `${g.pendentes} pendente(s) de preenchimento`
+                          : "registro do dia completo"}
+                      </p>
+                    </div>
+                  </div>
+                  <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+                </button>
+              );
+            })}
+            {grupos.length === 0 && (
+              <p className="panel p-6 text-sm text-muted-foreground">
+                Cadastre equipes e consultores ativos para lançar a produtividade.
+              </p>
+            )}
+          </div>
+        </section>
+      ) : (
+        <section className="panel overflow-hidden">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border p-6 pb-4">
+            <div className="flex items-center gap-3">
+              <Users className="size-5 text-muted-foreground" />
+              <div>
+                <h2 className="text-lg font-semibold">Equipe {grupoAtual.nome}</h2>
+                <p className="text-xs text-muted-foreground">
+                  {dateBR(data)} •{" "}
+                  {grupoAtual.pendentes
+                    ? `${grupoAtual.pendentes} consultor(es) pendente(s)`
+                    : "todos lançados, alterações são auditadas"}
+                </p>
+              </div>
+            </div>
+            <Button variant="outline" size="sm" onClick={() => setEquipeSel(null)}>
+              <ArrowLeft className="size-4" /> Unidades
+            </Button>
+          </div>
+
+          <ul className="divide-y divide-border/60">
+            {grupoAtual.membros.map((c) => {
+              const pendente = !lancados.has(c.id);
+              return (
+                <li
+                  key={c.id}
+                  className={`p-4 sm:px-6 ${pendente ? "bg-destructive/5" : ""}`}
+                >
+                  <div className="mb-3 flex items-center gap-2">
+                    {pendente ? (
+                      <AlertTriangle className="size-4 text-destructive" />
+                    ) : (
+                      <CheckCircle2 className="size-4 text-primary" />
+                    )}
+                    <span className={`text-sm font-medium ${pendente ? "text-destructive" : ""}`}>
+                      {c.nome}
                     </span>
-                  </td>
-                  {campos.map((k) => (
-                    <td key={k} className="px-3 py-2">
-                      <Input
-                        type="number"
-                        min="0"
-                        className="h-9 w-20"
-                        aria-label={`${k} de ${c.nome}`}
-                        value={linhas[c.id]?.[k] ?? ""}
-                        onChange={(e) =>
-                          setLinhas((prev) => ({
-                            ...prev,
-                            [c.id]: { ...(prev[c.id] ?? linhaVazia), [k]: e.target.value },
-                          }))
-                        }
-                      />
-                    </td>
-                  ))}
-                </tr>
-              ))}
-              {consultores.length === 0 && (
-                <tr>
-                  <td colSpan={5} className="px-6 py-6 text-sm text-muted-foreground">
-                    Cadastre consultores ativos para lançar a produtividade.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </section>
+                    <span className="text-xs text-muted-foreground">
+                      {pendente ? "pendente" : "lançado"}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    {campos.map((k) => (
+                      <div key={k} className="space-y-1">
+                        <span className="label-caps">{k}</span>
+                        <Input
+                          type="number"
+                          min="0"
+                          className="h-9"
+                          aria-label={`${k} de ${c.nome}`}
+                          value={linhas[c.id]?.[k] ?? ""}
+                          onChange={(e) =>
+                            setLinhas((prev) => ({
+                              ...prev,
+                              [c.id]: { ...(prev[c.id] ?? linhaVazia), [k]: e.target.value },
+                            }))
+                          }
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </li>
+              );
+            })}
+            {grupoAtual.membros.length === 0 && (
+              <li className="p-6 text-sm text-muted-foreground">
+                Nenhum consultor ativo nesta unidade.
+              </li>
+            )}
+          </ul>
+        </section>
+      )}
     </AppShell>
+
   );
 }
