@@ -27,6 +27,7 @@ import {
 
 import { AppShell } from "@/components/app-shell";
 import { FiltrosBar } from "@/components/filtros-bar";
+import { FunilVisual } from "@/components/funil-visual";
 import { Progress } from "@/components/ui/progress";
 import { dataQueries, etapaLabel } from "@/lib/data";
 import { brl, dateBR, pct } from "@/lib/format";
