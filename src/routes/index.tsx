@@ -2,10 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQueries } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import {
-  Bar,
-  BarChart,
   CartesianGrid,
-  Cell,
   Line,
   LineChart,
   ResponsiveContainer,
@@ -36,7 +33,6 @@ import {
   calcularIndicadores,
   conversaoLais,
   conversaoPorCanal,
-  conversoesPorEtapa,
   filtrarPreLeads,
   filtrarRegistros,
   filtrosVazios,
@@ -126,10 +122,6 @@ function Dashboard() {
   const op = useMemo(() => somarRegistros(registrosFiltrados), [registrosFiltrados]);
   const dadosFunil = useMemo(
     () => funilCompleto(filtradas, registrosFiltrados, preLeadsFiltrados),
-    [filtradas, registrosFiltrados, preLeadsFiltrados],
-  );
-  const conversoes = useMemo(
-    () => conversoesPorEtapa(filtradas, registrosFiltrados, preLeadsFiltrados),
     [filtradas, registrosFiltrados, preLeadsFiltrados],
   );
   const lais = useMemo(
