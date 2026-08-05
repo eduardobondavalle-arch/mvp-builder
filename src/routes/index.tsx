@@ -2,10 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQueries } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import {
-  Bar,
-  BarChart,
   CartesianGrid,
-  Cell,
   Line,
   LineChart,
   ResponsiveContainer,
@@ -27,6 +24,7 @@ import {
 
 import { AppShell } from "@/components/app-shell";
 import { FiltrosBar } from "@/components/filtros-bar";
+import { FunilVisual } from "@/components/funil-visual";
 import { Progress } from "@/components/ui/progress";
 import { dataQueries, etapaLabel } from "@/lib/data";
 import { brl, dateBR, pct } from "@/lib/format";
@@ -35,7 +33,6 @@ import {
   calcularIndicadores,
   conversaoLais,
   conversaoPorCanal,
-  conversoesPorEtapa,
   filtrarPreLeads,
   filtrarRegistros,
   filtrosVazios,
@@ -125,10 +122,6 @@ function Dashboard() {
   const op = useMemo(() => somarRegistros(registrosFiltrados), [registrosFiltrados]);
   const dadosFunil = useMemo(
     () => funilCompleto(filtradas, registrosFiltrados, preLeadsFiltrados),
-    [filtradas, registrosFiltrados, preLeadsFiltrados],
-  );
-  const conversoes = useMemo(
-    () => conversoesPorEtapa(filtradas, registrosFiltrados, preLeadsFiltrados),
     [filtradas, registrosFiltrados, preLeadsFiltrados],
   );
   const lais = useMemo(
@@ -233,41 +226,11 @@ function Dashboard() {
       <div className="mb-8 grid gap-6 lg:grid-cols-2">
         <section className="panel p-6">
           <h2 className="text-lg font-semibold">Funil comercial completo</h2>
-          <p className="mb-4 text-xs text-muted-foreground">
+          <p className="mb-5 text-xs text-muted-foreground">
             Pré Lead e Lead → Visita vêm do registro diário; Proposta → Contrato vêm da jornada
-            comercial.
+            comercial. À direita, a conversão em relação à etapa anterior.
           </p>
-          <div className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={dadosFunil} layout="vertical" margin={{ left: 8, right: 24 }}>
-                <CartesianGrid horizontal={false} stroke="var(--border)" />
-                <XAxis type="number" stroke="var(--muted-foreground)" fontSize={12} />
-                <YAxis
-                  type="category"
-                  dataKey="etapa"
-                  stroke="var(--muted-foreground)"
-                  fontSize={12}
-                  width={92}
-                />
-                <Tooltip {...chartTooltip} />
-                <Bar dataKey="valor" radius={[0, 6, 6, 0]}>
-                  {dadosFunil.map((_item, i) => (
-                    <Cell key={i} fill={`var(--chart-${(i % 4) + 1})`} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-          <ul className="mt-4 grid gap-1.5 text-xs text-muted-foreground sm:grid-cols-2">
-            {conversoes.map((c) => (
-              <li key={`${c.de}-${c.para}`} className="flex justify-between gap-2">
-                <span>
-                  {c.de} → {c.para}
-                </span>
-                <span className="font-mono text-foreground">{pct(c.conversao, 1)}</span>
-              </li>
-            ))}
-          </ul>
+          <FunilVisual etapas={dadosFunil} />
         </section>
 
         <section className="panel p-6">
