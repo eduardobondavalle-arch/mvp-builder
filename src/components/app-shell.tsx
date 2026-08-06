@@ -2,7 +2,6 @@ import { Link } from "@tanstack/react-router";
 import {
   BarChart3,
   KanbanSquare,
-  Building2,
   CalendarCheck,
   Target,
   Settings2,
