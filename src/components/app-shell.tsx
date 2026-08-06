@@ -11,9 +11,11 @@ import {
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 
+import adimLogo from "@/assets/adim-logo.png";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { getUsuario, setUsuario } from "@/lib/usuario";
+
 
 const nav = [
   { to: "/", label: "Inteligência", icon: BarChart3 },
