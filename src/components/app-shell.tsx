@@ -63,17 +63,20 @@ export function AppShell({
 }) {
   return (
     <div className="min-h-screen">
-      <header className="sticky top-0 z-30 border-b border-border/70 bg-background/85 backdrop-blur">
+      <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur">
         <div className="mx-auto flex max-w-[1600px] flex-wrap items-center gap-x-6 gap-y-3 px-6 py-3">
           <div className="flex items-center gap-3">
-            <span className="flex size-9 items-center justify-center rounded-lg bg-primary/15 text-primary">
-              <Building2 className="size-5" />
-            </span>
-            <div className="leading-tight">
-              <p className="text-sm font-semibold">Adim Aluguéis</p>
-              <p className="label-caps">Inteligência Comercial</p>
-            </div>
+            <img
+              src={adimLogo}
+              alt="Adim Aluguéis"
+              className="h-9 w-auto"
+              width={205}
+              height={90}
+            />
+            <span className="hidden h-8 w-px bg-border sm:block" />
+            <p className="label-caps hidden sm:block">Inteligência Comercial</p>
           </div>
+
           <nav className="flex flex-wrap items-center gap-1">
             {nav.map((item) => (
               <Link
