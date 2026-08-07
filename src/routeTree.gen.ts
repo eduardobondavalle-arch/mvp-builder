@@ -20,7 +20,6 @@ import { Route as AuthenticatedCiclosRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedKanbanRouteImport } from './routes/_authenticated/kanban'
 import { Route as AuthenticatedRegistroDiarioRouteImport } from './routes/_authenticated/registro-diario'
-import { Route as ApiPublicBootstrapAcessosRouteImport } from './routes/api/public/bootstrap-acessos'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -77,12 +76,6 @@ const AuthenticatedRegistroDiarioRoute =
     path: '/registro-diario',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const ApiPublicBootstrapAcessosRoute =
-  ApiPublicBootstrapAcessosRouteImport.update({
-    id: '/api/public/bootstrap-acessos',
-    path: '/api/public/bootstrap-acessos',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -95,7 +88,6 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/kanban': typeof AuthenticatedKanbanRoute
   '/registro-diario': typeof AuthenticatedRegistroDiarioRoute
-  '/api/public/bootstrap-acessos': typeof ApiPublicBootstrapAcessosRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -108,7 +100,6 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/kanban': typeof AuthenticatedKanbanRoute
   '/registro-diario': typeof AuthenticatedRegistroDiarioRoute
-  '/api/public/bootstrap-acessos': typeof ApiPublicBootstrapAcessosRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -123,7 +114,6 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/kanban': typeof AuthenticatedKanbanRoute
   '/_authenticated/registro-diario': typeof AuthenticatedRegistroDiarioRoute
-  '/api/public/bootstrap-acessos': typeof ApiPublicBootstrapAcessosRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -138,7 +128,6 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/kanban'
     | '/registro-diario'
-    | '/api/public/bootstrap-acessos'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -151,7 +140,6 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/kanban'
     | '/registro-diario'
-    | '/api/public/bootstrap-acessos'
   id:
     | '__root__'
     | '/'
@@ -165,7 +153,6 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/kanban'
     | '/_authenticated/registro-diario'
-    | '/api/public/bootstrap-acessos'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -173,7 +160,6 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
-  ApiPublicBootstrapAcessosRoute: typeof ApiPublicBootstrapAcessosRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -255,13 +241,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRegistroDiarioRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/api/public/bootstrap-acessos': {
-      id: '/api/public/bootstrap-acessos'
-      path: '/api/public/bootstrap-acessos'
-      fullPath: '/api/public/bootstrap-acessos'
-      preLoaderRoute: typeof ApiPublicBootstrapAcessosRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -293,7 +272,6 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   ResetPasswordRoute: ResetPasswordRoute,
-  ApiPublicBootstrapAcessosRoute: ApiPublicBootstrapAcessosRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
