@@ -13,7 +13,7 @@ export function FunilVisual({ etapas }: { etapas: Etapa[] }) {
   const larguras = etapas.map((e) => MIN_LARGURA + (100 - MIN_LARGURA) * Math.min(1, e.valor / topo));
 
   return (
-    <div className="space-y-1">
+    <div className="stagger-rows space-y-1">
       {etapas.map((e, i) => {
         const larguraAtual = larguras[i]!;
         const larguraProxima = larguras[i + 1] ?? Math.max(MIN_LARGURA, larguraAtual * 0.82);
@@ -29,7 +29,7 @@ export function FunilVisual({ etapas }: { etapas: Etapa[] }) {
           >
             <span className="label-caps truncate">{e.etapa}</span>
             <div
-              className="relative flex h-14 items-center justify-center"
+              className="relative flex h-14 items-center justify-center transition-[filter] duration-[200ms] hover:brightness-105"
               style={{
                 clipPath: `polygon(${recuoTopo}% 0%, ${100 - recuoTopo}% 0%, ${100 - recuoBase}% 100%, ${recuoBase}% 100%)`,
                 background: `color-mix(in oklab, var(--chart-${(i % 5) + 1}) 82%, transparent)`,
