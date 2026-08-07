@@ -28,7 +28,7 @@ import { dataQueries, ETAPAS, etapaLabel, type Etapa, type Jornada } from "@/lib
 import { brl, dateBR, pct } from "@/lib/format";
 import { aplicarFiltros, filtrosVazios } from "@/lib/metrics";
 
-export const Route = createFileRoute("/kanban")({
+export const Route = createFileRoute("/_authenticated/kanban")({
   head: () => ({
     meta: [
       { title: "Jornada Comercial | Adim Aluguéis" },

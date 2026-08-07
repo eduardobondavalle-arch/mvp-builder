@@ -13,7 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { dataQueries, registrarAuditoria, type RegistroDiario } from "@/lib/data";
 import { dateBR, pct } from "@/lib/format";
 
-export const Route = createFileRoute("/registro-diario")({
+export const Route = createFileRoute("/_authenticated/registro-diario")({
   head: () => ({
     meta: [
       { title: "Registro Diário | Adim Aluguéis" },

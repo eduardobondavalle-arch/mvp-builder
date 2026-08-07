@@ -1,4 +1,5 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   BarChart3,
   KanbanSquare,
@@ -7,17 +8,19 @@ import {
   Settings2,
   ScrollText,
   UserRound,
+  LogOut,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 
 import adimLogo from "@/assets/adim-logo.png";
-import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { getUsuario, setUsuario } from "@/lib/usuario";
+import { supabase } from "@/integrations/supabase/client";
+import { limparUsuario } from "@/lib/usuario";
 
 
 const nav = [
-  { to: "/", label: "Inteligência", icon: BarChart3 },
+  { to: "/dashboard", label: "Inteligência", icon: BarChart3 },
   { to: "/kanban", label: "Jornada Comercial", icon: KanbanSquare },
   { to: "/registro-diario", label: "Registro Diário", icon: CalendarCheck },
   { to: "/ciclos", label: "Ciclos e Metas", icon: Target },
@@ -26,30 +29,47 @@ const nav = [
 ] as const;
 
 function UsuarioAtual() {
-  const [nome, setNome] = useState("Gestão");
-  useEffect(() => setNome(getUsuario()), []);
+  const [email, setEmail] = useState("");
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setEmail(data.user?.email ?? ""));
+  }, []);
+
+  async function sair() {
+    await queryClient.cancelQueries();
+    queryClient.clear();
+    limparUsuario();
+    await supabase.auth.signOut();
+    navigate({ to: "/auth", replace: true });
+  }
+
   return (
     <Popover>
-      <PopoverTrigger className="ml-auto flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-xs text-muted-foreground hover:text-foreground">
-        <UserRound className="size-4" />
-        {nome}
+      <PopoverTrigger className="ml-auto flex max-w-[180px] items-center gap-2 rounded-lg border border-border px-3 py-2 text-xs text-muted-foreground hover:text-foreground">
+        <UserRound className="size-4 shrink-0" />
+        <span className="truncate">{email || "Conta"}</span>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-72 space-y-2">
-        <p className="label-caps">Usuário responsável</p>
+      <PopoverContent align="end" className="w-72 space-y-3">
+        <div>
+          <p className="label-caps">Usuário conectado</p>
+          <p className="mt-1 break-all text-xs text-muted-foreground">
+            {email || "Sessão ativa"}
+          </p>
+        </div>
         <p className="text-xs text-muted-foreground">
-          Nome registrado na auditoria de todas as alterações realizadas nesta sessão.
+          Este e-mail é registrado na auditoria de todas as alterações realizadas.
         </p>
-        <Input
-          value={nome}
-          onChange={(e) => {
-            setNome(e.target.value);
-            setUsuario(e.target.value);
-          }}
-        />
+        <Button variant="outline" size="sm" className="w-full" onClick={sair}>
+          <LogOut className="size-4" />
+          Sair
+        </Button>
       </PopoverContent>
     </Popover>
   );
 }
+
 
 export function AppShell({
   children,
@@ -83,7 +103,7 @@ export function AppShell({
               <Link
                 key={item.to}
                 to={item.to}
-                activeOptions={{ exact: item.to === "/" }}
+                activeOptions={{ exact: true }}
                 className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
                 activeProps={{ className: "bg-secondary text-foreground" }}
               >

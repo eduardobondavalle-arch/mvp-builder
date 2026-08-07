@@ -20,7 +20,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { dataQueries, registrarAuditoria } from "@/lib/data";
 
-export const Route = createFileRoute("/cadastros")({
+export const Route = createFileRoute("/_authenticated/cadastros")({
   head: () => ({
     meta: [
       { title: "Cadastros | Adim Aluguéis" },

@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/select";
 import { dataQueries } from "@/lib/data";
 
-export const Route = createFileRoute("/auditoria")({
+export const Route = createFileRoute("/_authenticated/auditoria")({
   head: () => ({
     meta: [
       { title: "Auditoria | Adim Aluguéis" },
