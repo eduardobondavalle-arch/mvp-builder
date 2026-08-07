@@ -7,6 +7,7 @@ import {
   Target,
   Settings2,
   ScrollText,
+  Users,
   UserRound,
   LogOut,
 } from "lucide-react";
@@ -26,6 +27,7 @@ const nav = [
   { to: "/ciclos", label: "Ciclos e Metas", icon: Target },
   { to: "/cadastros", label: "Cadastros", icon: Settings2 },
   { to: "/auditoria", label: "Auditoria", icon: ScrollText },
+  { to: "/acessos", label: "Acessos", icon: Users },
 ] as const;
 
 function UsuarioAtual() {

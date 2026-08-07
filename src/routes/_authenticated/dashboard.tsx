@@ -26,6 +26,7 @@ import { AppShell } from "@/components/app-shell";
 import { FiltrosBar } from "@/components/filtros-bar";
 import { FunilVisual } from "@/components/funil-visual";
 import { Progress } from "@/components/ui/progress";
+import { filtrarConsultores, filtrarEquipes, useAcesso } from "@/lib/acesso";
 import { dataQueries, etapaLabel } from "@/lib/data";
 import { brl, dateBR, pct } from "@/lib/format";
 import {
@@ -78,6 +79,7 @@ const chartTooltip = {
 
 function Dashboard() {
   const [filtros, setFiltros] = useState(filtrosVazios);
+  const acesso = useAcesso();
   const results = useQueries({
     queries: [
       dataQueries.jornadas(),
@@ -93,8 +95,8 @@ function Dashboard() {
   });
 
   const jornadas = results[0].data ?? [];
-  const consultores = results[1].data ?? [];
-  const equipes = results[2].data ?? [];
+  const consultores = filtrarConsultores(results[1].data ?? [], acesso);
+  const equipes = filtrarEquipes(results[2].data ?? [], acesso);
   const canais = results[3].data ?? [];
   const ciclos = results[4].data ?? [];
   const motivos = results[5].data ?? [];

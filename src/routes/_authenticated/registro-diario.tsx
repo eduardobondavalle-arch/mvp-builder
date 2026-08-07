@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
+import { filtrarConsultores, filtrarEquipes, useAcesso } from "@/lib/acesso";
 import { dataQueries, registrarAuditoria, type RegistroDiario } from "@/lib/data";
 import { dateBR, pct } from "@/lib/format";
 
@@ -49,6 +50,7 @@ function RegistroDiarioPage() {
   const [equipeSel, setEquipeSel] = useState<string | null>(null);
 
 
+  const acesso = useAcesso();
   const results = useQueries({
     queries: [
       dataQueries.consultores(),
@@ -57,8 +59,11 @@ function RegistroDiarioPage() {
       dataQueries.preLeads(),
     ],
   });
-  const consultores = (results[0].data ?? []).filter((c) => c.ativo);
-  const equipes = results[1].data ?? [];
+  const consultores = filtrarConsultores(
+    (results[0].data ?? []).filter((c) => c.ativo),
+    acesso,
+  );
+  const equipes = filtrarEquipes(results[1].data ?? [], acesso);
   const registros = results[2].data ?? [];
   const preLeads = results[3].data ?? [];
 
