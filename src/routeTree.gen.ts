@@ -9,170 +9,161 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuditoriaRouteImport } from './routes/auditoria'
-import { Route as CadastrosRouteImport } from './routes/cadastros'
-import { Route as CiclosRouteImport } from './routes/ciclos'
-import { Route as KanbanRouteImport } from './routes/kanban'
-import { Route as RegistroDiarioRouteImport } from './routes/registro-diario'
+import { Route as AuthenticatedAuditoriaRouteImport } from './routes/_authenticated/auditoria'
+import { Route as AuthenticatedCadastrosRouteImport } from './routes/_authenticated/cadastros'
+import { Route as AuthenticatedCiclosRouteImport } from './routes/_authenticated/ciclos'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedKanbanRouteImport } from './routes/_authenticated/kanban'
+import { Route as AuthenticatedRegistroDiarioRouteImport } from './routes/_authenticated/registro-diario'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuditoriaRoute = AuditoriaRouteImport.update({
-  id: '/auditoria',
+const AuthenticatedAuditoriaRoute = AuthenticatedAuditoriaRouteImport.update({
+  id: '/_authenticated/auditoria',
   path: '/auditoria',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CadastrosRoute = CadastrosRouteImport.update({
-  id: '/cadastros',
+const AuthenticatedCadastrosRoute = AuthenticatedCadastrosRouteImport.update({
+  id: '/_authenticated/cadastros',
   path: '/cadastros',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CiclosRoute = CiclosRouteImport.update({
-  id: '/ciclos',
+const AuthenticatedCiclosRoute = AuthenticatedCiclosRouteImport.update({
+  id: '/_authenticated/ciclos',
   path: '/ciclos',
   getParentRoute: () => rootRouteImport,
 } as any)
-const KanbanRoute = KanbanRouteImport.update({
-  id: '/kanban',
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/_authenticated/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedKanbanRoute = AuthenticatedKanbanRouteImport.update({
+  id: '/_authenticated/kanban',
   path: '/kanban',
   getParentRoute: () => rootRouteImport,
 } as any)
-const RegistroDiarioRoute = RegistroDiarioRouteImport.update({
-  id: '/registro-diario',
-  path: '/registro-diario',
-  getParentRoute: () => rootRouteImport,
-} as any)
+const AuthenticatedRegistroDiarioRoute =
+  AuthenticatedRegistroDiarioRouteImport.update({
+    id: '/_authenticated/registro-diario',
+    path: '/registro-diario',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/auditoria': typeof AuditoriaRoute
-  '/cadastros': typeof CadastrosRoute
-  '/ciclos': typeof CiclosRoute
-  '/kanban': typeof KanbanRoute
-  '/registro-diario': typeof RegistroDiarioRoute
+  '/auditoria': typeof AuthenticatedAuditoriaRoute
+  '/cadastros': typeof AuthenticatedCadastrosRoute
+  '/ciclos': typeof AuthenticatedCiclosRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/kanban': typeof AuthenticatedKanbanRoute
+  '/registro-diario': typeof AuthenticatedRegistroDiarioRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/auditoria': typeof AuditoriaRoute
-  '/cadastros': typeof CadastrosRoute
-  '/ciclos': typeof CiclosRoute
-  '/kanban': typeof KanbanRoute
-  '/registro-diario': typeof RegistroDiarioRoute
+  '/auditoria': typeof AuthenticatedAuditoriaRoute
+  '/cadastros': typeof AuthenticatedCadastrosRoute
+  '/ciclos': typeof AuthenticatedCiclosRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/kanban': typeof AuthenticatedKanbanRoute
+  '/registro-diario': typeof AuthenticatedRegistroDiarioRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/auditoria': typeof AuditoriaRoute
-  '/cadastros': typeof CadastrosRoute
-  '/ciclos': typeof CiclosRoute
-  '/kanban': typeof KanbanRoute
-  '/registro-diario': typeof RegistroDiarioRoute
+  '/_authenticated/auditoria': typeof AuthenticatedAuditoriaRoute
+  '/_authenticated/cadastros': typeof AuthenticatedCadastrosRoute
+  '/_authenticated/ciclos': typeof AuthenticatedCiclosRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/kanban': typeof AuthenticatedKanbanRoute
+  '/_authenticated/registro-diario': typeof AuthenticatedRegistroDiarioRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/'
     | '/auditoria'
     | '/cadastros'
     | '/ciclos'
+    | '/dashboard'
     | '/kanban'
     | '/registro-diario'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/'
     | '/auditoria'
     | '/cadastros'
     | '/ciclos'
+    | '/dashboard'
     | '/kanban'
     | '/registro-diario'
   id:
     | '__root__'
-    | '/'
-    | '/auditoria'
-    | '/cadastros'
-    | '/ciclos'
-    | '/kanban'
-    | '/registro-diario'
+    | '/_authenticated/auditoria'
+    | '/_authenticated/cadastros'
+    | '/_authenticated/ciclos'
+    | '/_authenticated/dashboard'
+    | '/_authenticated/kanban'
+    | '/_authenticated/registro-diario'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  AuditoriaRoute: typeof AuditoriaRoute
-  CadastrosRoute: typeof CadastrosRoute
-  CiclosRoute: typeof CiclosRoute
-  KanbanRoute: typeof KanbanRoute
-  RegistroDiarioRoute: typeof RegistroDiarioRoute
+  AuthenticatedAuditoriaRoute: typeof AuthenticatedAuditoriaRoute
+  AuthenticatedCadastrosRoute: typeof AuthenticatedCadastrosRoute
+  AuthenticatedCiclosRoute: typeof AuthenticatedCiclosRoute
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedKanbanRoute: typeof AuthenticatedKanbanRoute
+  AuthenticatedRegistroDiarioRoute: typeof AuthenticatedRegistroDiarioRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auditoria': {
-      id: '/auditoria'
+    '/_authenticated/auditoria': {
+      id: '/_authenticated/auditoria'
       path: '/auditoria'
       fullPath: '/auditoria'
-      preLoaderRoute: typeof AuditoriaRouteImport
+      preLoaderRoute: typeof AuthenticatedAuditoriaRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/cadastros': {
-      id: '/cadastros'
+    '/_authenticated/cadastros': {
+      id: '/_authenticated/cadastros'
       path: '/cadastros'
       fullPath: '/cadastros'
-      preLoaderRoute: typeof CadastrosRouteImport
+      preLoaderRoute: typeof AuthenticatedCadastrosRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/ciclos': {
-      id: '/ciclos'
+    '/_authenticated/ciclos': {
+      id: '/_authenticated/ciclos'
       path: '/ciclos'
       fullPath: '/ciclos'
-      preLoaderRoute: typeof CiclosRouteImport
+      preLoaderRoute: typeof AuthenticatedCiclosRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/kanban': {
-      id: '/kanban'
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/kanban': {
+      id: '/_authenticated/kanban'
       path: '/kanban'
       fullPath: '/kanban'
-      preLoaderRoute: typeof KanbanRouteImport
+      preLoaderRoute: typeof AuthenticatedKanbanRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/registro-diario': {
-      id: '/registro-diario'
+    '/_authenticated/registro-diario': {
+      id: '/_authenticated/registro-diario'
       path: '/registro-diario'
       fullPath: '/registro-diario'
-      preLoaderRoute: typeof RegistroDiarioRouteImport
+      preLoaderRoute: typeof AuthenticatedRegistroDiarioRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  AuditoriaRoute: AuditoriaRoute,
-  CadastrosRoute: CadastrosRoute,
-  CiclosRoute: CiclosRoute,
-  KanbanRoute: KanbanRoute,
-  RegistroDiarioRoute: RegistroDiarioRoute,
+  AuthenticatedAuditoriaRoute: AuthenticatedAuditoriaRoute,
+  AuthenticatedCadastrosRoute: AuthenticatedCadastrosRoute,
+  AuthenticatedCiclosRoute: AuthenticatedCiclosRoute,
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedKanbanRoute: AuthenticatedKanbanRoute,
+  AuthenticatedRegistroDiarioRoute: AuthenticatedRegistroDiarioRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
