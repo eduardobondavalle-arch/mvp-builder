@@ -24,6 +24,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { filtrarConsultores, filtrarEquipes, useAcesso } from "@/lib/acesso";
 import { dataQueries, ETAPAS, etapaLabel, type Etapa, type Jornada } from "@/lib/data";
 import { brl, dateBR, pct } from "@/lib/format";
 import { aplicarFiltros, filtrosVazios } from "@/lib/metrics";
@@ -65,6 +66,7 @@ function KanbanPage() {
   const [editar, setEditar] = useState<Jornada | null>(null);
   const [detalhe, setDetalhe] = useState<Jornada | null>(null);
 
+  const acesso = useAcesso();
   const results = useQueries({
     queries: [
       dataQueries.jornadas(),
@@ -77,8 +79,8 @@ function KanbanPage() {
     ],
   });
   const jornadas = results[0].data ?? [];
-  const consultores = results[1].data ?? [];
-  const equipes = results[2].data ?? [];
+  const consultores = filtrarConsultores(results[1].data ?? [], acesso);
+  const equipes = filtrarEquipes(results[2].data ?? [], acesso);
   const canais = results[3].data ?? [];
   const ciclos = results[4].data ?? [];
   const motivos = results[5].data ?? [];

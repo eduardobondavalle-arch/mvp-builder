@@ -25,6 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
+import { filtrarConsultores, filtrarEquipes, useAcesso } from "@/lib/acesso";
 import { dataQueries, registrarAuditoria, salvarMetas } from "@/lib/data";
 import { brl, dateBR, pct } from "@/lib/format";
 import { calcularIndicadores, metaDe } from "@/lib/metrics";
@@ -73,6 +74,7 @@ function CiclosPage() {
   const [cicloId, setCicloId] = useState("");
   const [rascunho, setRascunho] = useState<Record<string, { vgl: string; contratos: string }>>({});
 
+  const acesso = useAcesso();
   const results = useQueries({
     queries: [
       dataQueries.ciclos(),
@@ -83,8 +85,11 @@ function CiclosPage() {
     ],
   });
   const ciclos = results[0].data ?? [];
-  const equipes = results[1].data ?? [];
-  const consultores = (results[2].data ?? []).filter((c) => c.ativo);
+  const equipes = filtrarEquipes(results[1].data ?? [], acesso);
+  const consultores = filtrarConsultores(
+    (results[2].data ?? []).filter((c) => c.ativo),
+    acesso,
+  );
   const metas = results[3].data ?? [];
   const jornadas = results[4].data ?? [];
 
