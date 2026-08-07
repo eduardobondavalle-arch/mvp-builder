@@ -1,16 +1,18 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import {
-  BarChart3,
-  KanbanSquare,
+  ChartLineUp,
+  Kanban,
   CalendarCheck,
   Target,
-  Settings2,
-  ScrollText,
-  Users,
-  UserRound,
-  LogOut,
-} from "lucide-react";
+  SlidersHorizontal,
+  ClipboardText,
+  UsersThree,
+  UserCircle,
+  SignOut,
+  Moon,
+  Sun,
+} from "@phosphor-icons/react";
 import { useEffect, useState, type ReactNode } from "react";
 
 import adimLogo from "@/assets/adim-logo.png";
@@ -18,17 +20,42 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { supabase } from "@/integrations/supabase/client";
 import { limparUsuario } from "@/lib/usuario";
-
+import { useTema } from "@/lib/tema";
 
 const nav = [
-  { to: "/dashboard", label: "Inteligência", icon: BarChart3 },
-  { to: "/kanban", label: "Jornada Comercial", icon: KanbanSquare },
+  { to: "/dashboard", label: "Inteligência", icon: ChartLineUp },
+  { to: "/kanban", label: "Jornada Comercial", icon: Kanban },
   { to: "/registro-diario", label: "Registro Diário", icon: CalendarCheck },
   { to: "/ciclos", label: "Ciclos e Metas", icon: Target },
-  { to: "/cadastros", label: "Cadastros", icon: Settings2 },
-  { to: "/auditoria", label: "Auditoria", icon: ScrollText },
-  { to: "/acessos", label: "Acessos", icon: Users },
+  { to: "/cadastros", label: "Cadastros", icon: SlidersHorizontal },
+  { to: "/auditoria", label: "Auditoria", icon: ClipboardText },
+  { to: "/acessos", label: "Acessos", icon: UsersThree },
 ] as const;
+
+function BotaoTema() {
+  const { tema, alternar } = useTema();
+  const escuro = tema === "dark";
+
+  return (
+    <button
+      type="button"
+      onClick={alternar}
+      aria-label={escuro ? "Ativar modo claro" : "Ativar modo escuro"}
+      className="relative flex size-9 items-center justify-center rounded-full border border-border bg-secondary/60 text-muted-foreground transition-all duration-300 hover:text-foreground active:scale-95"
+    >
+      <Sun
+        size={18}
+        weight="fill"
+        className={`absolute transition-all duration-300 ${escuro ? "scale-50 rotate-90 opacity-0" : "scale-100 rotate-0 opacity-100"}`}
+      />
+      <Moon
+        size={18}
+        weight="fill"
+        className={`absolute transition-all duration-300 ${escuro ? "scale-100 rotate-0 opacity-100" : "scale-50 -rotate-90 opacity-0"}`}
+      />
+    </button>
+  );
+}
 
 function UsuarioAtual() {
   const [email, setEmail] = useState("");
@@ -49,11 +76,11 @@ function UsuarioAtual() {
 
   return (
     <Popover>
-      <PopoverTrigger className="ml-auto flex max-w-[180px] items-center gap-2 rounded-lg border border-border px-3 py-2 text-xs text-muted-foreground hover:text-foreground">
-        <UserRound className="size-4 shrink-0" />
+      <PopoverTrigger className="flex max-w-[180px] items-center gap-2 rounded-full border border-border bg-secondary/60 px-3 py-2 text-xs text-muted-foreground transition-colors hover:text-foreground active:scale-95">
+        <UserCircle size={18} weight="fill" className="shrink-0" />
         <span className="truncate">{email || "Conta"}</span>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-72 space-y-3">
+      <PopoverContent align="end" className="w-72 space-y-3 rounded-2xl">
         <div>
           <p className="label-caps">Usuário conectado</p>
           <p className="mt-1 break-all text-xs text-muted-foreground">
@@ -63,15 +90,14 @@ function UsuarioAtual() {
         <p className="text-xs text-muted-foreground">
           Este e-mail é registrado na auditoria de todas as alterações realizadas.
         </p>
-        <Button variant="outline" size="sm" className="w-full" onClick={sair}>
-          <LogOut className="size-4" />
+        <Button variant="outline" size="sm" className="w-full rounded-full" onClick={sair}>
+          <SignOut size={16} weight="bold" />
           Sair
         </Button>
       </PopoverContent>
     </Popover>
   );
 }
-
 
 export function AppShell({
   children,
@@ -84,9 +110,11 @@ export function AppShell({
   subtitle: string;
   actions?: ReactNode;
 }) {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+
   return (
     <div className="min-h-screen">
-      <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur">
+      <header className="glass sticky top-0 z-30 border-b border-border/70">
         <div className="mx-auto flex max-w-[1600px] flex-wrap items-center gap-x-6 gap-y-3 px-6 py-3">
           <div className="flex items-center gap-3">
             <img
@@ -100,28 +128,34 @@ export function AppShell({
             <p className="label-caps hidden sm:block">Inteligência Comercial</p>
           </div>
 
-          <nav className="flex flex-wrap items-center gap-1">
+          <nav className="flex flex-wrap items-center gap-1 rounded-full border border-border/70 bg-secondary/50 p-1">
             {nav.map((item) => (
               <Link
                 key={item.to}
                 to={item.to}
                 activeOptions={{ exact: true }}
-                className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-                activeProps={{ className: "bg-secondary text-foreground" }}
+                className="flex items-center gap-2 rounded-full px-3 py-1.5 text-sm text-muted-foreground transition-all duration-200 hover:bg-background/70 hover:text-foreground active:scale-95"
+                activeProps={{
+                  className: "bg-card text-foreground shadow-[0_1px_2px_0_oklch(0_0_0/10%)]",
+                }}
               >
-                <item.icon className="size-4" />
+                <item.icon size={18} weight="duotone" />
                 {item.label}
               </Link>
             ))}
           </nav>
-          <UsuarioAtual />
+
+          <div className="ml-auto flex items-center gap-2">
+            <BotaoTema />
+            <UsuarioAtual />
+          </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-[1600px] px-6 py-8">
+      <main key={pathname} className="page-transition mx-auto max-w-[1600px] px-6 py-8">
         <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-semibold sm:text-3xl">{title}</h1>
+            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{title}</h1>
             <p className="mt-1 max-w-3xl text-sm text-muted-foreground">{subtitle}</p>
           </div>
           {actions}
