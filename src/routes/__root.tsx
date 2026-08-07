@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { limparUsuario, setUsuario } from "@/lib/usuario";
+import { TemaProvider } from "@/lib/tema";
 
 
 import appCss from "../styles.css?url";
