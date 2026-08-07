@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQueries } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type CSSProperties } from "react";
 import {
   CartesianGrid,
   Line,
@@ -232,7 +232,7 @@ function Dashboard() {
           <div
             key={kpi.label}
             className="panel rise-in p-5"
-            style={{ "--delay": `${i * 35}ms` } as React.CSSProperties}
+            style={{ "--delay": `${i * 35}ms` } as CSSProperties}
           >
             <div className="flex items-start justify-between gap-3">
               <span className="label-caps">{kpi.label}</span>
@@ -345,7 +345,7 @@ function Dashboard() {
                   <th className="label-caps px-6 py-3 text-right">VGL</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="stagger-rows">
                 {consultoresRank.map((c, i) => (
                   <tr key={c.id} className="border-b border-border/50 last:border-0">
                     <td className="px-6 py-3 whitespace-nowrap">
@@ -392,7 +392,7 @@ function Dashboard() {
                   <th className="label-caps px-6 py-3 text-right">VGL</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="stagger-rows">
                 {canaisConv.map((c) => (
                   <tr key={c.nome} className="border-b border-border/50 last:border-0">
                     <td className="px-6 py-3">{c.nome}</td>
@@ -469,6 +469,8 @@ function Dashboard() {
           </ul>
         </section>
       </div>
+      </>
+      )}
     </AppShell>
   );
 }

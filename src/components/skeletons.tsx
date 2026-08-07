@@ -1,10 +1,12 @@
+import type { CSSProperties } from "react";
+
 import { Skeleton } from "@/components/ui/skeleton";
 
 export function SkeletonKpis({ total = 8 }: { total?: number }) {
   return (
     <section className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       {Array.from({ length: total }).map((_, i) => (
-        <div key={i} className="panel rise-in p-5" style={{ "--delay": `${i * 35}ms` } as React.CSSProperties}>
+        <div key={i} className="panel rise-in p-5" style={{ "--delay": `${i * 35}ms` } as CSSProperties}>
           <div className="flex items-start justify-between gap-3">
             <Skeleton className="h-3 w-24" />
             <Skeleton className="size-4 rounded-full" />
@@ -59,7 +61,7 @@ export function SkeletonCards({ total = 6 }: { total?: number }) {
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
       {Array.from({ length: total }).map((_, i) => (
-        <div key={i} className="panel rise-in p-5" style={{ "--delay": `${i * 35}ms` } as React.CSSProperties}>
+        <div key={i} className="panel rise-in p-5" style={{ "--delay": `${i * 35}ms` } as CSSProperties}>
           <Skeleton className="h-4 w-32" />
           <Skeleton className="mt-3 h-3 w-full" />
           <Skeleton className="mt-2 h-3 w-2/3" />
