@@ -29,7 +29,7 @@ import { dataQueries, registrarAuditoria, salvarMetas } from "@/lib/data";
 import { brl, dateBR, pct } from "@/lib/format";
 import { calcularIndicadores, metaDe } from "@/lib/metrics";
 
-export const Route = createFileRoute("/ciclos")({
+export const Route = createFileRoute("/_authenticated/ciclos")({
   head: () => ({
     meta: [
       { title: "Ciclos e Metas | Adim Aluguéis" },

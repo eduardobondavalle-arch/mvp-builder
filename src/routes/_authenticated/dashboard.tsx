@@ -45,7 +45,7 @@ import {
   somarRegistros,
 } from "@/lib/metrics";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
     meta: [
       { title: "Inteligência Comercial | Adim Aluguéis" },
