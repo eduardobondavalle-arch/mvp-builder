@@ -50,11 +50,11 @@ function UsuarioAtual() {
 
   return (
     <Popover>
-      <PopoverTrigger className="flex max-w-[180px] items-center gap-2 rounded-full border border-border bg-secondary/60 px-3 py-2 text-xs text-muted-foreground transition-colors hover:text-foreground active:scale-95">
+      <PopoverTrigger className="press flex h-10 max-w-[180px] items-center gap-2 rounded-full border border-border/60 bg-secondary/60 px-3 text-xs text-muted-foreground hover:text-foreground">
         <UserCircle size={18} weight="fill" className="shrink-0" />
-        <span className="truncate">{email || "Conta"}</span>
+        <span className="hidden truncate sm:inline">{email || "Conta"}</span>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-72 space-y-3 rounded-2xl">
+      <PopoverContent align="end" className="w-72 space-y-3">
         <div>
           <p className="label-caps">Usuário conectado</p>
           <p className="mt-1 break-all text-xs text-muted-foreground">
@@ -88,49 +88,64 @@ export function AppShell({
 
   return (
     <div className="min-h-screen">
-      <header className="glass sticky top-0 z-30 border-b border-border/70">
-        <div className="mx-auto flex max-w-[1600px] flex-wrap items-center gap-x-6 gap-y-3 px-6 py-3">
-          <div className="flex items-center gap-3">
-            <img
-              src={adimLogo}
-              alt="Adim Aluguéis"
-              className="h-9 w-auto"
-              width={205}
-              height={90}
-            />
-            <span className="hidden h-8 w-px bg-border sm:block" />
-            <p className="label-caps hidden sm:block">Inteligência Comercial</p>
+      <header className="glass sticky top-0 z-30 border-b border-border/60">
+        <div className="mx-auto flex max-w-[1600px] flex-col gap-3 px-4 py-3 sm:px-6 lg:flex-row lg:items-center lg:gap-6">
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 lg:flex">
+            <div className="flex min-w-0 items-center gap-3">
+              <img
+                src={adimLogo}
+                alt="Adim Aluguéis"
+                className="h-9 w-auto shrink-0"
+                width={205}
+                height={90}
+              />
+              <span className="hidden h-8 w-px shrink-0 bg-border sm:block" />
+              <p className="label-caps hidden truncate sm:block">Inteligência Comercial</p>
+            </div>
+            <div className="flex items-center gap-2 lg:hidden">
+              <ToggleTema />
+              <UsuarioAtual />
+            </div>
           </div>
 
-          <nav className="flex flex-wrap items-center gap-1 rounded-full border border-border/70 bg-secondary/50 p-1">
-            {nav.map((item) => (
-              <Link
-                key={item.to}
-                to={item.to}
-                activeOptions={{ exact: true }}
-                className="flex items-center gap-2 rounded-full px-3 py-1.5 text-sm text-muted-foreground transition-all duration-200 hover:bg-background/70 hover:text-foreground active:scale-95"
-                activeProps={{
-                  className: "bg-[var(--glass)] text-foreground shadow-[0_1px_2px_0_oklch(0_0_0/10%)] backdrop-blur-xl backdrop-saturate-150",
-                }}
-              >
-                <item.icon size={18} weight="duotone" />
-                {item.label}
-              </Link>
-            ))}
-          </nav>
+          <div className="scroll-x-soft -mx-1 px-1 lg:mx-0 lg:min-w-0 lg:flex-1">
+            <nav className="flex w-max items-center gap-1 rounded-full border border-border/60 bg-secondary/50 p-1">
+              {nav.map((item) => (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  preload="intent"
+                  activeOptions={{ exact: true }}
+                  className="press flex items-center gap-2 whitespace-nowrap rounded-full px-3 py-2 text-sm text-muted-foreground hover:bg-background/70 hover:text-foreground"
+                  activeProps={{
+                    className:
+                      "bg-[var(--glass-strong)] text-foreground shadow-sm backdrop-blur-xl backdrop-saturate-150",
+                  }}
+                >
+                  <item.icon size={18} weight="duotone" />
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+          </div>
 
-          <div className="ml-auto flex items-center gap-2">
+          <div className="ml-auto hidden items-center gap-2 lg:flex">
             <ToggleTema />
             <UsuarioAtual />
           </div>
         </div>
       </header>
 
-      <main key={pathname} className="page-transition mx-auto max-w-[1600px] px-6 py-8">
+      <main
+        key={pathname}
+        className="page-transition mx-auto max-w-[1600px] px-4 py-8 sm:px-6 sm:py-10"
+      >
         <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
-          <div>
+          <div className="min-w-0">
             <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{title}</h1>
-            <p className="mt-1 max-w-3xl text-sm text-muted-foreground">{subtitle}</p>
+            <p className="mt-1.5 max-w-3xl text-sm leading-relaxed text-muted-foreground">
+              {subtitle}
+            </p>
           </div>
           {actions}
         </div>
