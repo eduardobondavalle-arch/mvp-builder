@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQueries } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type CSSProperties } from "react";
 import {
   CartesianGrid,
   Line,
@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
+import { SkeletonKpis, SkeletonPanel } from "@/components/skeletons";
 import { FiltrosBar } from "@/components/filtros-bar";
 import { FunilVisual } from "@/components/funil-visual";
 import { Progress } from "@/components/ui/progress";
@@ -103,6 +104,7 @@ function Dashboard() {
   const registros = results[6].data ?? [];
   const preLeads = results[7].data ?? [];
   const metas = results[8].data ?? [];
+  const carregando = results.some((r) => r.isLoading);
 
   const cicloId = filtros.cicloId !== "all" ? filtros.cicloId : (ciclos[0]?.id ?? "");
   const cicloAtivo = ciclos.find((c) => c.id === cicloId);
@@ -212,9 +214,26 @@ function Dashboard() {
         />
       </div>
 
+      {carregando && (
+        <>
+          <SkeletonKpis />
+          <div className="mb-8 grid gap-6 lg:grid-cols-2">
+            <SkeletonPanel linhas={6} />
+            <SkeletonPanel linhas={4} />
+          </div>
+          <SkeletonPanel className="mb-8" linhas={5} />
+        </>
+      )}
+
+      {!carregando && (
+      <>
       <section className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {kpis.map((kpi) => (
-          <div key={kpi.label} className="panel p-5">
+        {kpis.map((kpi, i) => (
+          <div
+            key={kpi.label}
+            className="panel rise-in p-5"
+            style={{ "--delay": `${i * 35}ms` } as CSSProperties}
+          >
             <div className="flex items-start justify-between gap-3">
               <span className="label-caps">{kpi.label}</span>
               <kpi.icon className="size-4 shrink-0 text-primary" />
@@ -290,6 +309,8 @@ function Dashboard() {
                   stroke={`var(--chart-${i + 1})`}
                   strokeWidth={2}
                   dot={false}
+                  animationDuration={280}
+                  animationEasing="ease-out"
                   name={k[0]!.toUpperCase() + k.slice(1)}
                 />
               ))}
@@ -324,7 +345,7 @@ function Dashboard() {
                   <th className="label-caps px-6 py-3 text-right">VGL</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="stagger-rows">
                 {consultoresRank.map((c, i) => (
                   <tr key={c.id} className="border-b border-border/50 last:border-0">
                     <td className="px-6 py-3 whitespace-nowrap">
@@ -371,7 +392,7 @@ function Dashboard() {
                   <th className="label-caps px-6 py-3 text-right">VGL</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="stagger-rows">
                 {canaisConv.map((c) => (
                   <tr key={c.nome} className="border-b border-border/50 last:border-0">
                     <td className="px-6 py-3">{c.nome}</td>
@@ -448,6 +469,8 @@ function Dashboard() {
           </ul>
         </section>
       </div>
+      </>
+      )}
     </AppShell>
   );
 }

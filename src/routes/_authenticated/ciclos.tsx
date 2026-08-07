@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Plus, Save, Wand2 } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
+import { SkeletonPanel } from "@/components/skeletons";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -92,6 +93,7 @@ function CiclosPage() {
   );
   const metas = results[3].data ?? [];
   const jornadas = results[4].data ?? [];
+  const carregando = results.some((r) => r.isLoading);
 
   const cicloAtual = ciclos.find((c) => c.id === cicloId) ?? ciclos[0];
   const idAtual = cicloAtual?.id ?? "";
@@ -355,7 +357,15 @@ function CiclosPage() {
         </p>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      {carregando && (
+        <div className="grid gap-6 lg:grid-cols-2">
+          <SkeletonPanel linhas={4} />
+          <SkeletonPanel linhas={6} />
+        </div>
+      )}
+
+      <div className={`grid gap-6 lg:grid-cols-2 ${carregando ? "hidden" : ""}`}>
+
         <section className="panel p-6">
           <h2 className="text-lg font-semibold">Metas por equipe</h2>
           <p className="mb-4 text-xs text-muted-foreground">
