@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Plus, Save, Wand2 } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
+import { SkeletonPanel } from "@/components/skeletons";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -92,6 +93,7 @@ function CiclosPage() {
   );
   const metas = results[3].data ?? [];
   const jornadas = results[4].data ?? [];
+  const carregando = results.some((r) => r.isLoading);
 
   const cicloAtual = ciclos.find((c) => c.id === cicloId) ?? ciclos[0];
   const idAtual = cicloAtual?.id ?? "";

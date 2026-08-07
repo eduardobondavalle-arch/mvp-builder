@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Plus } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
+import { SkeletonPanel } from "@/components/skeletons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -63,6 +64,7 @@ function CadastrosPage() {
   const canais = results[2].data ?? [];
   const motivos = results[3].data ?? [];
   const motivosTransf = results[4].data ?? [];
+  const carregando = results.some((r) => r.isLoading);
 
   const invalidar = (tabela: Tabela) => {
     const chaves: Record<Tabela, string> = {
@@ -211,6 +213,14 @@ function CadastrosPage() {
       title="Cadastros"
       subtitle="Listas mestras usadas em toda a plataforma. Registros nunca são excluídos — para retirar um item de uso, desative-o; o histórico permanece íntegro."
     >
+      {carregando && (
+        <div className="grid gap-6 lg:grid-cols-2">
+          <SkeletonPanel linhas={5} />
+          <SkeletonPanel linhas={5} />
+        </div>
+      )}
+
+      {!carregando && (
       <Tabs defaultValue="pessoas">
         <TabsList className="mb-6">
           <TabsTrigger value="pessoas">Equipes e consultores</TabsTrigger>
@@ -350,6 +360,7 @@ function CadastrosPage() {
           )}
         </TabsContent>
       </Tabs>
+      )}
     </AppShell>
   );
 }
