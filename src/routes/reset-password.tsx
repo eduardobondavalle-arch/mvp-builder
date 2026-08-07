@@ -25,7 +25,7 @@ export const Route = createFileRoute("/reset-password")({
       { name: "twitter:card", content: "summary" },
     ],
   }),
-  ssr: false,
+  
   component: ResetPasswordPage,
 });
 
