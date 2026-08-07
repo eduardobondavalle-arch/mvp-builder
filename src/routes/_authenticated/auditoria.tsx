@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 
 import { AppShell } from "@/components/app-shell";
+import { SkeletonTabela } from "@/components/skeletons";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -103,7 +104,7 @@ function AuditoriaPage() {
                 <th className="label-caps px-6 py-3">Alteração</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="stagger-rows">
               {filtrados.map((r) => (
                 <tr key={r.id} className="border-b border-border/50 align-top last:border-0">
                   <td className="px-6 py-3 font-mono text-xs whitespace-nowrap">
@@ -126,10 +127,17 @@ function AuditoriaPage() {
                   </td>
                 </tr>
               ))}
-              {filtrados.length === 0 && (
+              {isLoading && (
+                <tr>
+                  <td colSpan={7} className="px-6 py-6">
+                    <SkeletonTabela linhas={8} colunas={6} />
+                  </td>
+                </tr>
+              )}
+              {!isLoading && filtrados.length === 0 && (
                 <tr>
                   <td colSpan={7} className="px-6 py-8 text-sm text-muted-foreground">
-                    {isLoading ? "Carregando trilha de auditoria…" : "Nenhum registro encontrado."}
+                    Nenhum registro encontrado.
                   </td>
                 </tr>
               )}

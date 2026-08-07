@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { Plus, ArrowRight, History, Pencil, UserRoundCog } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
+import { SkeletonCards } from "@/components/skeletons";
 import { EditarJornadaDialog } from "@/components/editar-jornada-dialog";
 import { FiltrosBar } from "@/components/filtros-bar";
 import { MoverEtapaDialog } from "@/components/mover-etapa-dialog";
@@ -85,6 +86,7 @@ function KanbanPage() {
   const ciclos = results[4].data ?? [];
   const motivos = results[5].data ?? [];
   const motivosTransf = results[6].data ?? [];
+  const carregando = results.some((r) => r.isLoading);
 
   const nomeConsultor = new Map(consultores.map((c) => [c.id, c.nome]));
   const nomeCanal = new Map(canais.map((c) => [c.id, c.nome]));
@@ -121,6 +123,9 @@ function KanbanPage() {
         />
       </div>
 
+      {carregando && <SkeletonCards total={4} />}
+
+      {!carregando && (
       <div className="grid gap-4 lg:grid-cols-4">
         {ETAPAS.map((etapa) => {
           const cards = filtradas.filter((j) => j.etapa === etapa.key);
@@ -141,11 +146,11 @@ function KanbanPage() {
                 <p className="mt-1 font-mono text-xs text-primary">{brl(soma)}</p>
               </header>
 
-              <div className="flex flex-col gap-3">
+              <div className="stagger-rows flex flex-col gap-3">
                 {cards.map((j) => (
                   <article
                     key={j.id}
-                    className={`rounded-lg border border-border border-l-2 bg-secondary/40 p-3 ${etapaCor[j.etapa]}`}
+                    className={`rounded-xl border border-border/60 border-l-2 bg-secondary/40 p-3 transition-all duration-[220ms] ease-[var(--ease-out-soft)] hover:-translate-y-0.5 hover:bg-secondary/70 hover:shadow-md ${etapaCor[j.etapa]}`}
                   >
                     <button
                       className="text-left"
@@ -251,6 +256,7 @@ function KanbanPage() {
           );
         })}
       </div>
+      )}
 
       <NovaPropostaDialog
         open={novaAberta}
