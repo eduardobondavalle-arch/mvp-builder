@@ -110,7 +110,7 @@ export function AppShell({
                 activeOptions={{ exact: true }}
                 className="flex items-center gap-2 rounded-full px-3 py-1.5 text-sm text-muted-foreground transition-all duration-200 hover:bg-background/70 hover:text-foreground active:scale-95"
                 activeProps={{
-                  className: "bg-card text-foreground shadow-[0_1px_2px_0_oklch(0_0_0/10%)]",
+                  className: "bg-[var(--glass)] text-foreground shadow-[0_1px_2px_0_oklch(0_0_0/10%)] backdrop-blur-xl backdrop-saturate-150",
                 }}
               >
                 <item.icon size={18} weight="duotone" />

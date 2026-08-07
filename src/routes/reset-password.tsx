@@ -66,7 +66,7 @@ function ResetPasswordPage() {
 
         <form
           onSubmit={salvar}
-          className="space-y-4 rounded-2xl border border-border bg-card p-6 shadow-sm"
+          className="space-y-4 rounded-2xl border border-border/70 bg-[var(--glass)] p-6 shadow-sm backdrop-blur-3xl backdrop-saturate-150"
         >
           <div className="space-y-2">
             <Label htmlFor="senha">Nova senha</Label>

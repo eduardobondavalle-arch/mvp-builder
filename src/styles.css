@@ -162,16 +162,16 @@
 }
 
 @utility panel {
-  background-color: var(--color-card);
-  border: 1px solid var(--color-border);
+  background-color: var(--glass);
+  backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid color-mix(in oklab, var(--color-border) 70%, transparent);
   border-radius: var(--radius-xl);
   box-shadow: var(--panel-shadow);
 }
 
 @utility glass {
   background-color: var(--glass);
-  backdrop-filter: saturate(180%) blur(20px);
-  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: blur(24px) saturate(160%);
 }
 
 @utility metric-value {
