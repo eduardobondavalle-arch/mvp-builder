@@ -7,7 +7,7 @@ const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElemen
     <div
       ref={ref}
       className={cn(
-        "rounded-xl border border-border/70 bg-[var(--glass)] text-card-foreground shadow backdrop-blur-3xl backdrop-saturate-150",
+        "rounded-2xl border border-border/60 bg-[var(--glass)] text-card-foreground shadow-sm backdrop-blur-xl backdrop-saturate-[1.4] transition-shadow duration-[220ms] ease-[var(--ease-out-soft)]",
         className,
       )}
       {...props}
@@ -27,7 +27,7 @@ const CardTitle = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivE
   ({ className, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn("font-semibold leading-none tracking-tight", className)}
+      className={cn("text-base font-semibold leading-none tracking-tight", className)}
       {...props}
     />
   ),
