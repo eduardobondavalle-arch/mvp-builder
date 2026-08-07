@@ -1,0 +1,151 @@
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+
+import adimLogo from "@/assets/adim-logo.png";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { supabase } from "@/integrations/supabase/client";
+
+export const Route = createFileRoute("/auth")({
+  head: () => ({
+    meta: [
+      { title: "Acesso restrito | Adim Aluguéis" },
+      {
+        name: "description",
+        content:
+          "Área restrita da plataforma de inteligência comercial da Adim Aluguéis. Entre com e-mail e senha para acessar o painel.",
+      },
+      { property: "og:title", content: "Acesso restrito | Adim Aluguéis" },
+      {
+        property: "og:description",
+        content: "Área restrita da plataforma de inteligência comercial da Adim Aluguéis.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
+  ssr: false,
+  component: AuthPage,
+});
+
+function AuthPage() {
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
+  const [modo, setModo] = useState<"login" | "recuperar">("login");
+  const [carregando, setCarregando] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user) navigate({ to: "/dashboard", replace: true });
+    });
+  }, [navigate]);
+
+  async function entrar(e: React.FormEvent) {
+    e.preventDefault();
+    setCarregando(true);
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password: senha,
+    });
+    setCarregando(false);
+    if (error) {
+      toast.error(
+        error.message.toLowerCase().includes("invalid")
+          ? "E-mail ou senha incorretos."
+          : "Não foi possível entrar. Tente novamente.",
+      );
+      return;
+    }
+    navigate({ to: "/dashboard", replace: true });
+  }
+
+  async function recuperar(e: React.FormEvent) {
+    e.preventDefault();
+    setCarregando(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setCarregando(false);
+    if (error) {
+      toast.error("Não foi possível enviar o e-mail de recuperação.");
+      return;
+    }
+    toast.success("Enviamos um link de redefinição para o seu e-mail.");
+    setModo("login");
+  }
+
+  return (
+    <main className="flex min-h-screen items-center justify-center px-4 py-12">
+      <div className="w-full max-w-sm">
+        <div className="mb-8 flex flex-col items-center gap-4 text-center">
+          <img src={adimLogo} alt="Adim Aluguéis" className="h-11 w-auto" width={205} height={90} />
+          <div>
+            <h1 className="text-xl font-semibold">Inteligência Comercial</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Acesso restrito à equipe Adim Aluguéis.
+            </p>
+          </div>
+        </div>
+
+        <form
+          onSubmit={modo === "login" ? entrar : recuperar}
+          className="space-y-4 rounded-2xl border border-border bg-card p-6 shadow-sm"
+        >
+          <div className="space-y-2">
+            <Label htmlFor="email">E-mail</Label>
+            <Input
+              id="email"
+              type="email"
+              autoComplete="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="voce@adimalugueis.com.br"
+            />
+          </div>
+
+          {modo === "login" ? (
+            <div className="space-y-2">
+              <Label htmlFor="senha">Senha</Label>
+              <Input
+                id="senha"
+                type="password"
+                autoComplete="current-password"
+                required
+                value={senha}
+                onChange={(e) => setSenha(e.target.value)}
+              />
+            </div>
+          ) : (
+            <p className="text-xs text-muted-foreground">
+              Informe o e-mail cadastrado e enviaremos um link para você criar uma nova senha.
+            </p>
+          )}
+
+          <Button type="submit" className="w-full" disabled={carregando}>
+            {carregando
+              ? "Aguarde..."
+              : modo === "login"
+                ? "Entrar"
+                : "Enviar link de recuperação"}
+          </Button>
+
+          <button
+            type="button"
+            className="w-full text-center text-xs text-muted-foreground underline-offset-4 hover:underline"
+            onClick={() => setModo(modo === "login" ? "recuperar" : "login")}
+          >
+            {modo === "login" ? "Esqueci minha senha" : "Voltar para o login"}
+          </button>
+        </form>
+
+        <p className="mt-6 text-center text-xs text-muted-foreground">
+          Novos acessos são criados pela gestão.
+        </p>
+      </div>
+    </main>
+  );
+}
