@@ -6,6 +6,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { AppShell } from "@/components/app-shell";
+import { SkeletonTabela } from "@/components/skeletons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -320,8 +321,8 @@ function AcessosPage() {
               )}
               {usuarios.isLoading && (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-sm text-muted-foreground">
-                    Carregando usuários…
+                  <td colSpan={5} className="px-6 py-6">
+                    <SkeletonTabela linhas={5} colunas={4} />
                   </td>
                 </tr>
               )}

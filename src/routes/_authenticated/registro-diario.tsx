@@ -6,6 +6,7 @@ import { AlertTriangle, ArrowLeft, CheckCircle2, ChevronRight, Save, Users } fro
 
 
 import { AppShell } from "@/components/app-shell";
+import { SkeletonCards } from "@/components/skeletons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -66,6 +67,7 @@ function RegistroDiarioPage() {
   const equipes = filtrarEquipes(results[1].data ?? [], acesso);
   const registros = results[2].data ?? [];
   const preLeads = results[3].data ?? [];
+  const carregando = results.some((r) => r.isLoading);
 
   const doDia = registros.filter((r) => r.data === data);
   const preLeadDoDia = preLeads.find((p) => p.data === data);
@@ -237,7 +239,7 @@ function RegistroDiarioPage() {
                   key={g.id}
                   type="button"
                   onClick={() => setEquipeSel(g.id)}
-                  className={`panel flex items-center justify-between gap-3 p-5 text-left transition hover:border-primary/60 ${
+                  className={`panel rise-in press flex items-center justify-between gap-3 p-5 text-left hover:border-primary/60 hover:shadow-md ${
                     pendente ? "border-destructive/60 bg-destructive/5" : ""
                   }`}
                 >
@@ -298,7 +300,7 @@ function RegistroDiarioPage() {
               return (
                 <li
                   key={c.id}
-                  className={`p-4 sm:px-6 ${pendente ? "bg-destructive/5" : ""}`}
+                  className={`p-4 transition-colors duration-[180ms] sm:px-6 ${pendente ? "bg-destructive/5" : ""}`}
                 >
                   <div className="mb-3 flex items-center gap-2">
                     {pendente ? (
