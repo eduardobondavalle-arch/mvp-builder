@@ -223,7 +223,9 @@ function RegistroDiarioPage() {
         </div>
       </div>
 
-      {!grupoAtual ? (
+      {carregando ? (
+        <SkeletonCards total={2} />
+      ) : !grupoAtual ? (
         <section className="space-y-3">
           <div>
             <h2 className="text-lg font-semibold">Selecione a unidade</h2>
@@ -232,13 +234,14 @@ function RegistroDiarioPage() {
             </p>
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
-            {grupos.map((g) => {
+            {grupos.map((g, gi) => {
               const pendente = g.pendentes > 0;
               return (
                 <button
                   key={g.id}
                   type="button"
                   onClick={() => setEquipeSel(g.id)}
+                  style={{ "--delay": `${gi * 45}ms` } as CSSProperties}
                   className={`panel rise-in press flex items-center justify-between gap-3 p-5 text-left hover:border-primary/60 hover:shadow-md ${
                     pendente ? "border-destructive/60 bg-destructive/5" : ""
                   }`}
