@@ -120,7 +120,7 @@ export function AppShell({
           </nav>
 
           <div className="ml-auto flex items-center gap-2">
-            <BotaoTema />
+            <ToggleTema />
             <UsuarioAtual />
           </div>
         </div>
