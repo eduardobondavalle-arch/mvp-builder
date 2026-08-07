@@ -223,7 +223,9 @@ export async function registrarAuditoria(
   }[],
 ) {
   if (!entradas.length) return;
-  const usuario = getUsuario();
+  const { data: sessao } = await supabase.auth.getUser();
+  const usuario = sessao.user?.email ?? getUsuario();
+
   const { error } = await supabase.from("auditoria").insert(
     entradas.map((e) => ({
       entidade: e.entidade,
