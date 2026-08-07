@@ -357,7 +357,15 @@ function CiclosPage() {
         </p>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      {carregando && (
+        <div className="grid gap-6 lg:grid-cols-2">
+          <SkeletonPanel linhas={4} />
+          <SkeletonPanel linhas={6} />
+        </div>
+      )}
+
+      <div className={`grid gap-6 lg:grid-cols-2 ${carregando ? "hidden" : ""}`}>
+
         <section className="panel p-6">
           <h2 className="text-lg font-semibold">Metas por equipe</h2>
           <p className="mb-4 text-xs text-muted-foreground">
