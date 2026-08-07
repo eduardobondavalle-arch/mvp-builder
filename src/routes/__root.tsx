@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { limparUsuario, setUsuario } from "@/lib/usuario";
+import { TemaProvider } from "@/lib/tema";
 
 
 import appCss from "../styles.css?url";
@@ -159,9 +160,11 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
-      <Toaster position="top-right" />
+      <TemaProvider>
+        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+        <Outlet />
+        <Toaster position="top-right" />
+      </TemaProvider>
     </QueryClientProvider>
   );
 }

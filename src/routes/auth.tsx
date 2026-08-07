@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import adimLogo from "@/assets/adim-logo.png";
+import { ToggleTema } from "@/components/toggle-tema";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -78,8 +79,11 @@ function AuthPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center px-4 py-12">
-      <div className="w-full max-w-sm">
+    <main className="relative flex min-h-screen items-center justify-center px-4 py-12">
+      <div className="absolute right-4 top-4">
+        <ToggleTema />
+      </div>
+      <div className="page-transition w-full max-w-sm">
         <div className="mb-8 flex flex-col items-center gap-4 text-center">
           <img src={adimLogo} alt="Adim Aluguéis" className="h-11 w-auto" width={205} height={90} />
           <div>
@@ -89,6 +93,7 @@ function AuthPage() {
             </p>
           </div>
         </div>
+
 
         <form
           onSubmit={modo === "login" ? entrar : recuperar}
