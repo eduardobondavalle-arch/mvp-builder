@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { toast } from "sonner";
 import { AlertTriangle, ArrowLeft, CheckCircle2, ChevronRight, Save, Users } from "lucide-react";
 
