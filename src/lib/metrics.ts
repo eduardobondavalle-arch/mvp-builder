@@ -307,7 +307,8 @@ export function conversaoPorCanal(jornadas: Jornada[], canais: Canal[]) {
         propostas: minhas.length,
         contratos: ind.contratos,
         conversao: ind.conversao,
-        vgl: ind.vgl,
+        vgl: ind.vglTotal,
+
         ticketMedio: ind.ticketMedio,
       };
     })
