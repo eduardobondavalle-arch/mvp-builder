@@ -44,7 +44,7 @@ import {
   produtividadeDiaria,
   rankingConsultores,
   rankingEquipes,
-  somarRegistros,
+
 } from "@/lib/metrics";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
@@ -123,7 +123,6 @@ function Dashboard() {
   );
 
   const ind = useMemo(() => calcularIndicadores(filtradas), [filtradas]);
-  const op = useMemo(() => somarRegistros(registrosFiltrados), [registrosFiltrados]);
   const dadosFunil = useMemo(
     () => funilCompleto(filtradas, registrosFiltrados, preLeadsFiltrados),
     [filtradas, registrosFiltrados, preLeadsFiltrados],
