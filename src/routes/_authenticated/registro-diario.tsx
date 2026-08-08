@@ -132,7 +132,9 @@ function RegistroDiarioPage() {
               valor_novo: String(p[k]),
             }));
         }),
-        ...(preLead.trim() && String(preLeadDoDia?.quantidade ?? "") !== preLead.trim()
+        ...(podeEditarPreLead &&
+        preLead.trim() &&
+        String(preLeadDoDia?.quantidade ?? "") !== preLead.trim()
           ? [
               {
                 entidade: "pre_lead",
