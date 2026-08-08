@@ -150,53 +150,69 @@ function Dashboard() {
   const metaContratosTotal =
     equipesRank.reduce((s, e) => s + e.metaContratos, 0) || cicloAtivo?.meta_contratos || 0;
 
+  const canalTop = canaisConv[0];
+
   const kpis = [
     {
-      label: "VGL realizado",
-      value: brl(ind.vgl),
+      label: "VGL Total",
+      value: brl(ind.vglTotal),
       icon: Wallet,
-      hint: metaVglTotal ? `${pct((ind.vgl / metaVglTotal) * 100, 0)} da meta` : "Sem meta definida",
+      hint: metaVglTotal
+        ? `${pct((ind.vglTotal / metaVglTotal) * 100, 0)} da meta`
+        : "Fechamento + contrato assinado",
     },
     {
-      label: "Contratos assinados",
-      value: String(ind.contratos),
+      label: "VGL Assinado",
+      value: brl(ind.vglAssinado),
       icon: Handshake,
-      hint: metaContratosTotal
-        ? `Meta ${metaContratosTotal} • ${ind.emNegociacao} em negociação`
-        : `${ind.emNegociacao} em negociação`,
+      hint: `${ind.contratos} contratos assinados`,
     },
-    { label: "Ticket médio", value: brl(ind.ticketMedio), icon: Target, hint: "Por contrato" },
+    {
+      label: "Ticket médio",
+      value: brl(ind.ticketMedio),
+      icon: Target,
+      hint: "Média dos cards em fechamento e contrato",
+    },
+    {
+      label: "Intermediação média",
+      value: pct(ind.taxaMedia),
+      icon: Percent,
+      hint: "Média do % de intermediação das propostas",
+    },
     {
       label: "Receita de intermediação",
       value: brl(ind.intermediacao),
       icon: TrendingUp,
-      hint: `Taxa média ${pct(ind.taxaMedia)}`,
+      hint: "Fechamento + contrato assinado",
     },
     {
-      label: "Conversão proposta → contrato",
-      value: pct(ind.conversao),
-      icon: Percent,
-      hint: `${ind.perdidos} perdidos • ${ind.reabertas} reabertas`,
-    },
-    {
-      label: "Conversão Laís (pré lead → lead)",
-      value: pct(lais.conversao),
-      icon: Bot,
-      hint: `${lais.preLeads} pré leads • ${lais.leads} leads`,
-    },
-    {
-      label: "Tempo médio da jornada",
+      label: "Tempo médio da jornada do cliente",
       value: `${ind.tempoMedioJornada.toFixed(1)} dias`,
       icon: Clock,
-      hint: `Laís ${ind.tempoMedioLais.toFixed(1)}d • consultor ${ind.tempoMedioConsultor.toFixed(1)}d`,
+      hint: "Da entrada do cliente ao envio da proposta",
     },
     {
-      label: "Produtividade do período",
-      value: `${op.visitas} visitas`,
+      label: "Em negociação",
+      value: String(ind.emNegociacao),
       icon: RefreshCcw,
-      hint: `${op.leads} leads • ${op.atendimentos} atend. • ${op.agendamentos} agend.`,
+      hint: "Cards em proposta e fechamento",
+    },
+    {
+      label: "Negócios perdidos",
+      value: String(ind.perdidos),
+      icon: AlertTriangle,
+      hint: `${ind.reabertas} reabertas • conversão ${pct(ind.conversao, 0)}`,
+    },
+    {
+      label: "Canal com maior conversão",
+      value: canalTop?.nome ?? "—",
+      icon: Bot,
+      hint: canalTop
+        ? `${pct(canalTop.conversao, 0)} • ${canalTop.contratos}/${canalTop.propostas} propostas`
+        : "Sem propostas no recorte",
     },
   ];
+
 
   return (
     <AppShell
