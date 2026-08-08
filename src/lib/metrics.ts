@@ -101,16 +101,30 @@ export function somarRegistros(registros: RegistroDiario[]) {
   );
 }
 
+/** Valor comercial de um card conforme a etapa alcançada. */
+const valorCard = (j: Jornada) =>
+  j.valor_final ?? j.valor_atualizado ?? j.valor_proposta ?? 0;
+
+const passouFechamento = (j: Jornada) =>
+  j.atingiu_fechamento || j.etapa === "fechamento" || j.etapa === "contrato_assinado";
+const passouContrato = (j: Jornada) => j.atingiu_contrato || j.etapa === "contrato_assinado";
+
 export function calcularIndicadores(jornadas: Jornada[]) {
-  const contratos = jornadas.filter((j) => j.atingiu_contrato);
-  const vgl = contratos.reduce((s, j) => s + (j.valor_final ?? 0), 0);
-  const intermediacao = contratos.reduce(
-    (s, j) => s + ((j.valor_final ?? 0) * j.percentual_intermediacao) / 100,
+  // Colunas atuais do painel de propostas.
+  const emFechamento = jornadas.filter((j) => j.etapa === "fechamento");
+  const assinados = jornadas.filter((j) => j.etapa === "contrato_assinado");
+  const comValor = [...emFechamento, ...assinados];
+
+  const vglTotal = comValor.reduce((s, j) => s + valorCard(j), 0);
+  const vglAssinado = assinados.reduce((s, j) => s + valorCard(j), 0);
+  const intermediacao = comValor.reduce(
+    (s, j) => s + (valorCard(j) * j.percentual_intermediacao) / 100,
     0,
   );
-  const taxaMedia = contratos.length
-    ? contratos.reduce((s, j) => s + j.percentual_intermediacao, 0) / contratos.length
+  const taxaMedia = jornadas.length
+    ? jornadas.reduce((s, j) => s + j.percentual_intermediacao, 0) / jornadas.length
     : 0;
+
   const emNegociacao = jornadas.filter(
     (j) => j.etapa === "proposta" || j.etapa === "fechamento",
   ).length;
@@ -121,34 +135,41 @@ export function calcularIndicadores(jornadas: Jornada[]) {
   const dias = (a: string | null, b: string | null) =>
     a && b ? (new Date(b).getTime() - new Date(a).getTime()) / 86400000 : null;
 
-  const tempoJornada = contratos
-    .map((j) => dias(j.data_primeiro_contato, j.data_assinatura))
+  // Jornada do cliente: da entrada no CRM até o envio da proposta, em todas as colunas.
+  const tempoJornada = jornadas
+    .map((j) => dias(j.data_entrada_crm, j.data_proposta))
     .filter((v): v is number => v !== null && v >= 0);
   const tempoLais = jornadas
     .map((j) => dias(j.data_primeiro_contato, j.data_entrada_crm))
     .filter((v): v is number => v !== null && v >= 0);
-  const tempoConsultor = contratos
+  const tempoConsultor = jornadas
+    .filter(passouContrato)
     .map((j) => dias(j.data_entrada_crm, j.data_assinatura))
     .filter((v): v is number => v !== null && v >= 0);
+
+  const contratos = jornadas.filter(passouContrato).length;
 
   return {
     total: jornadas.length,
     propostas: jornadas.length,
-    fechamentos: jornadas.filter((j) => j.atingiu_fechamento).length,
-    contratos: contratos.length,
-    vgl,
+    fechamentos: jornadas.filter(passouFechamento).length,
+    contratos,
+    vgl: vglAssinado,
+    vglTotal,
+    vglAssinado,
     intermediacao,
-    ticketMedio: contratos.length ? vgl / contratos.length : 0,
+    ticketMedio: comValor.length ? vglTotal / comValor.length : 0,
     taxaMedia,
     emNegociacao,
     perdidos,
     reabertas,
-    conversao: jornadas.length ? (contratos.length / jornadas.length) * 100 : 0,
+    conversao: jornadas.length ? (contratos / jornadas.length) * 100 : 0,
     tempoMedioJornada: media(tempoJornada),
     tempoMedioLais: media(tempoLais),
     tempoMedioConsultor: media(tempoConsultor),
   };
 }
+
 
 /** Funil completo: Pré Lead e Lead→Visita vêm do registro diário; Proposta→Contrato vêm do Kanban. */
 export function funilCompleto(
