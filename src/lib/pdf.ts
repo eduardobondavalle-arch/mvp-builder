@@ -15,8 +15,9 @@ function paraHex(cor: string): string {
     ctx.fillStyle = "#ffffff";
     ctx.fillStyle = cor;
     ctx.fillRect(0, 0, 1, 1);
-    const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
-    return `#${[r, g, b].map((v) => v.toString(16).padStart(2, "0")).join("")}`;
+    const d = ctx.getImageData(0, 0, 1, 1).data;
+    return `#${[d[0] ?? 255, d[1] ?? 255, d[2] ?? 255].map((v) => v.toString(16).padStart(2, "0")).join("")}`;
+
   } catch {
     return fallback;
   }
