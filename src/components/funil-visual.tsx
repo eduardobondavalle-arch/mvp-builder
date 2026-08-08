@@ -35,16 +35,14 @@ export function FunilVisual({ etapas }: { etapas: Etapa[] }) {
                 background: `color-mix(in oklab, var(--chart-${(i % 5) + 1}) 82%, transparent)`,
               }}
             >
-              {larguraAtual > 34 && (
-                <span className="font-mono text-sm font-semibold text-background">
-                  {e.valor.toLocaleString("pt-BR")}
-                </span>
-              )}
+              <span className="font-mono text-sm font-semibold text-background">
+                {e.valor.toLocaleString("pt-BR")}
+              </span>
             </div>
             <span className="text-right font-mono text-xs text-muted-foreground">
-              {larguraAtual > 34 ? "" : `${e.valor.toLocaleString("pt-BR")} · `}
               {conversao === null ? "—" : pct(conversao, 0)}
             </span>
+
           </div>
         );
       })}
