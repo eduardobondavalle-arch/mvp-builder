@@ -3,6 +3,25 @@ import { jsPDF } from "jspdf";
 
 const LARGURA_CAPTURA = 1400;
 
+/** Converte qualquer cor CSS (incl. oklch) para hex, que o jsPDF entende. */
+function paraHex(cor: string): string {
+  const fallback = "#ffffff";
+  try {
+    const c = document.createElement("canvas");
+    c.width = 1;
+    c.height = 1;
+    const ctx = c.getContext("2d");
+    if (!ctx) return fallback;
+    ctx.fillStyle = "#ffffff";
+    ctx.fillStyle = cor;
+    ctx.fillRect(0, 0, 1, 1);
+    const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+    return `#${[r, g, b].map((v) => v.toString(16).padStart(2, "0")).join("")}`;
+  } catch {
+    return fallback;
+  }
+}
+
 async function capturar(el: HTMLElement, fundo: string) {
   return html2canvas(el, {
     scale: 2,
@@ -12,6 +31,7 @@ async function capturar(el: HTMLElement, fundo: string) {
     windowWidth: LARGURA_CAPTURA,
   });
 }
+
 
 /**
  * Exporta um elemento como PDF A4 paisagem, sem margens.
