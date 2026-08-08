@@ -170,6 +170,7 @@ function RelatoriosPage() {
     cicloId,
   );
   const canaisConv = conversaoPorCanal(jornadas, canais);
+  const canaisConvAgrupado = conversaoPorCanalAgrupado(jornadas, canais);
   const perdas = motivosDePerda(jornadas, motivos);
   const paradas = negociacoesParadas(jornadas);
   const serie = produtividadeDiaria(registros);
