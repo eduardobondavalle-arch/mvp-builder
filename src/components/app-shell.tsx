@@ -103,7 +103,7 @@ export function AppShell({
                 height={90}
               />
               <span className="hidden h-8 w-px shrink-0 bg-border sm:block" />
-              <p className="label-caps hidden truncate sm:block">Inteligência Comercial</p>
+              <p className="label-caps hidden truncate sm:block">Painel de Resultados</p>
             </div>
             <div className="flex items-center gap-2 lg:hidden">
               <ToggleTema />
