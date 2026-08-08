@@ -81,7 +81,7 @@ function RelatoriosPage() {
   const relatorioRef = useRef<HTMLDivElement>(null);
   const [gerando, setGerando] = useState(false);
 
-  const [periodo, setPeriodo] = useState<Periodo>("semanal");
+  const [periodo, setPeriodo] = useState<Periodo>("ciclo");
   const [referencia, setReferencia] = useState(iso(new Date()));
   const [de, setDe] = useState(somaDias(iso(new Date()), -6));
   const [ate, setAte] = useState(iso(new Date()));
