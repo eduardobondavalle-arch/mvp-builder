@@ -66,9 +66,10 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
 const somaDias = (base: string, dias: number) =>
   iso(new Date(new Date(`${base}T12:00:00`).getTime() + dias * 86400000));
 
-type Periodo = "diario" | "semanal" | "mensal" | "ciclo" | "personalizado";
+type Periodo = "total" | "diario" | "semanal" | "mensal" | "ciclo" | "personalizado";
 
 const periodos: { key: Periodo; label: string }[] = [
+  { key: "total", label: "Base completa" },
   { key: "diario", label: "Diário" },
   { key: "semanal", label: "Semanal" },
   { key: "mensal", label: "Mensal" },
@@ -81,7 +82,8 @@ function RelatoriosPage() {
   const relatorioRef = useRef<HTMLDivElement>(null);
   const [gerando, setGerando] = useState(false);
 
-  const [periodo, setPeriodo] = useState<Periodo>("semanal");
+  const [periodo, setPeriodo] = useState<Periodo>("total");
+
   const [referencia, setReferencia] = useState(iso(new Date()));
   const [de, setDe] = useState(somaDias(iso(new Date()), -6));
   const [ate, setAte] = useState(iso(new Date()));
@@ -118,7 +120,9 @@ function RelatoriosPage() {
   const ciclo = ciclos.find((c) => c.id === cicloId);
 
   const intervalo = useMemo(() => {
+    if (periodo === "total") return { de: "", ate: "" };
     if (periodo === "diario") return { de: referencia, ate: referencia };
+
     if (periodo === "semanal") return { de: somaDias(referencia, -6), ate: referencia };
     if (periodo === "mensal") return { de: referencia.slice(0, 7) + "-01", ate: referencia };
     if (periodo === "ciclo")
@@ -259,7 +263,15 @@ function RelatoriosPage() {
           </Select>
         </div>
 
-        {periodo === "ciclo" ? (
+        {periodo === "total" ? (
+          <div className="space-y-1.5">
+            <Label>Recorte de datas</Label>
+            <p className="text-sm text-muted-foreground">
+              Sem filtro de data: considera todos os cards do painel de propostas.
+            </p>
+          </div>
+        ) : periodo === "ciclo" ? (
+
           <div className="space-y-1.5">
             <Label>Ciclo</Label>
             <Select value={cicloId} onValueChange={setCicloSel}>
@@ -366,9 +378,16 @@ function RelatoriosPage() {
               </div>
               <div className="text-right text-xs text-muted-foreground">
                 <p>
-                  Período: <span className="font-mono">{dateBR(intervalo.de)}</span> a{" "}
-                  <span className="font-mono">{dateBR(intervalo.ate)}</span>
+                  {periodo === "total" ? (
+                    "Período: base completa (todos os cards)"
+                  ) : (
+                    <>
+                      Período: <span className="font-mono">{dateBR(intervalo.de)}</span> a{" "}
+                      <span className="font-mono">{dateBR(intervalo.ate)}</span>
+                    </>
+                  )}
                 </p>
+
                 {periodo === "ciclo" && ciclo && <p>Ciclo {ciclo.nome}</p>}
                 <p>
                   Emitido em {dateBR(iso(new Date()))} por {acesso.email || "—"}
@@ -407,12 +426,24 @@ function RelatoriosPage() {
             <section className="panel overflow-hidden p-6">
               <h3 className="mb-4 text-base font-semibold">Desempenho por unidade</h3>
               <Tabela
-                cabecalho={["Unidade", "VGL", "Meta VGL", "% meta", "Contratos", "Propostas", "Visitas"]}
+                cabecalho={[
+                  "Unidade",
+                  "VGL Total",
+                  "VGL Assinado",
+                  "Meta VGL",
+                  "% meta",
+                  "Fechamentos",
+                  "Contratos",
+                  "Propostas",
+                  "Visitas",
+                ]}
                 linhas={equipesRank.map((e) => [
                   e.nome,
-                  brl(e.vgl),
+                  brl(e.vglTotal),
+                  brl(e.vglAssinado),
                   brl(e.metaVgl),
                   pct(e.pctMetaVgl, 0),
+                  String(e.fechamentos),
                   String(e.contratos),
                   String(e.propostas),
                   String(e.visitas),
@@ -426,8 +457,10 @@ function RelatoriosPage() {
                 cabecalho={[
                   "Consultor",
                   "Unidade",
-                  "VGL",
+                  "VGL Total",
+                  "VGL Assinado",
                   "% meta",
+                  "Fechamentos",
                   "Contratos",
                   "Propostas",
                   "Leads",
@@ -439,8 +472,10 @@ function RelatoriosPage() {
                 linhas={consultoresRank.map((c) => [
                   c.nome,
                   c.equipe,
-                  brl(c.vgl),
+                  brl(c.vglTotal),
+                  brl(c.vglAssinado),
                   pct(c.pctMetaVgl, 0),
+                  String(c.fechamentos),
                   String(c.contratos),
                   String(c.propostas),
                   String(c.leads),
@@ -452,6 +487,7 @@ function RelatoriosPage() {
               />
             </section>
           </div>
+
 
           <div data-pdf-page className="space-y-4 bg-background p-4">
             <div className="grid gap-4 lg:grid-cols-2">

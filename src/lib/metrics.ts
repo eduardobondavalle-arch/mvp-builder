@@ -250,10 +250,14 @@ export function rankingConsultores(
         equipeId: c.equipe_id,
         equipe: c.equipe_id ? (equipeNome.get(c.equipe_id) ?? "—") : "—",
         vgl: ind.vgl,
+        vglTotal: ind.vglTotal,
+        vglAssinado: ind.vglAssinado,
         contratos: ind.contratos,
+        fechamentos: ind.fechamentos,
         propostas: minhas.length,
         conversao: ind.conversao,
         intermediacao: ind.intermediacao,
+
         ...op,
         metaVgl: meta.meta_vgl,
         metaContratos: meta.meta_contratos,
@@ -303,7 +307,8 @@ export function conversaoPorCanal(jornadas: Jornada[], canais: Canal[]) {
         propostas: minhas.length,
         contratos: ind.contratos,
         conversao: ind.conversao,
-        vgl: ind.vgl,
+        vgl: ind.vglTotal,
+
         ticketMedio: ind.ticketMedio,
       };
     })
