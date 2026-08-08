@@ -216,7 +216,7 @@ function Dashboard() {
   return (
     <AppShell
       title="Inteligência Comercial"
-      subtitle="Indicadores consolidados da operação. O VGL considera exclusivamente o valor final da locação dos contratos assinados; valores de proposta e de fechamento não entram no cálculo."
+      subtitle="Indicadores consolidados da operação. Proposta em diante vem dos cards do Painel de Propostas: o VGL Total soma os cards em Fechamento e Contrato Assinado; o VGL Assinado considera apenas os contratos assinados."
     >
       <div className="panel mb-8 p-5">
         <FiltrosBar
