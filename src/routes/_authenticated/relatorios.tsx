@@ -69,7 +69,7 @@ const somaDias = (base: string, dias: number) =>
 type Periodo = "total" | "diario" | "semanal" | "mensal" | "ciclo" | "personalizado";
 
 const periodos: { key: Periodo; label: string }[] = [
-  { key: "total", label: "Base completa (todos os cards)" },
+  { key: "total", label: "Base completa" },
   { key: "diario", label: "Diário" },
   { key: "semanal", label: "Semanal" },
   { key: "mensal", label: "Mensal" },
