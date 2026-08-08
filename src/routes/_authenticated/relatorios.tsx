@@ -120,7 +120,9 @@ function RelatoriosPage() {
   const ciclo = ciclos.find((c) => c.id === cicloId);
 
   const intervalo = useMemo(() => {
+    if (periodo === "total") return { de: "", ate: "" };
     if (periodo === "diario") return { de: referencia, ate: referencia };
+
     if (periodo === "semanal") return { de: somaDias(referencia, -6), ate: referencia };
     if (periodo === "mensal") return { de: referencia.slice(0, 7) + "-01", ate: referencia };
     if (periodo === "ciclo")
