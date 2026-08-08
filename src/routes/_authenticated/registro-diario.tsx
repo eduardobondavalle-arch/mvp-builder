@@ -100,14 +100,7 @@ function RegistroDiarioPage() {
           visitas: Number(l.visitas || 0),
         }));
 
-      for (const p of payload) {
-        if (p.atendimentos > p.leads)
-          throw new Error("Atendimentos não podem exceder os leads recebidos no dia.");
-        if (p.agendamentos > p.atendimentos)
-          throw new Error("Agendamentos não podem exceder os atendimentos do dia.");
-        if (p.visitas > p.agendamentos)
-          throw new Error("Visitas não podem exceder os agendamentos do dia.");
-      }
+
 
       if (payload.length) {
         const { error } = await supabase
