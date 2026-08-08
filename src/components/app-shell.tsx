@@ -111,7 +111,7 @@ export function AppShell({
             </div>
           </div>
 
-          <div className="scroll-x-soft -mx-1 px-1 lg:mx-0 lg:min-w-0 lg:flex-1">
+          <NavScroll>
             <nav className="flex w-max items-center gap-1 rounded-full border border-border/60 bg-secondary/50 p-1">
               {nav.map((item) => (
                 <Link
@@ -130,7 +130,7 @@ export function AppShell({
                 </Link>
               ))}
             </nav>
-          </div>
+          </NavScroll>
 
           <div className="ml-auto hidden items-center gap-2 lg:flex">
             <ToggleTema />
