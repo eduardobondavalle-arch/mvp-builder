@@ -50,6 +50,7 @@ export function NavScroll({ children }: NavScrollProps) {
     let last = performance.now();
 
     function frame(now: number) {
+      if (!el) return;
       const dt = Math.min((now - last) / 1000, 0.05);
       last = now;
 
