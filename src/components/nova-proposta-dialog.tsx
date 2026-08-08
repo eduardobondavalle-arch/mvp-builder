@@ -100,7 +100,9 @@ export function NovaPropostaDialog({
 
   const criar = useMutation({
     mutationFn: async () => {
-      const obrigatorios = Object.entries(form).filter(([, v]) => !String(v).trim());
+      const obrigatorios = Object.entries(form).filter(
+        ([k, v]) => k !== "cpf" && !String(v).trim(),
+      );
       if (obrigatorios.length) throw new Error("Todos os campos da etapa Proposta são obrigatórios.");
 
       const { data, error } = await supabase
