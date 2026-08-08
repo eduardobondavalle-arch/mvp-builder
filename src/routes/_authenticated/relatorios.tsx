@@ -263,7 +263,15 @@ function RelatoriosPage() {
           </Select>
         </div>
 
-        {periodo === "ciclo" ? (
+        {periodo === "total" ? (
+          <div className="space-y-1.5">
+            <Label>Recorte de datas</Label>
+            <p className="text-sm text-muted-foreground">
+              Sem filtro de data: considera todos os cards do painel de propostas.
+            </p>
+          </div>
+        ) : periodo === "ciclo" ? (
+
           <div className="space-y-1.5">
             <Label>Ciclo</Label>
             <Select value={cicloId} onValueChange={setCicloSel}>
