@@ -297,6 +297,60 @@ export function rankingEquipes(
     .sort((a, b) => b.pctMetaVgl - a.pctMetaVgl);
 }
 
+/** Canais agrupados sob a tag "Imobiliária" para a métrica de maior conversão. */
+const CANAIS_IMOBILIARIA = [
+  "diretoria",
+  "indicacao grupo cri",
+  "instagram",
+  "ligacao",
+  "placa",
+  "porta",
+  "site",
+  "vitrine",
+  "vitrina",
+];
+
+const semAcento = (s: string) =>
+  s
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toLowerCase();
+
+export const grupoDoCanal = (nome: string) =>
+  CANAIS_IMOBILIARIA.includes(semAcento(nome)) ? "Imobiliária" : nome;
+
+/**
+ * Conversão por canal com os canais da imobiliária agrupados.
+ * Considera apenas cards em Proposta, Fechamento e Contrato assinado.
+ */
+export function conversaoPorCanalAgrupado(jornadas: Jornada[], canais: Canal[]) {
+  const etapasValidas = new Set(["proposta", "fechamento", "contrato_assinado"]);
+  const validas = jornadas.filter((j) => etapasValidas.has(j.etapa));
+  const grupoPorCanal = new Map(canais.map((c) => [c.id, grupoDoCanal(c.nome)]));
+
+  const mapa = new Map<string, Jornada[]>();
+  for (const j of validas) {
+    const grupo = grupoPorCanal.get(j.canal_id) ?? "Outros";
+    mapa.set(grupo, [...(mapa.get(grupo) ?? []), j]);
+  }
+
+  return [...mapa.entries()]
+    .map(([nome, itens]) => {
+      const ind = calcularIndicadores(itens);
+      return {
+        nome,
+        propostas: itens.length,
+        contratos: ind.contratos,
+        conversao: itens.length ? (ind.contratos / itens.length) * 100 : 0,
+        vgl: ind.vglTotal,
+        ticketMedio: ind.ticketMedio,
+      };
+    })
+    .filter((c) => c.propostas > 0)
+    .sort((a, b) => b.conversao - a.conversao);
+}
+
 export function conversaoPorCanal(jornadas: Jornada[], canais: Canal[]) {
   return canais
     .map((c) => {

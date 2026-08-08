@@ -26,6 +26,7 @@ import {
   calcularIndicadores,
   conversaoLais,
   conversaoPorCanal,
+  conversaoPorCanalAgrupado,
   conversoesPorEtapa,
   filtrarPreLeads,
   filtrarRegistros,
@@ -170,6 +171,7 @@ function RelatoriosPage() {
     cicloId,
   );
   const canaisConv = conversaoPorCanal(jornadas, canais);
+  const canaisConvAgrupado = conversaoPorCanalAgrupado(jornadas, canais);
   const perdas = motivosDePerda(jornadas, motivos);
   const paradas = negociacoesParadas(jornadas);
   const serie = produtividadeDiaria(registros);
@@ -208,7 +210,7 @@ function RelatoriosPage() {
     }
   }
 
-  const canalTop = canaisConv[0];
+  const canalTop = canaisConvAgrupado[0];
 
   const kpis = [
     { label: "VGL Total", value: brl(ind.vglTotal) },
