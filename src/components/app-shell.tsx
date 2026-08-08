@@ -23,8 +23,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { limparUsuario } from "@/lib/usuario";
 
 const nav = [
-  { to: "/dashboard", label: "Inteligência", icon: ChartLineUp },
-  { to: "/kanban", label: "Jornada Comercial", icon: Kanban },
+  { to: "/dashboard", label: "Geral", icon: ChartLineUp },
+  { to: "/kanban", label: "Painel de Propostas", icon: Kanban },
   { to: "/registro-diario", label: "Registro Diário", icon: CalendarCheck },
   { to: "/ciclos", label: "Ciclos e Metas", icon: Target },
   { to: "/cadastros", label: "Cadastros", icon: SlidersHorizontal },
@@ -103,7 +103,7 @@ export function AppShell({
                 height={90}
               />
               <span className="hidden h-8 w-px shrink-0 bg-border sm:block" />
-              <p className="label-caps hidden truncate sm:block">Inteligência Comercial</p>
+              <p className="label-caps hidden truncate sm:block">Painel de Resultados</p>
             </div>
             <div className="flex items-center gap-2 lg:hidden">
               <ToggleTema />
