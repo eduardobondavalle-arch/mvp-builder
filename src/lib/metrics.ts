@@ -105,9 +105,11 @@ export function somarRegistros(registros: RegistroDiario[]) {
 const valorCard = (j: Jornada) =>
   j.valor_final ?? j.valor_atualizado ?? j.valor_proposta ?? 0;
 
+// Contagem sempre pela coluna atual do Kanban do painel de propostas.
 const passouFechamento = (j: Jornada) =>
-  j.atingiu_fechamento || j.etapa === "fechamento" || j.etapa === "contrato_assinado";
-const passouContrato = (j: Jornada) => j.atingiu_contrato || j.etapa === "contrato_assinado";
+  j.etapa === "fechamento" || j.etapa === "contrato_assinado";
+const passouContrato = (j: Jornada) => j.etapa === "contrato_assinado";
+
 
 export function calcularIndicadores(jornadas: Jornada[]) {
   // Colunas atuais do painel de propostas.
