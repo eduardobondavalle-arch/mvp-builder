@@ -52,6 +52,7 @@ function RegistroDiarioPage() {
 
 
   const acesso = useAcesso();
+  const podeEditarPreLead = acesso.isGestor;
   const results = useQueries({
     queries: [
       dataQueries.consultores(),
