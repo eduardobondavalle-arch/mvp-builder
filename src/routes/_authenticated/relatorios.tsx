@@ -407,12 +407,24 @@ function RelatoriosPage() {
             <section className="panel overflow-hidden p-6">
               <h3 className="mb-4 text-base font-semibold">Desempenho por unidade</h3>
               <Tabela
-                cabecalho={["Unidade", "VGL", "Meta VGL", "% meta", "Contratos", "Propostas", "Visitas"]}
+                cabecalho={[
+                  "Unidade",
+                  "VGL Total",
+                  "VGL Assinado",
+                  "Meta VGL",
+                  "% meta",
+                  "Fechamentos",
+                  "Contratos",
+                  "Propostas",
+                  "Visitas",
+                ]}
                 linhas={equipesRank.map((e) => [
                   e.nome,
-                  brl(e.vgl),
+                  brl(e.vglTotal),
+                  brl(e.vglAssinado),
                   brl(e.metaVgl),
                   pct(e.pctMetaVgl, 0),
+                  String(e.fechamentos),
                   String(e.contratos),
                   String(e.propostas),
                   String(e.visitas),
@@ -426,8 +438,10 @@ function RelatoriosPage() {
                 cabecalho={[
                   "Consultor",
                   "Unidade",
-                  "VGL",
+                  "VGL Total",
+                  "VGL Assinado",
                   "% meta",
+                  "Fechamentos",
                   "Contratos",
                   "Propostas",
                   "Leads",
@@ -439,8 +453,10 @@ function RelatoriosPage() {
                 linhas={consultoresRank.map((c) => [
                   c.nome,
                   c.equipe,
-                  brl(c.vgl),
+                  brl(c.vglTotal),
+                  brl(c.vglAssinado),
                   pct(c.pctMetaVgl, 0),
+                  String(c.fechamentos),
                   String(c.contratos),
                   String(c.propostas),
                   String(c.leads),
@@ -452,6 +468,7 @@ function RelatoriosPage() {
               />
             </section>
           </div>
+
 
           <div data-pdf-page className="space-y-4 bg-background p-4">
             <div className="grid gap-4 lg:grid-cols-2">
