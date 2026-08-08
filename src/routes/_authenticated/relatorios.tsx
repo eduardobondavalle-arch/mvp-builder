@@ -26,6 +26,7 @@ import {
   calcularIndicadores,
   conversaoLais,
   conversaoPorCanal,
+  conversaoPorCanalAgrupado,
   conversoesPorEtapa,
   filtrarPreLeads,
   filtrarRegistros,
@@ -209,7 +210,7 @@ function RelatoriosPage() {
     }
   }
 
-  const canalTop = canaisConv[0];
+  const canalTop = canaisConvAgrupado[0];
 
   const kpis = [
     { label: "VGL Total", value: brl(ind.vglTotal) },
