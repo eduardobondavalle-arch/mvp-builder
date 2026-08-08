@@ -110,7 +110,7 @@ function RegistroDiarioPage() {
         if (error) throw new Error(error.message);
       }
 
-      if (preLead.trim()) {
+      if (podeEditarPreLead && preLead.trim()) {
         const { error } = await supabase
           .from("pre_leads_diarios")
           .upsert({ data, quantidade: Number(preLead) } as never, { onConflict: "data" });
