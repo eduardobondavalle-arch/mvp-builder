@@ -15,6 +15,7 @@ import {
 import { useEffect, useState, type ReactNode } from "react";
 
 import adimLogo from "@/assets/adim-logo.png";
+import { NavScroll } from "@/components/nav-scroll";
 import { ToggleTema } from "@/components/toggle-tema";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
