@@ -340,201 +340,214 @@ function RelatoriosPage() {
         </div>
       ) : (
         <div ref={relatorioRef} className="space-y-6 rounded-2xl bg-background p-1">
-          <header className="panel flex flex-wrap items-center justify-between gap-4 p-6">
-            <div className="flex items-center gap-4">
-              <img
-                src={adimLogo}
-                alt="Adim Aluguéis"
-                className="h-10 w-auto"
-                width={205}
-                height={90}
-              />
-              <div>
-                <p className="label-caps">Relatório {tituloPeriodo}</p>
-                <h2 className="text-xl font-semibold">Inteligência Comercial</h2>
-                <p className="text-xs text-muted-foreground">{escopo}</p>
-              </div>
-            </div>
-            <div className="text-right text-xs text-muted-foreground">
-              <p>
-                Período: <span className="font-mono">{dateBR(intervalo.de)}</span> a{" "}
-                <span className="font-mono">{dateBR(intervalo.ate)}</span>
-              </p>
-              {periodo === "ciclo" && ciclo && <p>Ciclo {ciclo.nome}</p>}
-              <p>
-                Emitido em {dateBR(iso(new Date()))} por {acesso.email || "—"}
-              </p>
-            </div>
-          </header>
-
-          <section className="grid gap-3 sm:grid-cols-3 xl:grid-cols-4">
-            {kpis.map((k) => (
-              <div key={k.label} className="panel p-4">
-                <p className="label-caps">{k.label}</p>
-                <p className="mt-1 font-mono text-xl font-semibold">{k.value}</p>
-              </div>
-            ))}
-          </section>
-
-          <section className="panel p-6">
-            <h3 className="mb-4 text-base font-semibold">Funil comercial completo</h3>
-            <FunilVisual etapas={etapasFunil} />
-            <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-              {conversoes.map((c) => (
-                <div key={`${c.de}-${c.para}`} className="rounded-lg border border-border/60 p-3">
-                  <p className="text-xs text-muted-foreground">
-                    {c.de} → {c.para}
-                  </p>
-                  <p className="font-mono text-sm font-semibold">{pct(c.conversao)}</p>
+          <div data-pdf-page className="space-y-4 bg-background p-4">
+            <header className="panel flex flex-wrap items-center justify-between gap-4 p-6">
+              <div className="flex items-center gap-4">
+                <img
+                  src={adimLogo}
+                  alt="Adim Aluguéis"
+                  className="h-10 w-auto"
+                  width={205}
+                  height={90}
+                />
+                <div>
+                  <p className="label-caps">Relatório {tituloPeriodo}</p>
+                  <h2 className="text-xl font-semibold">Inteligência Comercial</h2>
+                  <p className="text-xs text-muted-foreground">{escopo}</p>
                 </div>
-              ))}
+              </div>
+              <div className="text-right text-xs text-muted-foreground">
+                <p>
+                  Período: <span className="font-mono">{dateBR(intervalo.de)}</span> a{" "}
+                  <span className="font-mono">{dateBR(intervalo.ate)}</span>
+                </p>
+                {periodo === "ciclo" && ciclo && <p>Ciclo {ciclo.nome}</p>}
+                <p>
+                  Emitido em {dateBR(iso(new Date()))} por {acesso.email || "—"}
+                </p>
+              </div>
+            </header>
+
+            <div className="grid gap-4 lg:grid-cols-2">
+              <section className="panel p-6">
+                <h3 className="mb-4 text-base font-semibold">Funil comercial completo</h3>
+                <FunilVisual etapas={etapasFunil} />
+                <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                  {conversoes.map((c) => (
+                    <div key={`${c.de}-${c.para}`} className="rounded-lg border border-border/60 p-3">
+                      <p className="text-xs text-muted-foreground">
+                        {c.de} → {c.para}
+                      </p>
+                      <p className="font-mono text-sm font-semibold">{pct(c.conversao)}</p>
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              <section className="grid content-start gap-3 sm:grid-cols-2">
+                {kpis.map((k) => (
+                  <div key={k.label} className="panel p-4">
+                    <p className="label-caps">{k.label}</p>
+                    <p className="mt-1 font-mono text-xl font-semibold">{k.value}</p>
+                  </div>
+                ))}
+              </section>
             </div>
-          </section>
+          </div>
 
-          <section className="panel overflow-hidden p-6">
-            <h3 className="mb-4 text-base font-semibold">Desempenho por unidade</h3>
-            <Tabela
-              cabecalho={["Unidade", "VGL", "Meta VGL", "% meta", "Contratos", "Propostas", "Visitas"]}
-              linhas={equipesRank.map((e) => [
-                e.nome,
-                brl(e.vgl),
-                brl(e.metaVgl),
-                pct(e.pctMetaVgl, 0),
-                String(e.contratos),
-                String(e.propostas),
-                String(e.visitas),
-              ])}
-            />
-          </section>
-
-          <section className="panel overflow-hidden p-6">
-            <h3 className="mb-4 text-base font-semibold">Desempenho por consultor</h3>
-            <Tabela
-              cabecalho={[
-                "Consultor",
-                "Unidade",
-                "VGL",
-                "% meta",
-                "Contratos",
-                "Propostas",
-                "Leads",
-                "Atend.",
-                "Agend.",
-                "Visitas",
-                "Conversão",
-              ]}
-              linhas={consultoresRank.map((c) => [
-                c.nome,
-                c.equipe,
-                brl(c.vgl),
-                pct(c.pctMetaVgl, 0),
-                String(c.contratos),
-                String(c.propostas),
-                String(c.leads),
-                String(c.atendimentos),
-                String(c.agendamentos),
-                String(c.visitas),
-                pct(c.conversao, 0),
-              ])}
-            />
-          </section>
-
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div data-pdf-page className="space-y-4 bg-background p-4">
             <section className="panel overflow-hidden p-6">
-              <h3 className="mb-4 text-base font-semibold">Conversão por canal de origem</h3>
+              <h3 className="mb-4 text-base font-semibold">Desempenho por unidade</h3>
               <Tabela
-                cabecalho={["Canal", "Propostas", "Contratos", "Conversão", "VGL"]}
-                linhas={canaisConv.map((c) => [
-                  c.nome,
-                  String(c.propostas),
-                  String(c.contratos),
-                  pct(c.conversao, 0),
-                  brl(c.vgl),
+                cabecalho={["Unidade", "VGL", "Meta VGL", "% meta", "Contratos", "Propostas", "Visitas"]}
+                linhas={equipesRank.map((e) => [
+                  e.nome,
+                  brl(e.vgl),
+                  brl(e.metaVgl),
+                  pct(e.pctMetaVgl, 0),
+                  String(e.contratos),
+                  String(e.propostas),
+                  String(e.visitas),
                 ])}
               />
             </section>
 
             <section className="panel overflow-hidden p-6">
-              <h3 className="mb-4 text-base font-semibold">Motivos de perda</h3>
+              <h3 className="mb-4 text-base font-semibold">Desempenho por consultor</h3>
               <Tabela
-                cabecalho={["Motivo", "Ocorrências"]}
-                linhas={perdas.map((m) => [m.nome, String(m.total)])}
+                cabecalho={[
+                  "Consultor",
+                  "Unidade",
+                  "VGL",
+                  "% meta",
+                  "Contratos",
+                  "Propostas",
+                  "Leads",
+                  "Atend.",
+                  "Agend.",
+                  "Visitas",
+                  "Conversão",
+                ]}
+                linhas={consultoresRank.map((c) => [
+                  c.nome,
+                  c.equipe,
+                  brl(c.vgl),
+                  pct(c.pctMetaVgl, 0),
+                  String(c.contratos),
+                  String(c.propostas),
+                  String(c.leads),
+                  String(c.atendimentos),
+                  String(c.agendamentos),
+                  String(c.visitas),
+                  pct(c.conversao, 0),
+                ])}
               />
             </section>
           </div>
 
-          <section className="panel overflow-hidden p-6">
-            <h3 className="mb-4 text-base font-semibold">Produtividade diária</h3>
-            <Tabela
-              cabecalho={["Data", "Leads", "Atendimentos", "Agendamentos", "Visitas", "Lead → visita"]}
-              linhas={serie.map((d) => [
-                dateBR(d.data),
-                String(d.leads),
-                String(d.atendimentos),
-                String(d.agendamentos),
-                String(d.visitas),
-                pct(d.leads ? (d.visitas / d.leads) * 100 : 0, 0),
-              ])}
-              rodape={[
-                "Total",
-                String(op.leads),
-                String(op.atendimentos),
-                String(op.agendamentos),
-                String(op.visitas),
-                pct(op.leads ? (op.visitas / op.leads) * 100 : 0, 0),
-              ]}
-            />
-          </section>
+          <div data-pdf-page className="space-y-4 bg-background p-4">
+            <div className="grid gap-4 lg:grid-cols-2">
+              <section className="panel overflow-hidden p-6">
+                <h3 className="mb-4 text-base font-semibold">Conversão por canal de origem</h3>
+                <Tabela
+                  cabecalho={["Canal", "Propostas", "Contratos", "Conversão", "VGL"]}
+                  linhas={canaisConv.map((c) => [
+                    c.nome,
+                    String(c.propostas),
+                    String(c.contratos),
+                    pct(c.conversao, 0),
+                    brl(c.vgl),
+                  ])}
+                />
+              </section>
 
-          <section className="panel overflow-hidden p-6">
-            <h3 className="mb-4 text-base font-semibold">Jornadas do período</h3>
-            <Tabela
-              cabecalho={[
-                "Cliente",
-                "Imóvel",
-                "Consultor",
-                "Canal",
-                "Etapa",
-                "Proposta",
-                "Valor proposta",
-                "Valor final",
-                "Taxa",
-                "Motivo da perda",
-              ]}
-              linhas={jornadas.map((j) => [
-                j.cliente_nome,
-                j.imovel,
-                nomeConsultor.get(j.consultor_id) ?? "—",
-                nomeCanal.get(j.canal_id) ?? "—",
-                etapaLabel(j.etapa),
-                dateBR(j.data_proposta),
-                brl(j.valor_proposta),
-                j.valor_final == null ? "—" : brl(j.valor_final),
-                pct(j.percentual_intermediacao),
-                j.motivo_perda_id ? (nomeMotivo.get(j.motivo_perda_id) ?? "—") : "—",
-              ])}
-            />
-          </section>
+              <section className="panel overflow-hidden p-6">
+                <h3 className="mb-4 text-base font-semibold">Motivos de perda</h3>
+                <Tabela
+                  cabecalho={["Motivo", "Ocorrências"]}
+                  linhas={perdas.map((m) => [m.nome, String(m.total)])}
+                />
+              </section>
+            </div>
 
-          <section className="panel overflow-hidden p-6">
-            <h3 className="mb-4 text-base font-semibold">
-              Negociações paradas há mais de 15 dias
-            </h3>
-            <Tabela
-              cabecalho={["Cliente", "Consultor", "Etapa", "Última movimentação"]}
-              linhas={paradas.map((j) => [
-                j.cliente_nome,
-                nomeConsultor.get(j.consultor_id) ?? "—",
-                etapaLabel(j.etapa),
-                dateBR(j.updated_at),
-              ])}
-            />
-          </section>
+            <section className="panel overflow-hidden p-6">
+              <h3 className="mb-4 text-base font-semibold">Produtividade diária</h3>
+              <Tabela
+                cabecalho={["Data", "Leads", "Atendimentos", "Agendamentos", "Visitas", "Lead → visita"]}
+                linhas={serie.map((d) => [
+                  dateBR(d.data),
+                  String(d.leads),
+                  String(d.atendimentos),
+                  String(d.agendamentos),
+                  String(d.visitas),
+                  pct(d.leads ? (d.visitas / d.leads) * 100 : 0, 0),
+                ])}
+                rodape={[
+                  "Total",
+                  String(op.leads),
+                  String(op.atendimentos),
+                  String(op.agendamentos),
+                  String(op.visitas),
+                  pct(op.leads ? (op.visitas / op.leads) * 100 : 0, 0),
+                ]}
+              />
+            </section>
+          </div>
 
-          <p className="px-2 pb-2 text-center text-[11px] text-muted-foreground">
-            Adim Aluguéis • Inteligência Comercial • documento gerado automaticamente pelo sistema
-          </p>
+          <div data-pdf-page className="space-y-4 bg-background p-4">
+            <section className="panel overflow-hidden p-6">
+              <h3 className="mb-4 text-base font-semibold">Jornadas do período</h3>
+              <Tabela
+                cabecalho={[
+                  "Cliente",
+                  "Imóvel",
+                  "Consultor",
+                  "Canal",
+                  "Etapa",
+                  "Proposta",
+                  "Valor proposta",
+                  "Valor final",
+                  "Taxa",
+                  "Motivo da perda",
+                ]}
+                linhas={jornadas.map((j) => [
+                  j.cliente_nome,
+                  j.imovel,
+                  nomeConsultor.get(j.consultor_id) ?? "—",
+                  nomeCanal.get(j.canal_id) ?? "—",
+                  etapaLabel(j.etapa),
+                  dateBR(j.data_proposta),
+                  brl(j.valor_proposta),
+                  j.valor_final == null ? "—" : brl(j.valor_final),
+                  pct(j.percentual_intermediacao),
+                  j.motivo_perda_id ? (nomeMotivo.get(j.motivo_perda_id) ?? "—") : "—",
+                ])}
+              />
+            </section>
+          </div>
+
+          <div data-pdf-page className="space-y-4 bg-background p-4">
+            <section className="panel overflow-hidden p-6">
+              <h3 className="mb-4 text-base font-semibold">
+                Negociações paradas há mais de 15 dias
+              </h3>
+              <Tabela
+                cabecalho={["Cliente", "Consultor", "Etapa", "Última movimentação"]}
+                linhas={paradas.map((j) => [
+                  j.cliente_nome,
+                  nomeConsultor.get(j.consultor_id) ?? "—",
+                  etapaLabel(j.etapa),
+                  dateBR(j.updated_at),
+                ])}
+              />
+            </section>
+
+            <p className="px-2 pb-2 text-center text-[11px] text-muted-foreground">
+              Adim Aluguéis • Inteligência Comercial • documento gerado automaticamente pelo sistema
+            </p>
+          </div>
         </div>
+
       )}
     </AppShell>
   );

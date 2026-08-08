@@ -1,58 +1,88 @@
 import html2canvas from "html2canvas-pro";
 import { jsPDF } from "jspdf";
 
-/**
- * Captura um elemento do app e gera um PDF A4 retrato paginado,
- * preservando o layout visual da interface.
- */
-export async function exportarElementoParaPdf(el: HTMLElement, nomeArquivo: string) {
-  const fundo = getComputedStyle(document.body).backgroundColor || "#ffffff";
+const LARGURA_CAPTURA = 1400;
 
-  const canvas = await html2canvas(el, {
+async function capturar(el: HTMLElement, fundo: string) {
+  return html2canvas(el, {
     scale: 2,
     backgroundColor: fundo,
     useCORS: true,
     logging: false,
-    windowWidth: el.scrollWidth,
+    windowWidth: LARGURA_CAPTURA,
   });
+}
 
-  const pdf = new jsPDF({ unit: "pt", format: "a4", orientation: "portrait" });
+/**
+ * Exporta um elemento como PDF A4 paisagem, sem margens.
+ * Se o elemento tiver filhos marcados com [data-pdf-page], cada um vira
+ * uma página inteira, ajustada para caber (evitando quebras no meio do conteúdo).
+ */
+export async function exportarElementoParaPdf(el: HTMLElement, nomeArquivo: string) {
+  const fundo = getComputedStyle(document.body).backgroundColor || "#ffffff";
+  el.classList.add("pdf-exportando");
+
+  const pdf = new jsPDF({ unit: "pt", format: "a4", orientation: "landscape" });
   const larguraPagina = pdf.internal.pageSize.getWidth();
   const alturaPagina = pdf.internal.pageSize.getHeight();
 
-  const margem = 18;
-  const larguraUtil = larguraPagina - margem * 2;
-  const escala = larguraUtil / canvas.width;
-  const alturaUtil = alturaPagina - margem * 2;
-  const alturaFatiaPx = Math.floor(alturaUtil / escala);
+  try {
+    const blocos = Array.from(el.querySelectorAll<HTMLElement>("[data-pdf-page]"));
+    let pagina = 0;
 
-  let y = 0;
-  let pagina = 0;
+    if (blocos.length > 0) {
+      for (const bloco of blocos) {
+        const canvas = await capturar(bloco, fundo);
+        const escala = Math.min(larguraPagina / canvas.width, alturaPagina / canvas.height);
+        const largura = canvas.width * escala;
+        const altura = canvas.height * escala;
 
-  while (y < canvas.height) {
-    const alturaFatia = Math.min(alturaFatiaPx, canvas.height - y);
-    const fatia = document.createElement("canvas");
-    fatia.width = canvas.width;
-    fatia.height = alturaFatia;
-    const ctx = fatia.getContext("2d");
-    if (!ctx) break;
-    ctx.fillStyle = fundo;
-    ctx.fillRect(0, 0, fatia.width, fatia.height);
-    ctx.drawImage(canvas, 0, y, canvas.width, alturaFatia, 0, 0, canvas.width, alturaFatia);
+        if (pagina > 0) pdf.addPage();
+        pdf.setFillColor(fundo);
+        pdf.rect(0, 0, larguraPagina, alturaPagina, "F");
+        pdf.addImage(
+          canvas.toDataURL("image/jpeg", 0.94),
+          "JPEG",
+          (larguraPagina - largura) / 2,
+          0,
+          largura,
+          altura,
+        );
+        pagina += 1;
+      }
+    } else {
+      const canvas = await capturar(el, fundo);
+      const escala = larguraPagina / canvas.width;
+      const alturaFatiaPx = Math.floor(alturaPagina / escala);
+      let y = 0;
 
-    if (pagina > 0) pdf.addPage();
-    pdf.addImage(
-      fatia.toDataURL("image/jpeg", 0.94),
-      "JPEG",
-      margem,
-      margem,
-      larguraUtil,
-      alturaFatia * escala,
-    );
+      while (y < canvas.height) {
+        const alturaFatia = Math.min(alturaFatiaPx, canvas.height - y);
+        const fatia = document.createElement("canvas");
+        fatia.width = canvas.width;
+        fatia.height = alturaFatia;
+        const ctx = fatia.getContext("2d");
+        if (!ctx) break;
+        ctx.fillStyle = fundo;
+        ctx.fillRect(0, 0, fatia.width, fatia.height);
+        ctx.drawImage(canvas, 0, y, canvas.width, alturaFatia, 0, 0, canvas.width, alturaFatia);
 
-    y += alturaFatia;
-    pagina += 1;
+        if (pagina > 0) pdf.addPage();
+        pdf.addImage(
+          fatia.toDataURL("image/jpeg", 0.94),
+          "JPEG",
+          0,
+          0,
+          larguraPagina,
+          alturaFatia * escala,
+        );
+        y += alturaFatia;
+        pagina += 1;
+      }
+    }
+
+    pdf.save(nomeArquivo.endsWith(".pdf") ? nomeArquivo : `${nomeArquivo}.pdf`);
+  } finally {
+    el.classList.remove("pdf-exportando");
   }
-
-  pdf.save(nomeArquivo.endsWith(".pdf") ? nomeArquivo : `${nomeArquivo}.pdf`);
 }
