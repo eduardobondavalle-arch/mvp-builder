@@ -40,7 +40,7 @@ async function capturar(el: HTMLElement, fundo: string) {
  * uma página inteira, ajustada para caber (evitando quebras no meio do conteúdo).
  */
 export async function exportarElementoParaPdf(el: HTMLElement, nomeArquivo: string) {
-  const fundo = getComputedStyle(document.body).backgroundColor || "#ffffff";
+  const fundo = paraHex(getComputedStyle(document.body).backgroundColor || "#ffffff");
   el.classList.add("pdf-exportando");
 
   const pdf = new jsPDF({ unit: "pt", format: "a4", orientation: "landscape" });
