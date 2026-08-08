@@ -7,6 +7,7 @@ import {
   Target,
   SlidersHorizontal,
   ClipboardText,
+  FileText,
   UsersThree,
   UserCircle,
   SignOut,
@@ -26,6 +27,7 @@ const nav = [
   { to: "/registro-diario", label: "Registro Diário", icon: CalendarCheck },
   { to: "/ciclos", label: "Ciclos e Metas", icon: Target },
   { to: "/cadastros", label: "Cadastros", icon: SlidersHorizontal },
+  { to: "/relatorios", label: "Relatórios", icon: FileText },
   { to: "/auditoria", label: "Auditoria", icon: ClipboardText },
   { to: "/acessos", label: "Acessos", icon: UsersThree },
 ] as const;

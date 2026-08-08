@@ -52,6 +52,7 @@ function RegistroDiarioPage() {
 
 
   const acesso = useAcesso();
+  const podeEditarPreLead = acesso.isGestor;
   const results = useQueries({
     queries: [
       dataQueries.consultores(),
@@ -109,7 +110,7 @@ function RegistroDiarioPage() {
         if (error) throw new Error(error.message);
       }
 
-      if (preLead.trim()) {
+      if (podeEditarPreLead && preLead.trim()) {
         const { error } = await supabase
           .from("pre_leads_diarios")
           .upsert({ data, quantidade: Number(preLead) } as never, { onConflict: "data" });
@@ -131,7 +132,9 @@ function RegistroDiarioPage() {
               valor_novo: String(p[k]),
             }));
         }),
-        ...(preLead.trim() && String(preLeadDoDia?.quantidade ?? "") !== preLead.trim()
+        ...(podeEditarPreLead &&
+        preLead.trim() &&
+        String(preLeadDoDia?.quantidade ?? "") !== preLead.trim()
           ? [
               {
                 entidade: "pre_lead",
@@ -188,22 +191,26 @@ function RegistroDiarioPage() {
         </Button>
       }
     >
-      <div className="panel mb-6 grid gap-4 p-5 sm:grid-cols-3">
+      <div
+        className={`panel mb-6 grid gap-4 p-5 ${podeEditarPreLead ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}
+      >
         <div className="space-y-1.5">
           <Label htmlFor="data">Data do registro</Label>
           <Input id="data" type="date" value={data} onChange={(e) => setData(e.target.value)} />
         </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="prelead">Pré leads da empresa (Laís)</Label>
-          <Input
-            id="prelead"
-            type="number"
-            min="0"
-            value={preLead}
-            placeholder="0"
-            onChange={(e) => setPreLead(e.target.value)}
-          />
-        </div>
+        {podeEditarPreLead && (
+          <div className="space-y-1.5">
+            <Label htmlFor="prelead">Pré leads da empresa (Laís)</Label>
+            <Input
+              id="prelead"
+              type="number"
+              min="0"
+              value={preLead}
+              placeholder="0"
+              onChange={(e) => setPreLead(e.target.value)}
+            />
+          </div>
+        )}
         <div className="rounded-lg border border-border bg-secondary/40 p-3">
           <p className="label-caps">Consolidado do dia</p>
           <p className="mt-1 text-sm">
