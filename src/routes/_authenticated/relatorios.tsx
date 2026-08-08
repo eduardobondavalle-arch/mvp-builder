@@ -66,9 +66,10 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
 const somaDias = (base: string, dias: number) =>
   iso(new Date(new Date(`${base}T12:00:00`).getTime() + dias * 86400000));
 
-type Periodo = "diario" | "semanal" | "mensal" | "ciclo" | "personalizado";
+type Periodo = "total" | "diario" | "semanal" | "mensal" | "ciclo" | "personalizado";
 
 const periodos: { key: Periodo; label: string }[] = [
+  { key: "total", label: "Base completa (todos os cards)" },
   { key: "diario", label: "Diário" },
   { key: "semanal", label: "Semanal" },
   { key: "mensal", label: "Mensal" },
@@ -81,7 +82,8 @@ function RelatoriosPage() {
   const relatorioRef = useRef<HTMLDivElement>(null);
   const [gerando, setGerando] = useState(false);
 
-  const [periodo, setPeriodo] = useState<Periodo>("ciclo");
+  const [periodo, setPeriodo] = useState<Periodo>("total");
+
   const [referencia, setReferencia] = useState(iso(new Date()));
   const [de, setDe] = useState(somaDias(iso(new Date()), -6));
   const [ate, setAte] = useState(iso(new Date()));
