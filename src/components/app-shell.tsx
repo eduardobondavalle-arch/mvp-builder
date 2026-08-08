@@ -23,8 +23,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { limparUsuario } from "@/lib/usuario";
 
 const nav = [
-  { to: "/dashboard", label: "Inteligência", icon: ChartLineUp },
-  { to: "/kanban", label: "Jornada Comercial", icon: Kanban },
+  { to: "/dashboard", label: "Geral", icon: ChartLineUp },
+  { to: "/kanban", label: "Painel de Propostas", icon: Kanban },
   { to: "/registro-diario", label: "Registro Diário", icon: CalendarCheck },
   { to: "/ciclos", label: "Ciclos e Metas", icon: Target },
   { to: "/cadastros", label: "Cadastros", icon: SlidersHorizontal },
