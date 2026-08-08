@@ -3,6 +3,26 @@ import { jsPDF } from "jspdf";
 
 const LARGURA_CAPTURA = 1400;
 
+/** Converte qualquer cor CSS (incl. oklch) para hex, que o jsPDF entende. */
+function paraHex(cor: string): string {
+  const fallback = "#ffffff";
+  try {
+    const c = document.createElement("canvas");
+    c.width = 1;
+    c.height = 1;
+    const ctx = c.getContext("2d");
+    if (!ctx) return fallback;
+    ctx.fillStyle = "#ffffff";
+    ctx.fillStyle = cor;
+    ctx.fillRect(0, 0, 1, 1);
+    const d = ctx.getImageData(0, 0, 1, 1).data;
+    return `#${[d[0] ?? 255, d[1] ?? 255, d[2] ?? 255].map((v) => v.toString(16).padStart(2, "0")).join("")}`;
+
+  } catch {
+    return fallback;
+  }
+}
+
 async function capturar(el: HTMLElement, fundo: string) {
   return html2canvas(el, {
     scale: 2,
@@ -13,13 +33,14 @@ async function capturar(el: HTMLElement, fundo: string) {
   });
 }
 
+
 /**
  * Exporta um elemento como PDF A4 paisagem, sem margens.
  * Se o elemento tiver filhos marcados com [data-pdf-page], cada um vira
  * uma página inteira, ajustada para caber (evitando quebras no meio do conteúdo).
  */
 export async function exportarElementoParaPdf(el: HTMLElement, nomeArquivo: string) {
-  const fundo = getComputedStyle(document.body).backgroundColor || "#ffffff";
+  const fundo = paraHex(getComputedStyle(document.body).backgroundColor || "#ffffff");
   el.classList.add("pdf-exportando");
 
   const pdf = new jsPDF({ unit: "pt", format: "a4", orientation: "landscape" });
