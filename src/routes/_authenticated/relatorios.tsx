@@ -205,18 +205,20 @@ function RelatoriosPage() {
   }
 
   const kpis = [
-    { label: "VGL realizado", value: brl(ind.vgl) },
+    { label: "VGL Total", value: brl(ind.vglTotal) },
+    { label: "VGL Assinado", value: brl(ind.vglAssinado) },
     { label: "Contratos assinados", value: String(ind.contratos) },
     { label: "Propostas no período", value: String(ind.propostas) },
     { label: "Fechamentos", value: String(ind.fechamentos) },
     { label: "Ticket médio", value: brl(ind.ticketMedio) },
+    { label: "Intermediação média", value: pct(ind.taxaMedia) },
     { label: "Receita de intermediação", value: brl(ind.intermediacao) },
-    { label: "Conversão proposta → contrato", value: pct(ind.conversao) },
-    { label: "Conversão Laís (pré lead → lead)", value: pct(lais.conversao) },
+    { label: "Tempo médio da jornada do cliente", value: `${ind.tempoMedioJornada.toFixed(1)} dias` },
     { label: "Em negociação", value: String(ind.emNegociacao) },
     { label: "Negócios perdidos", value: String(ind.perdidos) },
-    { label: "Tempo médio da jornada", value: `${ind.tempoMedioJornada.toFixed(1)} dias` },
+    { label: "Conversão Laís (pré lead → lead)", value: pct(lais.conversao) },
     { label: "Visitas realizadas", value: String(op.visitas) },
+
   ];
 
   return (
