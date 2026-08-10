@@ -16,6 +16,12 @@ export type Filtros = {
   canalId: string;
   de: string;
   ate: string;
+  /**
+   * Como o card é posicionado no período:
+   * - "competencia" (padrão): assinatura/perda; cards em aberto contam no recorte vigente.
+   * - "proposta": somente a data da proposta, sem exceções.
+   */
+  baseData?: "competencia" | "proposta";
 };
 
 export const filtrosVazios: Filtros = {
@@ -25,7 +31,9 @@ export const filtrosVazios: Filtros = {
   canalId: "all",
   de: "",
   ate: "",
+  baseData: "competencia",
 };
+
 
 /** Intervalo efetivo do recorte: período informado ou período do ciclo. */
 export function periodoEfetivo(filtros: Filtros, ciclos: Ciclo[]) {
