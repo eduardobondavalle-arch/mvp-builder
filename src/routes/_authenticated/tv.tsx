@@ -5,7 +5,7 @@ import {
   Handshake,
   Wallet,
   Percent,
-  RefreshCcw,
+  ArrowsClockwise,
   Television,
   Target,
 } from "@phosphor-icons/react";
