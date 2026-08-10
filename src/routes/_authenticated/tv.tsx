@@ -165,7 +165,7 @@ function TvPage() {
             <p className="mb-6 text-xs text-muted-foreground lg:text-sm">
               Pré Lead → Visita vêm do registro diário; Proposta → Contrato vêm do Painel de Propostas.
             </p>
-            <div className="flex flex-1 items-center justify-center">
+            <div className="flex w-full flex-1 flex-col justify-center">
               <FunilVisual etapas={etapasFunil} size="lg" />
             </div>
           </section>
