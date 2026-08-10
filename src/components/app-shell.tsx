@@ -11,6 +11,7 @@ import {
   UsersThree,
   UserCircle,
   SignOut,
+  Television,
 } from "@phosphor-icons/react";
 import { useEffect, useState, type ReactNode } from "react";
 
@@ -31,6 +32,7 @@ const nav = [
   { to: "/relatorios", label: "Relatórios", icon: FileText },
   { to: "/auditoria", label: "Auditoria", icon: ClipboardText },
   { to: "/acessos", label: "Acessos", icon: UsersThree },
+  { to: "/tv", label: "TV", icon: Television },
 ] as const;
 
 
