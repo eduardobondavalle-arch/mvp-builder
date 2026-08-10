@@ -87,7 +87,13 @@ export function aplicarFiltros(
   const porEquipe = new Map(consultores.map((c) => [c.id, c.equipe_id]));
 
   return jornadas.filter((j) => {
-    if ((de || ate) && !noPeriodo(j, de, ate)) return false;
+    if (de || ate) {
+      const ok =
+        filtros.baseData === "proposta"
+          ? dentro(j.data_proposta, de, ate)
+          : noPeriodo(j, de, ate);
+      if (!ok) return false;
+    }
     if (filtros.consultorId !== "all" && j.consultor_id !== filtros.consultorId) return false;
     if (filtros.canalId !== "all" && j.canal_id !== filtros.canalId) return false;
     if (filtros.equipeId !== "all" && porEquipe.get(j.consultor_id) !== filtros.equipeId)
