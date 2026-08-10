@@ -67,28 +67,33 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
 const somaDias = (base: string, dias: number) =>
   iso(new Date(new Date(`${base}T12:00:00`).getTime() + dias * 86400000));
 
-type Periodo = "total" | "diario" | "semanal" | "mensal" | "ciclo" | "personalizado";
+type Periodo = "ciclo_atual" | "semana" | "trimestre" | "semestre" | "personalizado";
 
 const periodos: { key: Periodo; label: string }[] = [
-  { key: "total", label: "Base completa" },
-  { key: "diario", label: "Diário" },
-  { key: "semanal", label: "Semanal" },
-  { key: "mensal", label: "Mensal" },
-  { key: "ciclo", label: "Ciclo completo" },
+  { key: "ciclo_atual", label: "Ciclo atual" },
+  { key: "semana", label: "Semana" },
+  { key: "trimestre", label: "Trimestre (últimos 3 ciclos completos)" },
+  { key: "semestre", label: "Semestre (últimos 6 ciclos completos)" },
   { key: "personalizado", label: "Período personalizado" },
 ];
+
+/** Segunda-feira da semana da data informada. */
+const inicioSemana = (base: string) => {
+  const d = new Date(`${base}T12:00:00`);
+  const dow = (d.getDay() + 6) % 7;
+  return somaDias(base, -dow);
+};
+
 
 function RelatoriosPage() {
   const acesso = useAcesso();
   const relatorioRef = useRef<HTMLDivElement>(null);
   const [gerando, setGerando] = useState(false);
 
-  const [periodo, setPeriodo] = useState<Periodo>("total");
+  const [periodo, setPeriodo] = useState<Periodo>("ciclo_atual");
 
-  const [referencia, setReferencia] = useState(iso(new Date()));
   const [de, setDe] = useState(somaDias(iso(new Date()), -6));
   const [ate, setAte] = useState(iso(new Date()));
-  const [cicloSel, setCicloSel] = useState("");
   const [equipeId, setEquipeId] = useState("all");
   const [consultorId, setConsultorId] = useState("all");
 
@@ -117,31 +122,56 @@ function RelatoriosPage() {
   const metas = results[8].data ?? [];
   const carregando = results.some((r) => r.isLoading);
 
-  const cicloId = cicloSel || ciclos[0]?.id || "";
-  const ciclo = ciclos.find((c) => c.id === cicloId);
+  const hoje = iso(new Date());
+
+  // Ciclo atual: o que contém a data de hoje; se nenhum, o mais recente já iniciado.
+  const ciclo = useMemo(() => {
+    const atual = ciclos.find((c) => c.data_inicio <= hoje && c.data_fim >= hoje);
+    return atual ?? ciclos.find((c) => c.data_inicio <= hoje) ?? ciclos[0];
+  }, [ciclos, hoje]);
+  const cicloId = ciclo?.id ?? "";
+
+  // Ciclos completos (já encerrados), do mais recente para o mais antigo.
+  const ciclosCompletos = useMemo(
+    () => ciclos.filter((c) => c.data_fim < hoje).sort((a, b) => (a.data_inicio < b.data_inicio ? 1 : -1)),
+    [ciclos, hoje],
+  );
+
+  const intervaloUltimosCiclos = (qtd: number) => {
+    const sel = ciclosCompletos.slice(0, qtd);
+    if (sel.length === 0) return { de: "", ate: "" };
+    return {
+      de: sel[sel.length - 1]!.data_inicio,
+      ate: sel[0]!.data_fim,
+    };
+  };
 
   const intervalo = useMemo(() => {
-    if (periodo === "total") return { de: "", ate: "" };
-    if (periodo === "diario") return { de: referencia, ate: referencia };
-
-    if (periodo === "semanal") return { de: somaDias(referencia, -6), ate: referencia };
-    if (periodo === "mensal") return { de: referencia.slice(0, 7) + "-01", ate: referencia };
-    if (periodo === "ciclo")
+    if (periodo === "ciclo_atual")
       return { de: ciclo?.data_inicio ?? "", ate: ciclo?.data_fim ?? "" };
+    if (periodo === "semana") {
+      const segunda = inicioSemana(hoje);
+      const inicioCiclo = ciclo?.data_inicio ?? "";
+      return { de: inicioCiclo && inicioCiclo > segunda ? inicioCiclo : segunda, ate: hoje };
+    }
+    if (periodo === "trimestre") return intervaloUltimosCiclos(3);
+    if (periodo === "semestre") return intervaloUltimosCiclos(6);
     return { de, ate };
-  }, [periodo, referencia, ciclo, de, ate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [periodo, ciclo, ciclosCompletos, hoje, de, ate]);
 
   const filtros = useMemo(
     () => ({
       ...filtrosVazios,
-      cicloId: periodo === "ciclo" ? cicloId : "all",
+      cicloId: "all",
       equipeId,
       consultorId,
       de: intervalo.de,
       ate: intervalo.ate,
     }),
-    [periodo, cicloId, equipeId, consultorId, intervalo],
+    [equipeId, consultorId, intervalo],
   );
+
 
   const jornadas = useMemo(
     () => aplicarFiltros(jornadasTodas, filtros, consultores, ciclos),
@@ -265,31 +295,7 @@ function RelatoriosPage() {
           </Select>
         </div>
 
-        {periodo === "total" ? (
-          <div className="space-y-1.5">
-            <Label>Recorte de datas</Label>
-            <p className="text-sm text-muted-foreground">
-              Sem filtro de data: considera todos os cards do painel de propostas.
-            </p>
-          </div>
-        ) : periodo === "ciclo" ? (
-
-          <div className="space-y-1.5">
-            <Label>Ciclo</Label>
-            <Select value={cicloId} onValueChange={setCicloSel}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione" />
-              </SelectTrigger>
-              <SelectContent>
-                {ciclos.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>
-                    {c.nome}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        ) : periodo === "personalizado" ? (
+        {periodo === "personalizado" ? (
           <div className="grid grid-cols-2 gap-2">
             <div className="space-y-1.5">
               <Label htmlFor="de">De</Label>
@@ -302,17 +308,19 @@ function RelatoriosPage() {
           </div>
         ) : (
           <div className="space-y-1.5">
-            <Label htmlFor="ref">
-              {periodo === "diario" ? "Dia" : periodo === "semanal" ? "Final da semana" : "Mês até"}
-            </Label>
-            <Input
-              id="ref"
-              type="date"
-              value={referencia}
-              onChange={(e) => setReferencia(e.target.value)}
-            />
+            <Label>Recorte de datas</Label>
+            <p className="text-sm text-muted-foreground">
+              {periodo === "ciclo_atual"
+                ? `Ciclo ${ciclo?.nome ?? "—"}: ${dateBR(intervalo.de)} a ${dateBR(intervalo.ate)}`
+                : periodo === "semana"
+                  ? `Semana atual dentro do ciclo: ${dateBR(intervalo.de)} a ${dateBR(intervalo.ate)}`
+                  : intervalo.de
+                    ? `${periodo === "trimestre" ? "Últimos 3" : "Últimos 6"} ciclos completos: ${dateBR(intervalo.de)} a ${dateBR(intervalo.ate)}`
+                    : "Ainda não há ciclos completos suficientes."}
+            </p>
           </div>
         )}
+
 
         <div className="space-y-1.5">
           <Label>Unidade</Label>
@@ -380,17 +388,14 @@ function RelatoriosPage() {
               </div>
               <div className="text-right text-xs text-muted-foreground">
                 <p>
-                  {periodo === "total" ? (
-                    "Período: base completa (todos os cards)"
-                  ) : (
-                    <>
-                      Período: <span className="font-mono">{dateBR(intervalo.de)}</span> a{" "}
-                      <span className="font-mono">{dateBR(intervalo.ate)}</span>
-                    </>
-                  )}
+                  Período: <span className="font-mono">{dateBR(intervalo.de)}</span> a{" "}
+                  <span className="font-mono">{dateBR(intervalo.ate)}</span>
                 </p>
 
-                {periodo === "ciclo" && ciclo && <p>Ciclo {ciclo.nome}</p>}
+                {(periodo === "ciclo_atual" || periodo === "semana") && ciclo && (
+                  <p>Ciclo {ciclo.nome}</p>
+                )}
+
                 <p>
                   Emitido em {dateBR(iso(new Date()))} por {acesso.email || "—"}
                 </p>
