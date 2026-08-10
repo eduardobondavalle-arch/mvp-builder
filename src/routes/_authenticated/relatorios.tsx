@@ -67,16 +67,23 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
 const somaDias = (base: string, dias: number) =>
   iso(new Date(new Date(`${base}T12:00:00`).getTime() + dias * 86400000));
 
-type Periodo = "total" | "diario" | "semanal" | "mensal" | "ciclo" | "personalizado";
+type Periodo = "ciclo_atual" | "semana" | "trimestre" | "semestre" | "personalizado";
 
 const periodos: { key: Periodo; label: string }[] = [
-  { key: "total", label: "Base completa" },
-  { key: "diario", label: "Diário" },
-  { key: "semanal", label: "Semanal" },
-  { key: "mensal", label: "Mensal" },
-  { key: "ciclo", label: "Ciclo completo" },
+  { key: "ciclo_atual", label: "Ciclo atual" },
+  { key: "semana", label: "Semana" },
+  { key: "trimestre", label: "Trimestre (últimos 3 ciclos completos)" },
+  { key: "semestre", label: "Semestre (últimos 6 ciclos completos)" },
   { key: "personalizado", label: "Período personalizado" },
 ];
+
+/** Segunda-feira da semana da data informada. */
+const inicioSemana = (base: string) => {
+  const d = new Date(`${base}T12:00:00`);
+  const dow = (d.getDay() + 6) % 7;
+  return somaDias(base, -dow);
+};
+
 
 function RelatoriosPage() {
   const acesso = useAcesso();
