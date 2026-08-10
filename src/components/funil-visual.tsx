@@ -20,7 +20,7 @@ export function FunilVisual({ etapas, size = "md" }: { etapas: Etapa[]; size?: F
   const larguras = etapas.map((e) => cfg.min + (100 - cfg.min) * Math.min(1, e.valor / topo));
 
   return (
-    <div className="stagger-rows space-y-1">
+    <div className="stagger-rows w-full space-y-1">
       {etapas.map((e, i) => {
         const larguraAtual = larguras[i]!;
         const larguraProxima = larguras[i + 1] ?? Math.max(cfg.min, larguraAtual * 0.82);
