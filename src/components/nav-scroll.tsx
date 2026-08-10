@@ -54,9 +54,7 @@ export function NavScroll({ children }: NavScrollProps) {
       const dt = Math.min((now - last) / 1000, 0.05);
       last = now;
 
-      // Smooth velocity ramp-up/down
       velocityRef.current += (targetSpeed - velocityRef.current) * 0.18;
-
       el.scrollLeft += velocityRef.current * dt;
       updateBounds();
 
@@ -70,6 +68,26 @@ export function NavScroll({ children }: NavScrollProps) {
     };
   }, [dir]);
 
+  function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
+    const el = trackRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const edge = Math.min(80, rect.width * 0.12);
+
+    if (x < edge && canScrollLeft) {
+      setDir("left");
+    } else if (x > rect.width - edge && canScrollRight) {
+      setDir("right");
+    } else {
+      setDir(null);
+    }
+  }
+
+  function handleMouseLeave() {
+    setDir(null);
+  }
+
   const motionClass =
     dir === "left"
       ? "nav-motion-left"
@@ -78,17 +96,17 @@ export function NavScroll({ children }: NavScrollProps) {
         : "";
 
   return (
-    <div className="group/nav relative flex min-w-0 flex-1">
-      {/* Left hover zone */}
+    <div
+      className="group/nav relative flex min-w-0 flex-1"
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+    >
+      {/* Left indicator */}
       <div
-        className="pointer-events-auto absolute inset-y-0 left-0 z-20 w-16 cursor-w-resize lg:w-20"
-        onMouseEnter={() => canScrollLeft && setDir("left")}
-        onMouseLeave={() => setDir(null)}
+        className={`pointer-events-none absolute inset-y-0 left-0 z-20 w-16 lg:w-20 ${canScrollLeft ? "opacity-100" : "opacity-0"} ${dir === "left" ? "nav-edge-active" : ""}`}
         aria-hidden="true"
       >
-        <div
-          className={`nav-edge nav-edge-left ${canScrollLeft ? "opacity-100" : "opacity-0"} ${dir === "left" ? "nav-edge-active" : ""}`}
-        >
+        <div className="nav-edge nav-edge-left">
           <CaretLeft weight="bold" className="size-4" />
         </div>
       </div>
@@ -101,16 +119,12 @@ export function NavScroll({ children }: NavScrollProps) {
         {children}
       </div>
 
-      {/* Right hover zone */}
+      {/* Right indicator */}
       <div
-        className="pointer-events-auto absolute inset-y-0 right-0 z-20 w-16 cursor-e-resize lg:w-20"
-        onMouseEnter={() => canScrollRight && setDir("right")}
-        onMouseLeave={() => setDir(null)}
+        className={`pointer-events-none absolute inset-y-0 right-0 z-20 w-16 lg:w-20 ${canScrollRight ? "opacity-100" : "opacity-0"} ${dir === "right" ? "nav-edge-active" : ""}`}
         aria-hidden="true"
       >
-        <div
-          className={`nav-edge nav-edge-right ${canScrollRight ? "opacity-100" : "opacity-0"} ${dir === "right" ? "nav-edge-active" : ""}`}
-        >
+        <div className="nav-edge nav-edge-right">
           <CaretRight weight="bold" className="size-4" />
         </div>
       </div>
