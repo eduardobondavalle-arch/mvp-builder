@@ -45,6 +45,30 @@ const dentro = (data: string | null, de: string, ate: string) => {
   return true;
 };
 
+const hojeISO = () => new Date().toISOString().slice(0, 10);
+
+/**
+ * Data que posiciona o card no período:
+ * - Contrato assinado: data da assinatura (é o que compõe o valor do ciclo).
+ * - Negócio perdido: data da perda.
+ * - Proposta e Fechamento: ainda em aberto, contam no período vigente.
+ */
+export function dataDeCompetencia(j: Jornada) {
+  if (j.etapa === "contrato_assinado") return j.data_assinatura ?? j.data_proposta;
+  if (j.etapa === "negocio_perdido") return j.data_perda ?? j.data_proposta;
+  return null;
+}
+
+const noPeriodo = (j: Jornada, de: string, ate: string) => {
+  const data = dataDeCompetencia(j);
+  // Cards em aberto (proposta/fechamento) entram sempre que o recorte inclui hoje.
+  if (data === null) {
+    const hoje = hojeISO();
+    return (!de || de <= hoje) && (!ate || ate >= hoje);
+  }
+  return dentro(data, de, ate);
+};
+
 export function aplicarFiltros(
   jornadas: Jornada[],
   filtros: Filtros,
@@ -55,7 +79,7 @@ export function aplicarFiltros(
   const porEquipe = new Map(consultores.map((c) => [c.id, c.equipe_id]));
 
   return jornadas.filter((j) => {
-    if ((de || ate) && !dentro(j.data_proposta, de, ate)) return false;
+    if ((de || ate) && !noPeriodo(j, de, ate)) return false;
     if (filtros.consultorId !== "all" && j.consultor_id !== filtros.consultorId) return false;
     if (filtros.canalId !== "all" && j.canal_id !== filtros.canalId) return false;
     if (filtros.equipeId !== "all" && porEquipe.get(j.consultor_id) !== filtros.equipeId)
@@ -63,6 +87,7 @@ export function aplicarFiltros(
     return true;
   });
 }
+
 
 export function filtrarRegistros(
   registros: RegistroDiario[],
