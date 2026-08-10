@@ -52,6 +52,7 @@ const PERIODO: Periodo = "ciclo_atual";
 function TvPage() {
   const acesso = useAcesso();
   const [agora, setAgora] = useState(() => iso(new Date()));
+  const [equipeSel, setEquipeSel] = useState<string>("all");
 
   // Atualiza o recorte a cada minuto para manter o painel sempre fresco.
   useEffect(() => {
