@@ -300,8 +300,11 @@ export function rankingConsultores(
         ...op,
         metaVgl: meta.meta_vgl,
         metaContratos: meta.meta_contratos,
-        pctMetaVgl: meta.meta_vgl ? (ind.vgl / meta.meta_vgl) * 100 : 0,
-        pctMetaContratos: meta.meta_contratos ? (ind.contratos / meta.meta_contratos) * 100 : 0,
+        // Metas consideram tudo que está em Fechamento e Contrato Assinado.
+        pctMetaVgl: meta.meta_vgl ? (ind.vglTotal / meta.meta_vgl) * 100 : 0,
+        pctMetaContratos: meta.meta_contratos
+          ? (ind.fechamentos / meta.meta_contratos) * 100
+          : 0,
       };
     })
     .sort((a, b) => b.vgl - a.vgl);
@@ -329,8 +332,11 @@ export function rankingEquipes(
         ...op,
         metaVgl: meta.meta_vgl,
         metaContratos: meta.meta_contratos,
-        pctMetaVgl: meta.meta_vgl ? (ind.vgl / meta.meta_vgl) * 100 : 0,
-        pctMetaContratos: meta.meta_contratos ? (ind.contratos / meta.meta_contratos) * 100 : 0,
+        // Metas consideram tudo que está em Fechamento e Contrato Assinado.
+        pctMetaVgl: meta.meta_vgl ? (ind.vglTotal / meta.meta_vgl) * 100 : 0,
+        pctMetaContratos: meta.meta_contratos
+          ? (ind.fechamentos / meta.meta_contratos) * 100
+          : 0,
       };
     })
     .sort((a, b) => b.pctMetaVgl - a.pctMetaVgl);

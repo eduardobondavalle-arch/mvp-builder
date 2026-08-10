@@ -35,6 +35,7 @@ import {
   calcularIndicadores,
   conversaoLais,
   conversaoPorCanal,
+  conversaoPorCanalAgrupado,
   filtrarPreLeads,
   filtrarRegistros,
   filtrosVazios,
@@ -46,6 +47,23 @@ import {
   rankingEquipes,
 
 } from "@/lib/metrics";
+import {
+  cicloAtualDe,
+  filtrosDoPeriodo,
+  intervaloDoPeriodo,
+  iso,
+  periodos,
+  somaDias,
+  type Periodo,
+} from "@/lib/periodos";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -79,8 +97,12 @@ const chartTooltip = {
 };
 
 function Dashboard() {
-  const [filtros, setFiltros] = useState(filtrosVazios);
   const acesso = useAcesso();
+  const [periodo, setPeriodo] = useState<Periodo>("ciclo_atual");
+  const hoje = iso(new Date());
+  const [de, setDe] = useState(somaDias(hoje, -6));
+  const [ate, setAte] = useState(hoje);
+  const [escopo, setEscopo] = useState(filtrosVazios);
   const results = useQueries({
     queries: [
       dataQueries.jornadas(),
@@ -106,8 +128,24 @@ function Dashboard() {
   const metas = results[8].data ?? [];
   const carregando = results.some((r) => r.isLoading);
 
-  const cicloId = filtros.cicloId !== "all" ? filtros.cicloId : (ciclos[0]?.id ?? "");
-  const cicloAtivo = ciclos.find((c) => c.id === cicloId);
+  const cicloAtivo = useMemo(() => cicloAtualDe(ciclos, hoje), [ciclos, hoje]);
+  const cicloId = cicloAtivo?.id ?? "";
+
+  const intervalo = useMemo(
+    () => intervaloDoPeriodo(periodo, ciclos, hoje, { de, ate }),
+    [periodo, ciclos, hoje, de, ate],
+  );
+
+  // Mesma lógica da aba de relatórios: presets de período + escopo por equipe/consultor/canal.
+  const filtros = useMemo(
+    () =>
+      filtrosDoPeriodo(periodo, ciclos, hoje, { de, ate }, {
+        equipeId: escopo.equipeId,
+        consultorId: escopo.consultorId,
+        canalId: escopo.canalId,
+      }),
+    [periodo, ciclos, hoje, de, ate, escopo],
+  );
 
   const filtradas = useMemo(
     () => aplicarFiltros(jornadas, filtros, consultores, ciclos),
@@ -140,6 +178,10 @@ function Dashboard() {
     [filtradas, registrosFiltrados, consultores, equipes, metas, cicloId],
   );
   const canaisConv = useMemo(() => conversaoPorCanal(filtradas, canais), [filtradas, canais]);
+  const canaisAgrupado = useMemo(
+    () => conversaoPorCanalAgrupado(filtradas, canais),
+    [filtradas, canais],
+  );
   const perdas = useMemo(() => motivosDePerda(filtradas, motivos), [filtradas, motivos]);
   const paradas = useMemo(() => negociacoesParadas(filtradas), [filtradas]);
   const serieDiaria = useMemo(() => produtividadeDiaria(registrosFiltrados), [registrosFiltrados]);
@@ -149,7 +191,7 @@ function Dashboard() {
   const metaContratosTotal =
     equipesRank.reduce((s, e) => s + e.metaContratos, 0) || cicloAtivo?.meta_contratos || 0;
 
-  const canalTop = canaisConv[0];
+  const canalTop = canaisAgrupado[0];
 
   const kpis = [
     {
@@ -218,14 +260,52 @@ function Dashboard() {
       title="Inteligência Comercial"
       subtitle="Indicadores consolidados da operação. Proposta em diante vem dos cards do Painel de Propostas: o VGL Total soma os cards em Fechamento e Contrato Assinado; o VGL Assinado considera apenas os contratos assinados."
     >
-      <div className="panel mb-8 p-5">
+      <div className="panel mb-8 space-y-3 p-5">
+        <div className="grid items-end gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <label className="block">
+            <span className="label-caps mb-1.5 block">Período</span>
+            <Select value={periodo} onValueChange={(v) => setPeriodo(v as Periodo)}>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {periodos.map((p) => (
+                  <SelectItem key={p.key} value={p.key}>
+                    {p.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </label>
+          {periodo === "personalizado" && (
+            <>
+              <label className="block">
+                <span className="label-caps mb-1.5 block">De</span>
+                <Input type="date" value={de} onChange={(e) => setDe(e.target.value)} />
+              </label>
+              <label className="block">
+                <span className="label-caps mb-1.5 block">Até</span>
+                <Input type="date" value={ate} onChange={(e) => setAte(e.target.value)} />
+              </label>
+            </>
+          )}
+          <p className="text-xs text-muted-foreground">
+            {intervalo.de && intervalo.ate
+              ? `${dateBR(intervalo.de)} a ${dateBR(intervalo.ate)}`
+              : "Base completa"}
+            {periodo === "semana" || periodo === "personalizado"
+              ? " • cards pela data da proposta"
+              : " • cards pela data de assinatura/perda"}
+          </p>
+        </div>
         <FiltrosBar
           filtros={filtros}
-          onChange={setFiltros}
+          onChange={setEscopo}
           ciclos={ciclos}
           equipes={equipes}
           consultores={consultores}
           canais={canais}
+          mostrarPeriodo={false}
         />
       </div>
 
@@ -273,7 +353,7 @@ function Dashboard() {
           <h2 className="text-lg font-semibold">Metas por equipe</h2>
           <p className="mb-4 text-xs text-muted-foreground">
             {cicloAtivo
-              ? `${cicloAtivo.nome} • ${dateBR(cicloAtivo.data_inicio)} a ${dateBR(cicloAtivo.data_fim)}`
+              ? `${cicloAtivo.nome} • fechamento + contrato assinado no recorte`
               : "Nenhum ciclo cadastrado"}
           </p>
           <div className="space-y-5">
@@ -282,12 +362,12 @@ function Dashboard() {
                 <div className="flex items-baseline justify-between text-sm">
                   <span className="font-medium">{e.nome}</span>
                   <span className="font-mono text-xs text-muted-foreground">
-                    {brl(e.vgl)} / {brl(e.metaVgl)}
+                    {brl(e.vglTotal)} / {brl(e.metaVgl)}
                   </span>
                 </div>
                 <Progress value={Math.min(100, e.pctMetaVgl)} className="mt-2 h-2" />
                 <p className="mt-1.5 text-xs text-muted-foreground">
-                  {pct(e.pctMetaVgl)} da meta de VGL • {e.contratos} de {e.metaContratos} contratos (
+                  {pct(e.pctMetaVgl)} da meta de VGL • {e.fechamentos} de {e.metaContratos} contratos (
                   {pct(e.pctMetaContratos, 0)}) • {e.visitas} visitas
                 </p>
               </div>

@@ -11,6 +11,7 @@ export function FiltrosBar({
   equipes,
   consultores,
   canais,
+  mostrarPeriodo = true,
 }: {
   filtros: Filtros;
   onChange: (f: Filtros) => void;
@@ -18,14 +19,18 @@ export function FiltrosBar({
   equipes: Equipe[];
   consultores: Consultor[];
   canais: Canal[];
+  /** Quando falso, esconde os campos de ciclo e datas (o período vem de fora). */
+  mostrarPeriodo?: boolean;
 }) {
   const consultoresFiltrados =
     filtros.equipeId === "all"
       ? consultores
       : consultores.filter((c) => c.equipe_id === filtros.equipeId);
 
+
   const campos = [
-    {
+    ...(mostrarPeriodo
+      ? [{
       label: "Ciclo",
       value: filtros.cicloId,
       onValueChange: (v: string) => onChange({ ...filtros, cicloId: v }),
@@ -34,7 +39,8 @@ export function FiltrosBar({
         value: c.id,
         label: `${c.nome}${c.status === "aberto" ? " • aberto" : ""}`,
       })),
-    },
+    }]
+      : []),
     {
       label: "Equipe",
       value: filtros.equipeId,
@@ -83,6 +89,7 @@ export function FiltrosBar({
           </label>
         ))}
       </div>
+      {mostrarPeriodo && (
       <div className="grid items-end gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <label className="block">
           <span className="label-caps mb-1.5 block">Período — de</span>
@@ -109,6 +116,7 @@ export function FiltrosBar({
           </Button>
         </div>
       </div>
+      )}
     </div>
   );
 }
