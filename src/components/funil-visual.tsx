@@ -2,21 +2,28 @@ import { pct } from "@/lib/format";
 
 type Etapa = { etapa: string; valor: number; origem: "empresa" | "diario" | "kanban" };
 
-const MIN_LARGURA = 22;
+type FunilSize = "sm" | "md" | "lg";
 
-export function FunilVisual({ etapas }: { etapas: Etapa[] }) {
+const CONFIG: Record<FunilSize, { min: number; labelCol: string; valueCol: string; height: string; text: string }> = {
+  sm: { min: 28, labelCol: "5.5rem", valueCol: "3.5rem", height: "h-10", text: "text-xs" },
+  md: { min: 32, labelCol: "8rem", valueCol: "5rem", height: "h-14", text: "text-sm" },
+  lg: { min: 44, labelCol: "10rem", valueCol: "6rem", height: "h-20", text: "text-lg" },
+};
+
+export function FunilVisual({ etapas, size = "md" }: { etapas: Etapa[]; size?: FunilSize }) {
   if (etapas.length === 0) {
     return <p className="text-sm text-muted-foreground">Sem dados no recorte selecionado.</p>;
   }
 
+  const cfg = CONFIG[size];
   const topo = Math.max(...etapas.map((e) => e.valor), 1);
-  const larguras = etapas.map((e) => MIN_LARGURA + (100 - MIN_LARGURA) * Math.min(1, e.valor / topo));
+  const larguras = etapas.map((e) => cfg.min + (100 - cfg.min) * Math.min(1, e.valor / topo));
 
   return (
     <div className="stagger-rows space-y-1">
       {etapas.map((e, i) => {
         const larguraAtual = larguras[i]!;
-        const larguraProxima = larguras[i + 1] ?? Math.max(MIN_LARGURA, larguraAtual * 0.82);
+        const larguraProxima = larguras[i + 1] ?? Math.max(cfg.min, larguraAtual * 0.82);
         const recuoTopo = (100 - larguraAtual) / 2;
         const recuoBase = (100 - larguraProxima) / 2;
         const anterior = etapas[i - 1];
@@ -25,24 +32,27 @@ export function FunilVisual({ etapas }: { etapas: Etapa[] }) {
         return (
           <div
             key={e.etapa}
-            className="grid grid-cols-[5.5rem_1fr_3.5rem] items-center gap-2 sm:grid-cols-[8rem_1fr_5rem] sm:gap-3"
+            className="grid items-center gap-2 sm:gap-3"
+            style={{
+              gridTemplateColumns: `${cfg.labelCol} 1fr ${cfg.valueCol}`,
+            }}
           >
             <span className="label-caps truncate">{e.etapa}</span>
-            <div
-              className="relative flex h-14 items-center justify-center transition-[filter] duration-[200ms] hover:brightness-105"
-              style={{
-                clipPath: `polygon(${recuoTopo}% 0%, ${100 - recuoTopo}% 0%, ${100 - recuoBase}% 100%, ${recuoBase}% 100%)`,
-                background: `color-mix(in oklab, var(--chart-${(i % 5) + 1}) 82%, transparent)`,
-              }}
-            >
-              <span className="font-mono text-sm font-semibold text-background">
+            <div className={`relative flex ${cfg.height} items-center justify-center overflow-visible`}>
+              <div
+                className="absolute inset-0 transition-[filter] duration-200 hover:brightness-105"
+                style={{
+                  clipPath: `polygon(${recuoTopo}% 0%, ${100 - recuoTopo}% 0%, ${100 - recuoBase}% 100%, ${recuoBase}% 100%)`,
+                  background: `color-mix(in oklab, var(--chart-${(i % 5) + 1}) 82%, transparent)`,
+                }}
+              />
+              <span className={`relative z-10 whitespace-nowrap font-mono font-semibold text-background ${cfg.text}`}>
                 {e.valor.toLocaleString("pt-BR")}
               </span>
             </div>
             <span className="text-right font-mono text-xs text-muted-foreground">
               {conversao === null ? "—" : pct(conversao, 0)}
             </span>
-
           </div>
         );
       })}

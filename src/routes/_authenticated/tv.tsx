@@ -158,7 +158,7 @@ function TvPage() {
           <p className="text-lg">Carregando painel…</p>
         </div>
       ) : (
-        <div className="grid flex-1 gap-4 lg:grid-cols-2 lg:gap-6">
+        <div className="grid flex-1 gap-4 lg:grid-cols-[55%_1fr] lg:gap-6">
           {/* Esquerda — Funil */}
           <section className="panel flex flex-col p-5 lg:p-8">
             <h2 className="mb-2 text-lg font-semibold lg:text-xl">Funil atualizado</h2>
@@ -166,7 +166,7 @@ function TvPage() {
               Pré Lead → Visita vêm do registro diário; Proposta → Contrato vêm do Painel de Propostas.
             </p>
             <div className="flex flex-1 items-center justify-center">
-              <FunilVisual etapas={etapasFunil} />
+              <FunilVisual etapas={etapasFunil} size="lg" />
             </div>
           </section>
 
