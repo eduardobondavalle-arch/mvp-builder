@@ -282,13 +282,17 @@ export function rankingConsultores(
       const ind = calcularIndicadores(minhas);
       const op = somarRegistros(registros.filter((r) => r.consultor_id === c.id));
       const meta = metaDe(metas, cicloId, { consultorId: c.id });
+      // Ranking considera VGL de Proposta, Fechamento e Contrato assinado.
+      const vglRanking = minhas
+        .filter((j) => ["proposta", "fechamento", "contrato_assinado"].includes(j.etapa))
+        .reduce((s, j) => s + valorCard(j), 0);
       return {
         id: c.id,
         nome: c.nome,
         ativo: c.ativo,
         equipeId: c.equipe_id,
         equipe: c.equipe_id ? (equipeNome.get(c.equipe_id) ?? "—") : "—",
-        vgl: ind.vgl,
+        vgl: vglRanking,
         vglTotal: ind.vglTotal,
         vglAssinado: ind.vglAssinado,
         contratos: ind.contratos,
