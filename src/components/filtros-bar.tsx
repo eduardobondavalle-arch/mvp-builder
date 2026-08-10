@@ -11,6 +11,7 @@ export function FiltrosBar({
   equipes,
   consultores,
   canais,
+  mostrarPeriodo = true,
 }: {
   filtros: Filtros;
   onChange: (f: Filtros) => void;
@@ -18,11 +19,14 @@ export function FiltrosBar({
   equipes: Equipe[];
   consultores: Consultor[];
   canais: Canal[];
+  /** Quando falso, esconde os campos de ciclo e datas (o período vem de fora). */
+  mostrarPeriodo?: boolean;
 }) {
   const consultoresFiltrados =
     filtros.equipeId === "all"
       ? consultores
       : consultores.filter((c) => c.equipe_id === filtros.equipeId);
+
 
   const campos = [
     {
