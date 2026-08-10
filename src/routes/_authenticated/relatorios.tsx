@@ -388,17 +388,14 @@ function RelatoriosPage() {
               </div>
               <div className="text-right text-xs text-muted-foreground">
                 <p>
-                  {periodo === "total" ? (
-                    "Período: base completa (todos os cards)"
-                  ) : (
-                    <>
-                      Período: <span className="font-mono">{dateBR(intervalo.de)}</span> a{" "}
-                      <span className="font-mono">{dateBR(intervalo.ate)}</span>
-                    </>
-                  )}
+                  Período: <span className="font-mono">{dateBR(intervalo.de)}</span> a{" "}
+                  <span className="font-mono">{dateBR(intervalo.ate)}</span>
                 </p>
 
-                {periodo === "ciclo" && ciclo && <p>Ciclo {ciclo.nome}</p>}
+                {(periodo === "ciclo_atual" || periodo === "semana") && ciclo && (
+                  <p>Ciclo {ciclo.nome}</p>
+                )}
+
                 <p>
                   Emitido em {dateBR(iso(new Date()))} por {acesso.email || "—"}
                 </p>
