@@ -90,12 +90,10 @@ function RelatoriosPage() {
   const relatorioRef = useRef<HTMLDivElement>(null);
   const [gerando, setGerando] = useState(false);
 
-  const [periodo, setPeriodo] = useState<Periodo>("total");
+  const [periodo, setPeriodo] = useState<Periodo>("ciclo_atual");
 
-  const [referencia, setReferencia] = useState(iso(new Date()));
   const [de, setDe] = useState(somaDias(iso(new Date()), -6));
   const [ate, setAte] = useState(iso(new Date()));
-  const [cicloSel, setCicloSel] = useState("");
   const [equipeId, setEquipeId] = useState("all");
   const [consultorId, setConsultorId] = useState("all");
 
@@ -124,31 +122,56 @@ function RelatoriosPage() {
   const metas = results[8].data ?? [];
   const carregando = results.some((r) => r.isLoading);
 
-  const cicloId = cicloSel || ciclos[0]?.id || "";
-  const ciclo = ciclos.find((c) => c.id === cicloId);
+  const hoje = iso(new Date());
+
+  // Ciclo atual: o que contém a data de hoje; se nenhum, o mais recente já iniciado.
+  const ciclo = useMemo(() => {
+    const atual = ciclos.find((c) => c.data_inicio <= hoje && c.data_fim >= hoje);
+    return atual ?? ciclos.find((c) => c.data_inicio <= hoje) ?? ciclos[0];
+  }, [ciclos, hoje]);
+  const cicloId = ciclo?.id ?? "";
+
+  // Ciclos completos (já encerrados), do mais recente para o mais antigo.
+  const ciclosCompletos = useMemo(
+    () => ciclos.filter((c) => c.data_fim < hoje).sort((a, b) => (a.data_inicio < b.data_inicio ? 1 : -1)),
+    [ciclos, hoje],
+  );
+
+  const intervaloUltimosCiclos = (qtd: number) => {
+    const sel = ciclosCompletos.slice(0, qtd);
+    if (sel.length === 0) return { de: "", ate: "" };
+    return {
+      de: sel[sel.length - 1]!.data_inicio,
+      ate: sel[0]!.data_fim,
+    };
+  };
 
   const intervalo = useMemo(() => {
-    if (periodo === "total") return { de: "", ate: "" };
-    if (periodo === "diario") return { de: referencia, ate: referencia };
-
-    if (periodo === "semanal") return { de: somaDias(referencia, -6), ate: referencia };
-    if (periodo === "mensal") return { de: referencia.slice(0, 7) + "-01", ate: referencia };
-    if (periodo === "ciclo")
+    if (periodo === "ciclo_atual")
       return { de: ciclo?.data_inicio ?? "", ate: ciclo?.data_fim ?? "" };
+    if (periodo === "semana") {
+      const segunda = inicioSemana(hoje);
+      const inicioCiclo = ciclo?.data_inicio ?? "";
+      return { de: inicioCiclo && inicioCiclo > segunda ? inicioCiclo : segunda, ate: hoje };
+    }
+    if (periodo === "trimestre") return intervaloUltimosCiclos(3);
+    if (periodo === "semestre") return intervaloUltimosCiclos(6);
     return { de, ate };
-  }, [periodo, referencia, ciclo, de, ate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [periodo, ciclo, ciclosCompletos, hoje, de, ate]);
 
   const filtros = useMemo(
     () => ({
       ...filtrosVazios,
-      cicloId: periodo === "ciclo" ? cicloId : "all",
+      cicloId: "all",
       equipeId,
       consultorId,
       de: intervalo.de,
       ate: intervalo.ate,
     }),
-    [periodo, cicloId, equipeId, consultorId, intervalo],
+    [equipeId, consultorId, intervalo],
   );
+
 
   const jornadas = useMemo(
     () => aplicarFiltros(jornadasTodas, filtros, consultores, ciclos),
