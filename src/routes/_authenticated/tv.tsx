@@ -87,8 +87,17 @@ function TvPage() {
   const cicloId = cicloAtivo?.id ?? "";
 
   const filtros = useMemo(
-    () => filtrosDoPeriodo(PERIODO, ciclos, hoje, { de: "", ate: "" }),
-    [ciclos, hoje],
+    () => ({ ...filtrosDoPeriodo(PERIODO, ciclos, hoje, { de: "", ate: "" }), equipeId: equipeSel }),
+    [ciclos, hoje, equipeSel],
+  );
+
+  const consultoresEscopo = useMemo(
+    () => (equipeSel === "all" ? consultores : consultores.filter((c) => c.equipe_id === equipeSel)),
+    [consultores, equipeSel],
+  );
+  const equipesEscopo = useMemo(
+    () => (equipeSel === "all" ? equipes : equipes.filter((e) => e.id === equipeSel)),
+    [equipes, equipeSel],
   );
 
   const jornadas = useMemo(
@@ -110,12 +119,12 @@ function TvPage() {
     [jornadas, registros, preLeads],
   );
   const consultoresRank = useMemo(
-    () => rankingConsultores(jornadas, registros, consultores, equipes, metas, cicloId),
-    [jornadas, registros, consultores, equipes, metas, cicloId],
+    () => rankingConsultores(jornadas, registros, consultoresEscopo, equipesEscopo, metas, cicloId),
+    [jornadas, registros, consultoresEscopo, equipesEscopo, metas, cicloId],
   );
   const equipesRank = useMemo(
-    () => rankingEquipes(jornadas, registros, consultores, equipes, metas, cicloId),
-    [jornadas, registros, consultores, equipes, metas, cicloId],
+    () => rankingEquipes(jornadas, registros, consultoresEscopo, equipesEscopo, metas, cicloId),
+    [jornadas, registros, consultoresEscopo, equipesEscopo, metas, cicloId],
   );
 
   const kpis = [
