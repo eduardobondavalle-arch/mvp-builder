@@ -295,31 +295,7 @@ function RelatoriosPage() {
           </Select>
         </div>
 
-        {periodo === "total" ? (
-          <div className="space-y-1.5">
-            <Label>Recorte de datas</Label>
-            <p className="text-sm text-muted-foreground">
-              Sem filtro de data: considera todos os cards do painel de propostas.
-            </p>
-          </div>
-        ) : periodo === "ciclo" ? (
-
-          <div className="space-y-1.5">
-            <Label>Ciclo</Label>
-            <Select value={cicloId} onValueChange={setCicloSel}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione" />
-              </SelectTrigger>
-              <SelectContent>
-                {ciclos.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>
-                    {c.nome}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        ) : periodo === "personalizado" ? (
+        {periodo === "personalizado" ? (
           <div className="grid grid-cols-2 gap-2">
             <div className="space-y-1.5">
               <Label htmlFor="de">De</Label>
@@ -332,17 +308,19 @@ function RelatoriosPage() {
           </div>
         ) : (
           <div className="space-y-1.5">
-            <Label htmlFor="ref">
-              {periodo === "diario" ? "Dia" : periodo === "semanal" ? "Final da semana" : "Mês até"}
-            </Label>
-            <Input
-              id="ref"
-              type="date"
-              value={referencia}
-              onChange={(e) => setReferencia(e.target.value)}
-            />
+            <Label>Recorte de datas</Label>
+            <p className="text-sm text-muted-foreground">
+              {periodo === "ciclo_atual"
+                ? `Ciclo ${ciclo?.nome ?? "—"}: ${dateBR(intervalo.de)} a ${dateBR(intervalo.ate)}`
+                : periodo === "semana"
+                  ? `Semana atual dentro do ciclo: ${dateBR(intervalo.de)} a ${dateBR(intervalo.ate)}`
+                  : intervalo.de
+                    ? `${periodo === "trimestre" ? "Últimos 3" : "Últimos 6"} ciclos completos: ${dateBR(intervalo.de)} a ${dateBR(intervalo.ate)}`
+                    : "Ainda não há ciclos completos suficientes."}
+            </p>
           </div>
         )}
+
 
         <div className="space-y-1.5">
           <Label>Unidade</Label>
