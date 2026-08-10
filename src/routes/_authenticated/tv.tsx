@@ -157,9 +157,27 @@ function TvPage() {
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <Television size={24} weight="duotone" />
-          <span className="hidden text-sm sm:inline">{new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</span>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1 rounded-full border border-border/60 bg-secondary/50 p-1">
+            {[{ id: "all", nome: "Todas" }, ...equipes.map((e) => ({ id: e.id, nome: e.nome }))].map((opt) => (
+              <button
+                key={opt.id}
+                type="button"
+                onClick={() => setEquipeSel(opt.id)}
+                className={`rounded-full px-3 py-1.5 text-xs font-medium transition-all active:scale-95 lg:text-sm ${
+                  equipeSel === opt.id
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {opt.nome}
+              </button>
+            ))}
+          </div>
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Television size={24} weight="duotone" />
+            <span className="hidden text-sm sm:inline">{new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</span>
+          </div>
         </div>
       </header>
 
