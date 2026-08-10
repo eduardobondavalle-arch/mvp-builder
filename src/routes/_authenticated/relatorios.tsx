@@ -168,9 +168,15 @@ function RelatoriosPage() {
       consultorId,
       de: intervalo.de,
       ate: intervalo.ate,
+      // Semana e período personalizado consideram só a data da proposta.
+      baseData:
+        periodo === "semana" || periodo === "personalizado"
+          ? ("proposta" as const)
+          : ("competencia" as const),
     }),
-    [equipeId, consultorId, intervalo],
+    [equipeId, consultorId, intervalo, periodo],
   );
+
 
 
   const jornadas = useMemo(
