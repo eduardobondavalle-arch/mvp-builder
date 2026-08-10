@@ -29,7 +29,8 @@ export function FiltrosBar({
 
 
   const campos = [
-    {
+    ...(mostrarPeriodo
+      ? [{
       label: "Ciclo",
       value: filtros.cicloId,
       onValueChange: (v: string) => onChange({ ...filtros, cicloId: v }),
@@ -38,7 +39,8 @@ export function FiltrosBar({
         value: c.id,
         label: `${c.nome}${c.status === "aberto" ? " • aberto" : ""}`,
       })),
-    },
+    }]
+      : []),
     {
       label: "Equipe",
       value: filtros.equipeId,
@@ -87,6 +89,7 @@ export function FiltrosBar({
           </label>
         ))}
       </div>
+      {mostrarPeriodo && (
       <div className="grid items-end gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <label className="block">
           <span className="label-caps mb-1.5 block">Período — de</span>
@@ -113,6 +116,7 @@ export function FiltrosBar({
           </Button>
         </div>
       </div>
+      )}
     </div>
   );
 }
