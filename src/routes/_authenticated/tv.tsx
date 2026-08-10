@@ -123,7 +123,7 @@ function TvPage() {
     { label: "VGL Assinado", value: brl(ind.vglAssinado), icon: Handshake },
     { label: "Ticket Médio", value: brl(ind.ticketMedio), icon: Target },
     { label: "Intermediação Média", value: pct(ind.taxaMedia), icon: Percent },
-    { label: "Contratos em Negociação", value: String(ind.emNegociacao), icon: RefreshCcw },
+    { label: "Contratos em Negociação", value: String(ind.emNegociacao), icon: ArrowsClockwise },
   ];
 
   return (
