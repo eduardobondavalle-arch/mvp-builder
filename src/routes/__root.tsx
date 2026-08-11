@@ -10,6 +10,7 @@ import {
 import { useEffect, type ReactNode } from "react";
 
 import { Toaster } from "@/components/ui/sonner";
+import { GlowFundo } from "@/components/glow-fundo";
 import { supabase } from "@/integrations/supabase/client";
 import { limparUsuario, setUsuario } from "@/lib/usuario";
 import { TemaProvider } from "@/lib/tema";
@@ -176,6 +177,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <TemaProvider>
+        <GlowFundo />
         {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
         <Outlet />
         <Toaster position="top-right" />
