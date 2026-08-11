@@ -279,7 +279,7 @@ export function GlowFundo() {
        * A diferença é que agora ele possui
        * um pouco mais de luminosidade.
        */
-      const brilhoFoco = 0.23 + Math.min(velocidade / 35, 1) * 0.08;
+      const brilhoFoco = 0.3 + Math.min(velocidade / 35, 1) * 0.1;
 
       // ----------------------------------------------------------
       // HALO EXTERNO
