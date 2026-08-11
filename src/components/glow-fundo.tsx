@@ -50,8 +50,8 @@ export function GlowFundo() {
 
     type Ponto = { x: number; y: number; nascimento: number; r: number };
     const rastro: Ponto[] = [];
-    const VIDA = 4600; // ms
-    const RAIO_FOCO = 58; // ~116px de diâmetro
+    const VIDA = 3000; // ms (rastro visível por ~3s)
+    const RAIO_FOCO = 36; // ~72px diâmetro (com blur CSS de 18px resulta em ~80-95px visual)
 
     let raf = 0;
     let ultimoMovimento = performance.now();
@@ -65,10 +65,12 @@ export function GlowFundo() {
     };
 
     const desenharLuz = (px: number, py: number, raio: number, alpha: number) => {
+      if (alpha <= 0.001 || raio <= 0) return;
       const g = ctx.createRadialGradient(px, py, 0, px, py, raio);
-      g.addColorStop(0, `rgba(255, 138, 46, ${alpha})`);
-      g.addColorStop(0.45, `rgba(234, 96, 20, ${alpha * 0.45})`);
-      g.addColorStop(1, "rgba(234, 96, 20, 0)");
+      g.addColorStop(0, `rgba(255, 145, 45, ${alpha})`);
+      g.addColorStop(0.4, `rgba(234, 96, 20, ${alpha * 0.55})`);
+      g.addColorStop(0.75, `rgba(215, 75, 10, ${alpha * 0.15})`);
+      g.addColorStop(1, "rgba(215, 75, 10, 0)");
       ctx.fillStyle = g;
       ctx.beginPath();
       ctx.arc(px, py, raio, 0, Math.PI * 2);
@@ -78,9 +80,9 @@ export function GlowFundo() {
     const tick = () => {
       const agora = performance.now();
 
-      // inércia: mola crítica suave (acelera e desacelera sem brusquidão)
-      const k = 0.055;
-      const damp = 0.82;
+      // inércia: mola crítica suave (acelera e desacelera com elegância)
+      const k = 0.06;
+      const damp = 0.83;
       vx = (vx + (alvoX - x) * k) * damp;
       vy = (vy + (alvoY - y) * k) * damp;
       x += vx;
@@ -88,22 +90,23 @@ export function GlowFundo() {
 
       const vel = Math.hypot(vx, vy);
 
-      // amostra do rastro com leve irregularidade orgânica
+      // amostragem fluida do rastro acompanhando a trajetória real da partícula de luz
       const ultimo = rastro[rastro.length - 1];
       const dist = ultimo ? Math.hypot(x - ultimo.x, y - ultimo.y) : Infinity;
-      if (dist > 7) {
+      if (dist > 5) {
         rastro.push({
-          x: x + (Math.random() - 0.5) * 10,
-          y: y + (Math.random() - 0.5) * 10,
+          x: x,
+          y: y,
           nascimento: agora,
-          r: RAIO_FOCO * (0.55 + Math.random() * 0.45),
+          r: RAIO_FOCO * 0.65,
         });
-        if (rastro.length > 340) rastro.shift();
+        if (rastro.length > 200) rastro.shift();
       }
 
       ctx.clearRect(0, 0, w, h);
       ctx.globalCompositeOperation = "lighter";
 
+      // 1. Rastro suave e perceptível que desaparece gradualmente em ~3s
       for (let i = rastro.length - 1; i >= 0; i--) {
         const p = rastro[i];
         if (!p) continue;
@@ -112,18 +115,27 @@ export function GlowFundo() {
           rastro.splice(i, 1);
           continue;
         }
-        const fade = (1 - idade) * (1 - idade); // easing de desaparecimento
-        desenharLuz(p.x, p.y, p.r * (1 + idade * 0.8), 0.022 * fade);
+        const fade = Math.pow(1 - idade, 1.4); // desaparecimento suave e progressivo
+        const alphaRastro = (0.075 + Math.min(vel / 35, 1) * 0.035) * fade;
+        const raioRastro = p.r * (0.85 + (1 - fade) * 0.25);
+        desenharLuz(p.x, p.y, raioRastro, alphaRastro);
       }
 
-      // foco principal: discreto, sem borda definida
-      const brilho = 0.055 + Math.min(vel / 60, 1) * 0.03;
-      desenharLuz(x, y, RAIO_FOCO, brilho);
-      desenharLuz(x, y, RAIO_FOCO * 0.45, brilho * 0.8);
+      // 2. Foco de luz principal (ponto de luz discreto, 18-24% de brilho, com halo suave)
+      const brilho = 0.18 + Math.min(vel / 40, 1) * 0.06;
+
+      // Halo externo sutil (aprox 8-12%)
+      desenharLuz(x, y, RAIO_FOCO * 1.5, brilho * 0.35);
+
+      // Ponto principal de luz
+      desenharLuz(x, y, RAIO_FOCO, brilho * 0.85);
+
+      // Núcleo difuso central
+      desenharLuz(x, y, RAIO_FOCO * 0.4, brilho * 0.45);
 
       ctx.globalCompositeOperation = "source-over";
 
-      const parado = vel < 0.05 && rastro.length === 0 && agora - ultimoMovimento > 400;
+      const parado = vel < 0.05 && rastro.length === 0 && agora - ultimoMovimento > 500;
       if (parado) {
         raf = 0;
         return;
