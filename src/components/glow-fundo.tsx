@@ -51,7 +51,7 @@ export function GlowFundo() {
     type Ponto = { x: number; y: number; nascimento: number; r: number };
     const rastro: Ponto[] = [];
     const VIDA = 3000; // ms (rastro visível por ~3s)
-    const RAIO_FOCO = 36; // ~72px diâmetro (com blur CSS de 18px resulta em ~80-95px visual)
+    const RAIO_FOCO = 86; // ~72px diâmetro (com blur CSS de 18px resulta em ~80-95px visual)
 
     let raf = 0;
     let ultimoMovimento = performance.now();
