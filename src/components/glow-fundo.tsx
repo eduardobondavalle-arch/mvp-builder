@@ -29,7 +29,7 @@ export function GlowFundo() {
     let raf = 0;
     let ativo = false;
 
-    const onMove = (e: PointerEvent) => {
+    const onMove = (e: PointerEvent | MouseEvent) => {
       alvoX = e.clientX / window.innerWidth;
       alvoY = e.clientY / window.innerHeight;
       if (!ativo) {
@@ -71,8 +71,10 @@ export function GlowFundo() {
     };
 
     window.addEventListener("pointermove", onMove, { passive: true });
+    window.addEventListener("mousemove", onMove, { passive: true });
     return () => {
       window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("mousemove", onMove);
       cancelAnimationFrame(raf);
     };
   }, [tema]);
