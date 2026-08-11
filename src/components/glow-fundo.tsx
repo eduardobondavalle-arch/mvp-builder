@@ -50,7 +50,7 @@ export function GlowFundo() {
 
     type Ponto = { x: number; y: number; nascimento: number; r: number };
     const rastro: Ponto[] = [];
-    const VIDA = 2600; // ms
+    const VIDA = 4600; // ms
     const RAIO_FOCO = 58; // ~116px de diâmetro
 
     let raf = 0;
@@ -98,7 +98,7 @@ export function GlowFundo() {
           nascimento: agora,
           r: RAIO_FOCO * (0.55 + Math.random() * 0.45),
         });
-        if (rastro.length > 140) rastro.shift();
+        if (rastro.length > 340) rastro.shift();
       }
 
       ctx.clearRect(0, 0, w, h);
