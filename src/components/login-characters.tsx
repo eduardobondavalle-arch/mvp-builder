@@ -43,9 +43,33 @@ export function LoginCharacters() {
     let mouseX = window.innerWidth / 2;
     let mouseY = window.innerHeight / 2;
 
+    let currentX = 0;
+    let currentY = 0;
+
     let animationFrame = 0;
 
-    function atualizarOlhos() {
+    function handleMouseMove(event: MouseEvent) {
+      mouseX = event.clientX;
+      mouseY = event.clientY;
+    }
+
+    function animate() {
+      const windowCenterX = window.innerWidth / 2;
+      const windowCenterY = window.innerHeight / 2;
+
+      const normalizedX = Math.max(
+        -1,
+        Math.min(1, (mouseX - windowCenterX) / windowCenterX),
+      );
+
+      const normalizedY = Math.max(
+        -1,
+        Math.min(1, (mouseY - windowCenterY) / windowCenterY),
+      );
+
+      currentX += (normalizedX - currentX) * 0.06;
+      currentY += (normalizedY - currentY) * 0.06;
+
       const eyes = container.querySelectorAll<HTMLElement>(".login-eye");
 
       eyes.forEach((eye) => {
@@ -71,17 +95,34 @@ export function LoginCharacters() {
         pupil.style.transform = `translate3d(${x}px, ${y}px, 0)`;
       });
 
-      animationFrame = requestAnimationFrame(atualizarOlhos);
-    }
+      const characters =
+        container.querySelectorAll<HTMLElement>(".login-character");
 
-    function handleMouseMove(event: MouseEvent) {
-      mouseX = event.clientX;
-      mouseY = event.clientY;
+      characters.forEach((character, index) => {
+        const strength = 1 + index * 0.08;
+
+        const moveX = currentX * 18 * strength;
+        const moveY = currentY * 5;
+
+        const stretchX = 1 + Math.abs(currentX) * 0.08 * strength;
+        const stretchY = 1 - Math.abs(currentX) * 0.025;
+
+        const rotation = currentX * 3.5 * strength;
+
+        character.style.transform = `
+          translate3d(${moveX}px, ${moveY}px, 0)
+          rotate(${rotation}deg)
+          scaleX(${stretchX})
+          scaleY(${stretchY})
+        `;
+      });
+
+      animationFrame = requestAnimationFrame(animate);
     }
 
     window.addEventListener("mousemove", handleMouseMove);
 
-    animationFrame = requestAnimationFrame(atualizarOlhos);
+    animationFrame = requestAnimationFrame(animate);
 
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
@@ -95,7 +136,7 @@ export function LoginCharacters() {
       className="relative flex h-[420px] w-[520px] items-end justify-center"
     >
       {/* PERSONAGEM LARANJA */}
-      <div className="relative z-10 h-52 w-52 rounded-t-full bg-orange-500 animate-[loginFloat_5s_ease-in-out_infinite]">
+      <div className="login-character relative z-10 h-52 w-52 origin-bottom rounded-t-full bg-orange-500">
         <div className="absolute left-14 top-16 flex gap-7">
           <Eye size={30} pupilSize={11} />
           <Eye size={30} pupilSize={11} />
@@ -103,7 +144,7 @@ export function LoginCharacters() {
       </div>
 
       {/* PERSONAGEM ROXO */}
-      <div className="relative z-0 -ml-8 h-72 w-36 rounded-t-full bg-violet-600 animate-[loginFloat_4.4s_ease-in-out_infinite]">
+      <div className="login-character relative z-0 -ml-8 h-72 w-36 origin-bottom rounded-t-full bg-violet-600">
         <div className="absolute left-9 top-14 flex gap-4">
           <Eye size={26} pupilSize={9} />
           <Eye size={26} pupilSize={9} />
@@ -111,7 +152,7 @@ export function LoginCharacters() {
       </div>
 
       {/* PERSONAGEM PRETO */}
-      <div className="relative z-20 -ml-6 h-64 w-32 rounded-t-[45%] bg-neutral-900 animate-[loginFloat_4.8s_ease-in-out_infinite]">
+      <div className="login-character relative z-20 -ml-6 h-64 w-32 origin-bottom rounded-t-[45%] bg-neutral-900">
         <div className="absolute left-6 top-10 flex gap-3">
           <Eye size={28} pupilSize={10} />
           <Eye size={28} pupilSize={10} />
@@ -119,7 +160,7 @@ export function LoginCharacters() {
       </div>
 
       {/* PERSONAGEM AMARELO */}
-      <div className="relative z-30 -ml-8 h-56 w-36 rounded-t-full bg-yellow-400 animate-[loginFloat_5.4s_ease-in-out_infinite]">
+      <div className="login-character relative z-30 -ml-8 h-56 w-36 origin-bottom rounded-t-full bg-yellow-400">
         <div className="absolute left-11 top-11">
           <Eye size={28} pupilSize={10} />
         </div>
@@ -128,26 +169,14 @@ export function LoginCharacters() {
       </div>
 
       <style>{`
-        @keyframes loginFloat {
-          0%,
-          100% {
-            transform: translateY(0px);
-          }
-
-          50% {
-            transform: translateY(-7px);
-          }
+        .login-character {
+          transition: transform 80ms linear;
+          will-change: transform;
         }
 
         .login-pupil {
           transition: transform 80ms linear;
           will-change: transform;
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-          [class*="animate-[loginFloat"] {
-            animation: none !important;
-          }
         }
       `}</style>
     </div>
