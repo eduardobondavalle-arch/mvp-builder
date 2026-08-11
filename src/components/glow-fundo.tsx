@@ -69,18 +69,19 @@ export function GlowFundo() {
     // CONFIGURAÇÕES DO EFEITO
     // ============================================================
 
-    // Vida do rastro.
-    // 2800ms = aproximadamente 2,8 segundos.
+    // Tempo de vida do rastro.
+    // O rastro desaparece gradualmente em aproximadamente 2,8 segundos.
     const VIDA_RASTRO = 2800;
 
-    // Ponto principal menor que a versão anterior.
+    // Tamanho do foco principal.
+    // Mantemos pequeno para evitar o efeito de uma grande mancha laranja.
     const RAIO_FOCO = 58;
 
-    // Distância mínima para criar um novo ponto do rastro.
+    // Distância mínima percorrida antes de criar outro ponto.
     // Quanto menor, mais contínuo será o rastro.
     const DISTANCIA_RASTRO = 3;
 
-    // Quantidade máxima de pontos armazenados.
+    // Limite de pontos armazenados.
     const MAX_PONTOS = 240;
 
     // ============================================================
@@ -101,7 +102,7 @@ export function GlowFundo() {
     let visivel = true;
 
     // ============================================================
-    // MOUSE
+    // MOVIMENTO DO MOUSE
     // ============================================================
 
     const onMove = (e: PointerEvent) => {
@@ -124,20 +125,26 @@ export function GlowFundo() {
 
       const gradiente = ctx.createRadialGradient(px, py, 0, px, py, raio);
 
+      // Núcleo laranja mais luminoso
       gradiente.addColorStop(0, `rgba(255, 145, 45, ${alpha})`);
 
+      // Transição suave
       gradiente.addColorStop(0.25, `rgba(255, 120, 30, ${alpha * 0.75})`);
 
+      // Corpo do glow
       gradiente.addColorStop(0.55, `rgba(235, 90, 20, ${alpha * 0.38})`);
 
+      // Halo externo
       gradiente.addColorStop(0.8, `rgba(215, 75, 10, ${alpha * 0.12})`);
 
+      // Transparência total nas bordas
       gradiente.addColorStop(1, "rgba(215, 75, 10, 0)");
 
       ctx.fillStyle = gradiente;
 
       ctx.beginPath();
       ctx.arc(px, py, raio, 0, Math.PI * 2);
+
       ctx.fill();
     };
 
@@ -149,7 +156,7 @@ export function GlowFundo() {
       const agora = performance.now();
 
       // ----------------------------------------------------------
-      // INÉRCIA
+      // INÉRCIA DO FOCO
       // ----------------------------------------------------------
 
       const k = 0.065;
@@ -177,11 +184,12 @@ export function GlowFundo() {
           y,
           nascimento: agora,
 
-          // O rastro é menor que o foco principal.
-          raio: RAIO_FOCO * 0.55,
+          // Rastro ligeiramente maior que antes,
+          // mas ainda menor que o foco principal.
+          raio: RAIO_FOCO * 0.62,
         });
 
-        // Limita memória do canvas.
+        // Evita crescimento excessivo do array.
         if (rastro.length > MAX_PONTOS) {
           rastro.shift();
         }
@@ -193,12 +201,12 @@ export function GlowFundo() {
 
       ctx.clearRect(0, 0, w, h);
 
-      // Adiciona as luzes umas às outras,
-      // criando uma aparência mais luminosa.
+      // Soma as luzes umas às outras.
+      // Isso cria uma aparência mais luminosa e natural.
       ctx.globalCompositeOperation = "lighter";
 
       // ----------------------------------------------------------
-      // RASTRO
+      // DESENHA O RASTRO
       // ----------------------------------------------------------
 
       for (let i = rastro.length - 1; i >= 0; i--) {
@@ -207,9 +215,10 @@ export function GlowFundo() {
         if (!ponto) continue;
 
         const idade = agora - ponto.nascimento;
+
         const progresso = idade / VIDA_RASTRO;
 
-        // Remove pontos antigos.
+        // Remove pontos que já passaram do tempo de vida.
         if (progresso >= 1) {
           rastro.splice(i, 1);
           continue;
@@ -219,26 +228,42 @@ export function GlowFundo() {
         // FADE DO RASTRO
         // --------------------------------------------------------
 
-        // Mantém o rastro perceptível no começo,
-        // depois desaparece progressivamente.
-        const fade = Math.pow(1 - progresso, 1.15);
+        /*
+         * O valor 1.05 deixa o rastro desaparecer
+         * um pouco mais lentamente.
+         *
+         * Isso faz com que ele continue perceptível
+         * durante boa parte dos 2,8 segundos.
+         */
+        const fade = Math.pow(1 - progresso, 1.05);
 
-        // Aumenta a intensidade conforme a velocidade.
+        // --------------------------------------------------------
+        // INTENSIDADE BASEADA NA VELOCIDADE
+        // --------------------------------------------------------
+
         const intensidadeMovimento = Math.min(velocidade / 25, 1);
 
         /*
-         * ANTES:
-         * ~7% a 11%
-         *
-         * AGORA:
-         * ~12% a 20%
-         *
-         * Isso torna o rastro claramente perceptível
-         * sem transformar o fundo em uma mancha laranja.
-         */
-        const alphaRastro = (0.12 + intensidadeMovimento * 0.08) * fade;
+         * Rastro mais visível.
 
-        // O rastro fica levemente menor conforme envelhece.
+         * Antes:
+         * aproximadamente 12% → 20%
+
+         * Agora:
+         * aproximadamente 16% → 27%
+
+         * A intensidade aumenta um pouco quando
+         * o mouse se movimenta mais rapidamente.
+         */
+        const alphaRastro = (0.16 + intensidadeMovimento * 0.11) * fade;
+
+        // --------------------------------------------------------
+        // TAMANHO DO RASTRO
+        // --------------------------------------------------------
+
+        /*
+         * O rastro diminui suavemente conforme envelhece.
+         */
         const raioRastro = ponto.raio * (0.7 + fade * 0.3);
 
         desenharLuz(ponto.x, ponto.y, raioRastro, alphaRastro);
@@ -249,29 +274,35 @@ export function GlowFundo() {
       // ----------------------------------------------------------
 
       /*
-       * O foco foi reduzido.
+       * O foco continua pequeno.
 
-       * A intenção é:
-       * - foco pequeno;
-       * - rastro mais importante;
-       * - nada de uma grande mancha laranja.
+       * A diferença é que agora ele possui
+       * um pouco mais de luminosidade.
        */
+      const brilhoFoco = 0.23 + Math.min(velocidade / 35, 1) * 0.08;
 
-      const brilhoFoco = 0.2 + Math.min(velocidade / 35, 1) * 0.07;
+      // ----------------------------------------------------------
+      // HALO EXTERNO
+      // ----------------------------------------------------------
 
-      // Halo externo
       desenharLuz(x, y, RAIO_FOCO * 1.35, brilhoFoco * 0.3);
 
-      // Corpo principal
+      // ----------------------------------------------------------
+      // CORPO PRINCIPAL
+      // ----------------------------------------------------------
+
       desenharLuz(x, y, RAIO_FOCO, brilhoFoco * 0.8);
 
-      // Núcleo
+      // ----------------------------------------------------------
+      // NÚCLEO
+      // ----------------------------------------------------------
+
       desenharLuz(x, y, RAIO_FOCO * 0.38, brilhoFoco * 0.45);
 
       ctx.globalCompositeOperation = "source-over";
 
       // ----------------------------------------------------------
-      // CONTROLE DA ANIMAÇÃO
+      // CONTROLE DO REQUESTANIMATIONFRAME
       // ----------------------------------------------------------
 
       const semVelocidade = velocidade < 0.03;
@@ -281,11 +312,11 @@ export function GlowFundo() {
       const passouTempo = agora - ultimoMovimento > 500;
 
       /*
-       * Mesmo quando o mouse para,
-       * o RAF continua enquanto existir rastro.
-       *
-       * Isso é importante para permitir que o rastro
-       * desapareça naturalmente durante os ~3 segundos.
+       * Quando o mouse para, o RAF continua enquanto
+       * houver rastro na tela.
+
+       * Dessa maneira o rastro consegue desaparecer
+       * naturalmente durante os ~2,8 segundos.
        */
       if (semVelocidade && semRastro && passouTempo) {
         raf = 0;
@@ -316,7 +347,9 @@ export function GlowFundo() {
     // EVENTOS
     // ============================================================
 
-    window.addEventListener("pointermove", onMove, { passive: true });
+    window.addEventListener("pointermove", onMove, {
+      passive: true,
+    });
 
     window.addEventListener("resize", redimensionar);
 
@@ -342,6 +375,7 @@ export function GlowFundo() {
     };
   }, [tema]);
 
+  // Só renderiza o efeito no modo escuro.
   if (tema !== "dark") return null;
 
   return (
