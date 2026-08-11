@@ -119,10 +119,7 @@ export function LoginCharacters() {
       });
 
       /*
-       * PERSONAGEM LARANJA
-       *
-       * Mais pesado e curioso.
-       * Inclina bastante para os lados.
+       * LARANJA
        */
       const orange =
         container.querySelector<HTMLElement>(
@@ -154,54 +151,41 @@ export function LoginCharacters() {
       }
 
       /*
-       * PERSONAGEM ROXO
-       *
-       * O mais elástico.
-       * Estica bastante para cima.
+       * ROXO SVG
        */
       const purple =
-        container.querySelector<HTMLElement>(
+        container.querySelector<SVGSVGElement>(
           '[data-character="purple"]',
         );
 
       if (purple) {
-        const x = smoothX * 31;
-
         const lookingUp = Math.max(0, -smoothY);
-
         const lookingDown = Math.max(0, smoothY);
 
-        const y =
-          smoothY * 9 -
-          lookingUp * 20;
-
-        const rotate = smoothX * 10;
-
-        const stretchX =
-          1 + Math.abs(smoothX) * 0.08;
+        const moveX = smoothX * 26;
+        const moveY = smoothY * 8;
 
         const stretchY =
           1 +
-          lookingUp * 0.26 -
-          lookingDown * 0.08;
+          lookingUp * 0.34 -
+          lookingDown * 0.07;
 
-        const skew =
-          smoothX * -7;
+        const stretchX =
+          1 +
+          Math.abs(smoothX) * 0.08;
+
+        const rotate = smoothX * 7;
 
         purple.style.transform = `
-          translate3d(${x}px, ${y}px, 0)
+          translate3d(${moveX}px, ${moveY}px, 0)
           rotate(${rotate}deg)
-          skewX(${skew}deg)
           scaleX(${stretchX})
           scaleY(${stretchY})
         `;
       }
 
       /*
-       * PERSONAGEM PRETO
-       *
-       * Mais rápido e nervoso.
-       * Reage também à velocidade do mouse.
+       * PRETO
        */
       const black =
         container.querySelector<HTMLElement>(
@@ -218,8 +202,7 @@ export function LoginCharacters() {
           smoothX * 34 +
           speedReaction;
 
-        const y =
-          smoothY * 10;
+        const y = smoothY * 10;
 
         const rotate =
           smoothX * 12 +
@@ -244,11 +227,7 @@ export function LoginCharacters() {
       }
 
       /*
-       * PERSONAGEM AMARELO
-       *
-       * Curioso.
-       * Se projeta bastante para os lados
-       * e levanta quando o mouse sobe.
+       * AMARELO
        */
       const yellow =
         container.querySelector<HTMLElement>(
@@ -258,15 +237,13 @@ export function LoginCharacters() {
       if (yellow) {
         const lookingUp = Math.max(0, -smoothY);
 
-        const x =
-          smoothX * 38;
+        const x = smoothX * 38;
 
         const y =
           smoothY * 7 -
           lookingUp * 12;
 
-        const rotate =
-          smoothX * 13;
+        const rotate = smoothX * 13;
 
         const stretchX =
           1 +
@@ -311,10 +288,9 @@ export function LoginCharacters() {
   return (
     <div
       ref={containerRef}
-      className="relative flex h-[430px] w-[540px] items-end justify-center"
+      className="relative flex h-[430px] w-[560px] items-end justify-center"
     >
       {/* LARANJA */}
-
       <div className="relative z-10 flex h-52 w-52 items-end">
         <div
           data-character="orange"
@@ -342,37 +318,48 @@ export function LoginCharacters() {
         </div>
       </div>
 
-      {/* ROXO */}
-
-      <div className="relative z-0 -ml-8 flex h-72 w-36 items-end">
-        <div
+      {/* ROXO SVG */}
+      <div className="relative z-0 -ml-8 flex h-72 w-40 items-end">
+        <svg
           data-character="purple"
-          className="
-            login-character
-            relative
-            h-72
-            w-36
-            origin-bottom
-            rounded-t-full
-            bg-violet-600
-          "
+          className="login-character h-72 w-40 overflow-visible"
+          viewBox="0 0 160 288"
         >
-          <div className="absolute left-9 top-14 flex gap-4">
-            <Eye
-              size={26}
-              pupilSize={9}
-            />
+          <path
+            d="
+              M 32 288
+              L 32 120
+              C 32 55, 48 18, 80 18
+              C 112 18, 128 55, 128 120
+              L 128 288
+              Z
+            "
+            fill="#7c3aed"
+          />
 
-            <Eye
-              size={26}
-              pupilSize={9}
-            />
-          </div>
-        </div>
+          <foreignObject
+            x="47"
+            y="52"
+            width="70"
+            height="42"
+            className="pointer-events-none"
+          >
+            <div className="flex gap-4">
+              <Eye
+                size={26}
+                pupilSize={9}
+              />
+
+              <Eye
+                size={26}
+                pupilSize={9}
+              />
+            </div>
+          </foreignObject>
+        </svg>
       </div>
 
       {/* PRETO */}
-
       <div className="relative z-20 -ml-6 flex h-64 w-32 items-end">
         <div
           data-character="black"
@@ -401,7 +388,6 @@ export function LoginCharacters() {
       </div>
 
       {/* AMARELO */}
-
       <div className="relative z-30 -ml-8 flex h-56 w-36 items-end">
         <div
           data-character="yellow"
@@ -439,7 +425,6 @@ export function LoginCharacters() {
       <style>{`
         .login-character {
           will-change: transform;
-          transition: none;
           transform-origin: center bottom;
         }
 
