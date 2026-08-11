@@ -406,41 +406,25 @@
   contain: strict;
 }
 
-.glow-camada {
+/* base estática muito sutil (também usada em mobile / reduced-motion) */
+.glow-estatico {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  border-radius: 9999px;
+  inset: 0;
+  background: radial-gradient(
+    60vmax 40vmax at 50% -8%,
+    oklch(0.62 0.16 38 / 8%) 0%,
+    transparent 70%
+  );
+}
+
+.glow-canvas {
+  position: absolute;
+  inset: 0;
+  filter: blur(56px);
   will-change: transform;
   transform: translate3d(0, 0, 0);
   opacity: 0;
-  animation: glow-surgir 1.2s var(--ease-out-soft) 0.1s forwards;
-}
-
-.glow-camada-a {
-  width: 62vmax;
-  height: 62vmax;
-  margin: -31vmax 0 0 -31vmax;
-  background: radial-gradient(
-    circle at center,
-    oklch(0.68 0.19 42 / 26%) 0%,
-    oklch(0.68 0.19 42 / 12%) 38%,
-    transparent 70%
-  );
-  filter: blur(140px);
-}
-
-.glow-camada-b {
-  width: 96vmax;
-  height: 96vmax;
-  margin: -48vmax 0 0 -48vmax;
-  background: radial-gradient(
-    circle at center,
-    oklch(0.62 0.16 34 / 14%) 0%,
-    oklch(0.62 0.16 34 / 7%) 45%,
-    transparent 72%
-  );
-  filter: blur(220px);
+  animation: glow-surgir 1s var(--ease-out-soft) 0.1s forwards;
 }
 
 @keyframes glow-surgir {
@@ -450,15 +434,13 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .glow-camada {
-    animation: none !important;
-    opacity: 1 !important;
-    transform: none !important;
-    will-change: auto;
+  .glow-canvas {
+    display: none !important;
   }
 }
 
 .pdf-exportando .glow-fundo {
   display: none !important;
 }
+
 
