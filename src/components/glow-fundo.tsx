@@ -106,6 +106,7 @@ export function GlowFundo() {
 
       for (let i = rastro.length - 1; i >= 0; i--) {
         const p = rastro[i];
+        if (!p) continue;
         const idade = (agora - p.nascimento) / VIDA;
         if (idade >= 1) {
           rastro.splice(i, 1);
