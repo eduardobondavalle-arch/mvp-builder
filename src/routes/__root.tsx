@@ -72,6 +72,21 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
           >
             Go home
           </a>
+          <button
+            onClick={async () => {
+              try {
+                await supabase.auth.signOut({ scope: "local" });
+              } catch {
+                /* sessão já inválida */
+              }
+              limparUsuario();
+              window.location.href = "/auth";
+            }}
+            className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+          >
+            Entrar novamente
+          </button>
+
         </div>
       </div>
     </div>
