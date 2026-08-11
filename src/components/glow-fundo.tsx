@@ -13,6 +13,7 @@ export function GlowFundo() {
   const camadaB = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    console.log("GLOW effect", tema);
     if (tema !== "dark") return;
 
     const semMovimento = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -39,6 +40,7 @@ export function GlowFundo() {
     };
 
     const tick = () => {
+      if (!(window as any).__g) { (window as any).__g = 1; console.log("GLOW tick"); }
       // interpolação suave: camada A mais responsiva, B lenta e maior
       aX += (alvoX - aX) * 0.035;
       aY += (alvoY - aY) * 0.035;
