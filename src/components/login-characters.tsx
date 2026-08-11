@@ -46,14 +46,23 @@ export function LoginCharacters() {
     let smoothX = 0;
     let smoothY = 0;
 
+    let targetX = 0;
+    let targetY = 0;
+
     let velocityX = 0;
+    let velocityY = 0;
+
     let lastMouseX = mouseX;
+    let lastMouseY = mouseY;
 
     let animationFrame = 0;
 
     function handleMouseMove(event: MouseEvent) {
       velocityX = event.clientX - lastMouseX;
+      velocityY = event.clientY - lastMouseY;
+
       lastMouseX = event.clientX;
+      lastMouseY = event.clientY;
 
       mouseX = event.clientX;
       mouseY = event.clientY;
@@ -63,24 +72,33 @@ export function LoginCharacters() {
       const centerX = window.innerWidth / 2;
       const centerY = window.innerHeight / 2;
 
-      const normalizedX = Math.max(
+      targetX = Math.max(
         -1,
         Math.min(1, (mouseX - centerX) / centerX),
       );
 
-      const normalizedY = Math.max(
+      targetY = Math.max(
         -1,
         Math.min(1, (mouseY - centerY) / centerY),
       );
 
-      smoothX += (normalizedX - smoothX) * 0.055;
-      smoothY += (normalizedY - smoothY) * 0.055;
+      /*
+       * Inércia.
+       *
+       * Valores menores deixam o movimento mais "mole".
+       */
+      smoothX += (targetX - smoothX) * 0.045;
+      smoothY += (targetY - smoothY) * 0.045;
 
-      velocityX *= 0.88;
+      velocityX *= 0.86;
+      velocityY *= 0.86;
 
       /*
+       * ==================================================
        * OLHOS
+       * ==================================================
        */
+
       const eyes =
         container.querySelectorAll<HTMLElement>(".login-eye");
 
@@ -101,166 +119,344 @@ export function LoginCharacters() {
         const angle = Math.atan2(dy, dx);
 
         const distance = Math.min(
-          Math.sqrt(dx * dx + dy * dy) / 250,
+          Math.sqrt(dx * dx + dy * dy) / 260,
           1,
         );
 
         const maxMove =
           Math.min(rect.width, rect.height) *
-          0.2 *
+          0.21 *
           distance;
 
         const pupilX = Math.cos(angle) * maxMove;
         const pupilY = Math.sin(angle) * maxMove;
 
         pupil.style.transform = `
-          translate3d(${pupilX}px, ${pupilY}px, 0)
+          translate3d(
+            ${pupilX}px,
+            ${pupilY}px,
+            0
+          )
         `;
       });
 
       /*
+       * Valores auxiliares.
+       */
+
+      const lookingUp = Math.max(0, -smoothY);
+      const lookingDown = Math.max(0, smoothY);
+
+      /*
+       * ==================================================
        * LARANJA
+       * ==================================================
+       *
+       * Largo, pesado e mais lento.
        */
-      const orange =
-        container.querySelector<HTMLElement>(
-          '[data-character="orange"]',
+
+      const orangePath =
+        container.querySelector<SVGPathElement>(
+          '[data-body="orange"]',
         );
 
-      if (orange) {
-        const x = smoothX * 24;
-        const y = smoothY * 7;
+      const orangeFace =
+        container.querySelector<SVGForeignObjectElement>(
+          '[data-face="orange"]',
+        );
 
-        const rotate = smoothX * 8;
+      if (orangePath) {
+        const headX = smoothX * 22;
 
-        const horizontalStretch =
-          1 + Math.abs(smoothX) * 0.12;
+        const topY =
+          30 -
+          lookingUp * 28 +
+          lookingDown * 12;
 
-        const verticalSquash =
-          1 - Math.abs(smoothX) * 0.05;
+        const leftShoulderX =
+          18 + smoothX * 7;
 
-        const upwardStretch =
-          smoothY < 0 ? Math.abs(smoothY) * 0.14 : 0;
+        const rightShoulderX =
+          190 + smoothX * 7;
 
-        orange.style.transform = `
-          translate3d(${x}px, ${y}px, 0)
-          rotate(${rotate}deg)
-          skewX(${smoothX * -3}deg)
-          scaleX(${horizontalStretch})
-          scaleY(${verticalSquash + upwardStretch})
-        `;
+        orangePath.setAttribute(
+          "d",
+          `
+            M 15 208
+
+            L ${leftShoulderX} 112
+
+            C
+              ${leftShoulderX} ${70 - lookingUp * 8},
+              ${55 + headX} ${topY},
+              ${104 + headX} ${topY}
+
+            C
+              ${155 + headX} ${topY},
+              ${rightShoulderX} ${70 - lookingUp * 8},
+              ${rightShoulderX} 112
+
+            L 193 208
+
+            Z
+          `,
+        );
+      }
+
+      if (orangeFace) {
+        orangeFace.setAttribute(
+          "x",
+          String(58 + smoothX * 20),
+        );
+
+        orangeFace.setAttribute(
+          "y",
+          String(
+            62 -
+              lookingUp * 20 +
+              lookingDown * 8,
+          ),
+        );
       }
 
       /*
-       * ROXO SVG
+       * ==================================================
+       * ROXO
+       * ==================================================
+       *
+       * O personagem mais elástico.
        */
-      const purple =
-        container.querySelector<SVGSVGElement>(
-          '[data-character="purple"]',
+
+      const purplePath =
+        container.querySelector<SVGPathElement>(
+          '[data-body="purple"]',
         );
 
-      if (purple) {
-        const lookingUp = Math.max(0, -smoothY);
-        const lookingDown = Math.max(0, smoothY);
+      const purpleFace =
+        container.querySelector<SVGForeignObjectElement>(
+          '[data-face="purple"]',
+        );
 
-        const moveX = smoothX * 26;
-        const moveY = smoothY * 8;
+      if (purplePath) {
+        const headX = smoothX * 30;
 
-        const stretchY =
-          1 +
-          lookingUp * 0.34 -
-          lookingDown * 0.07;
+        const top =
+          20 -
+          lookingUp * 52 +
+          lookingDown * 14;
 
-        const stretchX =
-          1 +
-          Math.abs(smoothX) * 0.08;
+        const leftNeck =
+          29 + smoothX * 5;
 
-        const rotate = smoothX * 7;
+        const rightNeck =
+          131 + smoothX * 5;
 
-        purple.style.transform = `
-          translate3d(${moveX}px, ${moveY}px, 0)
-          rotate(${rotate}deg)
-          scaleX(${stretchX})
-          scaleY(${stretchY})
-        `;
+        purplePath.setAttribute(
+          "d",
+          `
+            M 28 288
+
+            L ${leftNeck} 116
+
+            C
+              ${leftNeck} ${62 - lookingUp * 14},
+              ${48 + headX} ${top},
+              ${80 + headX} ${top}
+
+            C
+              ${112 + headX} ${top},
+              ${rightNeck} ${62 - lookingUp * 14},
+              ${rightNeck} 116
+
+            L 132 288
+
+            Z
+          `,
+        );
+      }
+
+      if (purpleFace) {
+        purpleFace.setAttribute(
+          "x",
+          String(46 + smoothX * 28),
+        );
+
+        purpleFace.setAttribute(
+          "y",
+          String(
+            48 -
+              lookingUp * 44 +
+              lookingDown * 10,
+          ),
+        );
       }
 
       /*
+       * ==================================================
        * PRETO
+       * ==================================================
+       *
+       * Mais agitado. Reage à velocidade do mouse.
        */
-      const black =
-        container.querySelector<HTMLElement>(
-          '[data-character="black"]',
+
+      const blackPath =
+        container.querySelector<SVGPathElement>(
+          '[data-body="black"]',
         );
 
-      if (black) {
-        const speedReaction = Math.max(
+      const blackFace =
+        container.querySelector<SVGForeignObjectElement>(
+          '[data-face="black"]',
+        );
+
+      if (blackPath) {
+        const speedX = Math.max(
           -10,
-          Math.min(10, velocityX * 0.12),
+          Math.min(10, velocityX * 0.14),
         );
 
-        const x =
-          smoothX * 34 +
-          speedReaction;
+        const headX =
+          smoothX * 34 + speedX;
 
-        const y = smoothY * 10;
+        const top =
+          16 -
+          lookingUp * 34 +
+          lookingDown * 9;
 
-        const rotate =
-          smoothX * 12 +
-          speedReaction * 0.25;
+        blackPath.setAttribute(
+          "d",
+          `
+            M 20 256
 
-        const stretchX =
-          1 +
-          Math.abs(smoothX) * 0.1 +
-          Math.abs(speedReaction) * 0.003;
+            L ${22 + smoothX * 5} 92
 
-        const stretchY =
-          1 -
-          Math.abs(smoothX) * 0.04;
+            C
+              ${23 + smoothX * 5} 48,
+              ${39 + headX} ${top},
+              ${64 + headX} ${top}
 
-        black.style.transform = `
-          translate3d(${x}px, ${y}px, 0)
-          rotate(${rotate}deg)
-          skewX(${smoothX * -5}deg)
-          scaleX(${stretchX})
-          scaleY(${stretchY})
-        `;
+            C
+              ${91 + headX} ${top},
+              ${107 + smoothX * 5} 48,
+              ${108 + smoothX * 5} 92
+
+            L 108 256
+
+            Z
+          `,
+        );
+      }
+
+      if (blackFace) {
+        const speedFace = Math.max(
+          -8,
+          Math.min(8, velocityX * 0.1),
+        );
+
+        blackFace.setAttribute(
+          "x",
+          String(
+            28 +
+              smoothX * 31 +
+              speedFace,
+          ),
+        );
+
+        blackFace.setAttribute(
+          "y",
+          String(
+            39 -
+              lookingUp * 27 +
+              lookingDown * 7,
+          ),
+        );
       }
 
       /*
+       * ==================================================
        * AMARELO
+       * ==================================================
+       *
+       * Curioso, puxa o rosto bastante para o cursor.
        */
-      const yellow =
-        container.querySelector<HTMLElement>(
-          '[data-character="yellow"]',
+
+      const yellowPath =
+        container.querySelector<SVGPathElement>(
+          '[data-body="yellow"]',
         );
 
-      if (yellow) {
-        const lookingUp = Math.max(0, -smoothY);
+      const yellowFace =
+        container.querySelector<SVGForeignObjectElement>(
+          '[data-face="yellow"]',
+        );
 
-        const x = smoothX * 38;
+      const yellowMouth =
+        container.querySelector<SVGRectElement>(
+          '[data-mouth="yellow"]',
+        );
 
-        const y =
-          smoothY * 7 -
-          lookingUp * 12;
+      if (yellowPath) {
+        const headX = smoothX * 38;
 
-        const rotate = smoothX * 13;
+        const top =
+          24 -
+          lookingUp * 31 +
+          lookingDown * 11;
 
-        const stretchX =
-          1 +
-          Math.abs(smoothX) * 0.15;
+        yellowPath.setAttribute(
+          "d",
+          `
+            M 18 224
 
-        const stretchY =
-          1 +
-          lookingUp * 0.12 -
-          Math.abs(smoothX) * 0.04;
+            L ${20 + smoothX * 5} 92
 
-        yellow.style.transform = `
-          translate3d(${x}px, ${y}px, 0)
-          rotate(${rotate}deg)
-          skewX(${smoothX * -6}deg)
-          scaleX(${stretchX})
-          scaleY(${stretchY})
-        `;
+            C
+              ${22 + smoothX * 5} 49,
+              ${44 + headX} ${top},
+              ${72 + headX} ${top}
+
+            C
+              ${104 + headX} ${top},
+              ${123 + smoothX * 5} 49,
+              ${124 + smoothX * 5} 92
+
+            L 126 224
+
+            Z
+          `,
+        );
+      }
+
+      if (yellowFace) {
+        yellowFace.setAttribute(
+          "x",
+          String(46 + smoothX * 35),
+        );
+
+        yellowFace.setAttribute(
+          "y",
+          String(
+            45 -
+              lookingUp * 26 +
+              lookingDown * 8,
+          ),
+        );
+      }
+
+      if (yellowMouth) {
+        yellowMouth.setAttribute(
+          "x",
+          String(49 + smoothX * 29),
+        );
+
+        yellowMouth.setAttribute(
+          "y",
+          String(
+            101 -
+              lookingUp * 20 +
+              lookingDown * 5,
+          ),
+        );
       }
 
       animationFrame =
@@ -288,148 +484,176 @@ export function LoginCharacters() {
   return (
     <div
       ref={containerRef}
-      className="relative flex h-[430px] w-[560px] items-end justify-center"
+      className="relative flex h-[450px] w-[580px] items-end justify-center"
     >
-      {/* LARANJA */}
-      <div className="relative z-10 flex h-52 w-52 items-end">
-        <div
-          data-character="orange"
-          className="
-            login-character
-            relative
-            h-52
-            w-52
-            origin-bottom
-            rounded-t-full
-            bg-orange-500
-          "
-        >
-          <div className="absolute left-14 top-16 flex gap-7">
-            <Eye
-              size={30}
-              pupilSize={11}
-            />
+      {/* ============================================
+          LARANJA
+      ============================================ */}
 
-            <Eye
-              size={30}
-              pupilSize={11}
-            />
-          </div>
-        </div>
+      <div className="relative z-10 flex h-[208px] w-[208px] items-end">
+        <svg
+          className="h-[208px] w-[208px] overflow-visible"
+          viewBox="0 0 208 208"
+        >
+          <path
+            data-body="orange"
+            d="
+              M 15 208
+              L 18 112
+              C 18 70, 55 30, 104 30
+              C 155 30, 190 70, 190 112
+              L 193 208
+              Z
+            "
+            fill="#f97316"
+          />
+
+          <foreignObject
+            data-face="orange"
+            x="58"
+            y="62"
+            width="100"
+            height="50"
+            className="pointer-events-none overflow-visible"
+          >
+            <div className="flex gap-7">
+              <Eye size={30} pupilSize={11} />
+              <Eye size={30} pupilSize={11} />
+            </div>
+          </foreignObject>
+        </svg>
       </div>
 
-      {/* ROXO SVG */}
+      {/* ============================================
+          ROXO
+      ============================================ */}
+
       <div className="relative z-0 -ml-8 flex h-72 w-40 items-end">
         <svg
-          data-character="purple"
-          className="login-character h-72 w-40 overflow-visible"
+          className="h-72 w-40 overflow-visible"
           viewBox="0 0 160 288"
         >
           <path
+            data-body="purple"
             d="
-              M 32 288
-              L 32 120
-              C 32 55, 48 18, 80 18
-              C 112 18, 128 55, 128 120
-              L 128 288
+              M 28 288
+              L 29 116
+              C 29 62, 48 20, 80 20
+              C 112 20, 131 62, 131 116
+              L 132 288
               Z
             "
             fill="#7c3aed"
           />
 
           <foreignObject
-            x="47"
-            y="52"
-            width="70"
-            height="42"
-            className="pointer-events-none"
+            data-face="purple"
+            x="46"
+            y="48"
+            width="82"
+            height="48"
+            className="pointer-events-none overflow-visible"
           >
             <div className="flex gap-4">
-              <Eye
-                size={26}
-                pupilSize={9}
-              />
-
-              <Eye
-                size={26}
-                pupilSize={9}
-              />
+              <Eye size={26} pupilSize={9} />
+              <Eye size={26} pupilSize={9} />
             </div>
           </foreignObject>
         </svg>
       </div>
 
-      {/* PRETO */}
-      <div className="relative z-20 -ml-6 flex h-64 w-32 items-end">
-        <div
-          data-character="black"
-          className="
-            login-character
-            relative
-            h-64
-            w-32
-            origin-bottom
-            rounded-t-[45%]
-            bg-neutral-900
-          "
-        >
-          <div className="absolute left-6 top-10 flex gap-3">
-            <Eye
-              size={28}
-              pupilSize={10}
-            />
+      {/* ============================================
+          PRETO
+      ============================================ */}
 
-            <Eye
-              size={28}
-              pupilSize={10}
-            />
-          </div>
-        </div>
+      <div className="relative z-20 -ml-6 flex h-64 w-32 items-end">
+        <svg
+          className="h-64 w-32 overflow-visible"
+          viewBox="0 0 128 256"
+        >
+          <path
+            data-body="black"
+            d="
+              M 20 256
+              L 22 92
+              C 23 48, 39 16, 64 16
+              C 91 16, 107 48, 108 92
+              L 108 256
+              Z
+            "
+            className="fill-neutral-900 dark:fill-neutral-950"
+          />
+
+          <foreignObject
+            data-face="black"
+            x="28"
+            y="39"
+            width="82"
+            height="50"
+            className="pointer-events-none overflow-visible"
+          >
+            <div className="flex gap-3">
+              <Eye size={28} pupilSize={10} />
+              <Eye size={28} pupilSize={10} />
+            </div>
+          </foreignObject>
+        </svg>
       </div>
 
-      {/* AMARELO */}
-      <div className="relative z-30 -ml-8 flex h-56 w-36 items-end">
-        <div
-          data-character="yellow"
-          className="
-            login-character
-            relative
-            h-56
-            w-36
-            origin-bottom
-            rounded-t-full
-            bg-yellow-400
-          "
-        >
-          <div className="absolute left-11 top-11">
-            <Eye
-              size={28}
-              pupilSize={10}
-            />
-          </div>
+      {/* ============================================
+          AMARELO
+      ============================================ */}
 
-          <div
-            className="
-              absolute
-              left-12
-              top-24
-              h-2
-              w-10
-              rounded-full
-              bg-black
+      <div className="relative z-30 -ml-8 flex h-56 w-36 items-end">
+        <svg
+          className="h-56 w-36 overflow-visible"
+          viewBox="0 0 144 224"
+        >
+          <path
+            data-body="yellow"
+            d="
+              M 18 224
+              L 20 92
+              C 22 49, 44 24, 72 24
+              C 104 24, 123 49, 124 92
+              L 126 224
+              Z
             "
+            fill="#facc15"
           />
-        </div>
+
+          <foreignObject
+            data-face="yellow"
+            x="46"
+            y="45"
+            width="55"
+            height="45"
+            className="pointer-events-none overflow-visible"
+          >
+            <div>
+              <Eye size={28} pupilSize={10} />
+            </div>
+          </foreignObject>
+
+          <rect
+            data-mouth="yellow"
+            x="49"
+            y="101"
+            width="40"
+            height="8"
+            rx="4"
+            fill="black"
+          />
+        </svg>
       </div>
 
       <style>{`
-        .login-character {
-          will-change: transform;
-          transform-origin: center bottom;
-        }
-
         .login-pupil {
           will-change: transform;
+        }
+
+        [data-body] {
+          will-change: d;
         }
       `}</style>
     </div>
