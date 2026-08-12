@@ -580,7 +580,7 @@ function RelatoriosPage() {
           <div data-pdf-page className="space-y-4 bg-background p-4">
             <section className="panel overflow-hidden p-6">
               <h3 className="mb-4 text-base font-semibold">
-                Negociações paradas há mais de 15 dias
+                Negociações paradas há mais de 3 dias
               </h3>
               <Tabela
                 cabecalho={["Cliente", "Consultor", "Etapa", "Última movimentação"]}
