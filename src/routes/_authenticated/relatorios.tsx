@@ -507,14 +507,8 @@ function RelatoriosPage() {
               <section className="panel overflow-hidden p-6">
                 <h3 className="mb-4 text-base font-semibold">Conversão por canal de origem</h3>
                 <Tabela
-                  cabecalho={["Canal", "Propostas", "Contratos", "Conversão", "VGL"]}
-                  linhas={canaisConv.map((c) => [
-                    c.nome,
-                    String(c.propostas),
-                    String(c.contratos),
-                    pct(c.conversao, 0),
-                    brl(c.vgl),
-                  ])}
+                  cabecalho={["Canal", "Prop.", "VGL"]}
+                  linhas={canaisConv.map((c) => [c.nome, String(c.propostas), brl(c.vgl)])}
                 />
               </section>
 
@@ -586,7 +580,7 @@ function RelatoriosPage() {
           <div data-pdf-page className="space-y-4 bg-background p-4">
             <section className="panel overflow-hidden p-6">
               <h3 className="mb-4 text-base font-semibold">
-                Negociações paradas há mais de 15 dias
+                Negociações paradas há mais de 3 dias
               </h3>
               <Tabela
                 cabecalho={["Cliente", "Consultor", "Etapa", "Última movimentação"]}

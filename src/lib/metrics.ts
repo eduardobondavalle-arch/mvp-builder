@@ -420,7 +420,7 @@ export function conversaoPorCanal(jornadas: Jornada[], canais: Canal[]) {
       };
     })
     .filter((c) => c.propostas > 0)
-    .sort((a, b) => b.conversao - a.conversao);
+    .sort((a, b) => b.propostas - a.propostas);
 }
 
 export function motivosDePerda(
@@ -438,7 +438,7 @@ export function motivosDePerda(
 }
 
 /** Negociações paradas: sem movimentação há mais de N dias e ainda em andamento. */
-export function negociacoesParadas(jornadas: Jornada[], dias = 15) {
+export function negociacoesParadas(jornadas: Jornada[], dias = 3) {
   const limite = Date.now() - dias * 86400000;
   return jornadas
     .filter((j) => j.etapa === "proposta" || j.etapa === "fechamento")
