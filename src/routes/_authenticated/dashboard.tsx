@@ -488,8 +488,6 @@ function Dashboard() {
                 <tr className="border-b border-border text-left">
                   <th className="label-caps px-6 py-3">Canal</th>
                   <th className="label-caps px-3 py-3">Prop.</th>
-                  <th className="label-caps px-3 py-3">Contr.</th>
-                  <th className="label-caps px-3 py-3">Conv.</th>
                   <th className="label-caps px-6 py-3 text-right">VGL</th>
                 </tr>
               </thead>
@@ -498,14 +496,12 @@ function Dashboard() {
                   <tr key={c.nome} className="border-b border-border/50 last:border-0">
                     <td className="px-6 py-3">{c.nome}</td>
                     <td className="px-3 py-3 font-mono text-xs">{c.propostas}</td>
-                    <td className="px-3 py-3 font-mono text-xs">{c.contratos}</td>
-                    <td className="px-3 py-3 font-mono text-xs">{pct(c.conversao, 0)}</td>
                     <td className="px-6 py-3 text-right font-mono text-xs">{brl(c.vgl)}</td>
                   </tr>
                 ))}
                 {canaisConv.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="px-6 py-6 text-sm text-muted-foreground">
+                    <td colSpan={3} className="px-6 py-6 text-sm text-muted-foreground">
                       Sem propostas no recorte selecionado.
                     </td>
                   </tr>
