@@ -420,7 +420,7 @@ export function conversaoPorCanal(jornadas: Jornada[], canais: Canal[]) {
       };
     })
     .filter((c) => c.propostas > 0)
-    .sort((a, b) => b.conversao - a.conversao);
+    .sort((a, b) => b.propostas - a.propostas);
 }
 
 export function motivosDePerda(
