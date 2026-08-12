@@ -203,6 +203,12 @@ function Dashboard() {
         : "Fechamento + contrato assinado",
     },
     {
+      label: "VGL em Proposta",
+      value: brl(ind.vglProposta),
+      icon: Wallet,
+      hint: `${ind.propostasAbertas} cards na coluna Proposta`,
+    },
+    {
       label: "VGL Assinado",
       value: brl(ind.vglAssinado),
       icon: Handshake,
