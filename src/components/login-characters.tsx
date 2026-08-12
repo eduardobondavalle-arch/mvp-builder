@@ -185,6 +185,8 @@ export function LoginCharacters({
     function animateEyes() {
       const state = physics.current;
 
+      if (!stage) return;
+
       const eyes =
         stage.querySelectorAll<HTMLElement>(
           ".blob-eye",
