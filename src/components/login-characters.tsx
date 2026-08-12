@@ -74,7 +74,7 @@ export function LoginCharacters({
        * mas sem perder completamente
        * o movimento natural.
        */
-      if (blobState === "tracking") {
+      if (activeField === "email") {
         extraX = 8 + index * 2;
         extraY = -2;
 
