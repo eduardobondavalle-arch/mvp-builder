@@ -14,7 +14,9 @@ import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Acesso restrito | Adim Aluguéis" },
+      {
+        title: "Acesso restrito | Adim Aluguéis",
+      },
       {
         name: "description",
         content:
@@ -48,35 +50,65 @@ function AuthPage() {
 
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
-  const [modo, setModo] = useState<"login" | "recuperar">("login");
-  const [carregando, setCarregando] = useState(false);
 
+  const [modo, setModo] = useState<
+    "login" | "recuperar"
+  >("login");
+
+  const [carregando, setCarregando] =
+    useState(false);
+
+  /*
+   * Informa aos personagens qual campo
+   * está sendo utilizado no momento.
+   */
+  const [activeField, setActiveField] =
+    useState<
+      "none" | "email" | "password"
+    >("none");
+
+  /*
+   * Verifica se o usuário já está
+   * autenticado.
+   */
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (data.user) {
-        navigate({
-          to: "/dashboard",
-          replace: true,
-        });
-      }
-    });
+    supabase.auth
+      .getUser()
+      .then(({ data }) => {
+        if (data.user) {
+          navigate({
+            to: "/dashboard",
+            replace: true,
+          });
+        }
+      });
   }, [navigate]);
 
-  async function entrar(e: React.FormEvent) {
+  /*
+   * LOGIN
+   */
+  async function entrar(
+    e: React.FormEvent,
+  ) {
     e.preventDefault();
 
     setCarregando(true);
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
-      password: senha,
-    });
+    const { error } =
+      await supabase.auth.signInWithPassword(
+        {
+          email: email.trim(),
+          password: senha,
+        },
+      );
 
     setCarregando(false);
 
     if (error) {
       toast.error(
-        error.message.toLowerCase().includes("invalid")
+        error.message
+          .toLowerCase()
+          .includes("invalid")
           ? "E-mail ou senha incorretos."
           : "Não foi possível entrar. Tente novamente.",
       );
@@ -90,22 +122,31 @@ function AuthPage() {
     });
   }
 
-  async function recuperar(e: React.FormEvent) {
+  /*
+   * RECUPERAÇÃO DE SENHA
+   */
+  async function recuperar(
+    e: React.FormEvent,
+  ) {
     e.preventDefault();
 
     setCarregando(true);
 
-    const { error } = await supabase.auth.resetPasswordForEmail(
-      email.trim(),
-      {
-        redirectTo: `${window.location.origin}/reset-password`,
-      },
-    );
+    const { error } =
+      await supabase.auth.resetPasswordForEmail(
+        email.trim(),
+        {
+          redirectTo: `${window.location.origin}/reset-password`,
+        },
+      );
 
     setCarregando(false);
 
     if (error) {
-      toast.error("Não foi possível enviar o e-mail de recuperação.");
+      toast.error(
+        "Não foi possível enviar o e-mail de recuperação.",
+      );
+
       return;
     }
 
@@ -118,22 +159,37 @@ function AuthPage() {
 
   return (
     <main className="relative min-h-screen overflow-hidden">
-      {/* Toggle de tema */}
+      {/* ================================
+          ALTERAR TEMA
+      ================================= */}
+
       <div className="absolute right-4 top-4 z-50">
         <ToggleTema />
       </div>
 
-      {/* Layout principal */}
+      {/* ================================
+          LAYOUT
+      ================================= */}
+
       <div className="grid min-h-screen grid-cols-1 lg:grid-cols-2">
-        {/* LADO ESQUERDO — PERSONAGENS */}
+        {/* ================================
+            PERSONAGENS
+        ================================= */}
+
         <div className="relative hidden items-center justify-center overflow-hidden lg:flex">
-          <LoginCharacters />
+          <LoginCharacters
+            activeField={activeField}
+          />
         </div>
 
-        {/* LADO DIREITO — LOGIN */}
+        {/* ================================
+            LOGIN
+        ================================= */}
+
         <div className="flex items-center justify-center px-4 py-12 sm:px-6">
           <div className="page-transition w-full max-w-sm">
-            {/* Cabeçalho */}
+            {/* CABEÇALHO */}
+
             <div className="mb-8 flex flex-col items-center gap-4 text-center">
               <img
                 src={adimLogo}
@@ -149,19 +205,32 @@ function AuthPage() {
                 </h1>
 
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Acesso restrito à equipe Adim Aluguéis.
+                  Acesso restrito à equipe
+                  Adim Aluguéis.
                 </p>
               </div>
             </div>
 
-            {/* Formulário */}
+            {/* ================================
+                FORMULÁRIO
+            ================================= */}
+
             <form
-              onSubmit={modo === "login" ? entrar : recuperar}
+              onSubmit={
+                modo === "login"
+                  ? entrar
+                  : recuperar
+              }
               className="space-y-4 rounded-2xl border border-border/70 bg-[var(--glass)] p-6 shadow-sm backdrop-blur-3xl backdrop-saturate-150"
             >
-              {/* E-mail */}
+              {/* ================================
+                  E-MAIL
+              ================================= */}
+
               <div className="space-y-2">
-                <Label htmlFor="email">E-mail</Label>
+                <Label htmlFor="email">
+                  E-mail
+                </Label>
 
                 <Input
                   id="email"
@@ -169,15 +238,34 @@ function AuthPage() {
                   autoComplete="email"
                   required
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) =>
+                    setEmail(
+                      e.target.value,
+                    )
+                  }
+                  onFocus={() =>
+                    setActiveField(
+                      "email",
+                    )
+                  }
+                  onBlur={() =>
+                    setActiveField(
+                      "none",
+                    )
+                  }
                   placeholder="voce@adimalugueis.com.br"
                 />
               </div>
 
-              {/* Senha */}
+              {/* ================================
+                  SENHA
+              ================================= */}
+
               {modo === "login" ? (
                 <div className="space-y-2">
-                  <Label htmlFor="senha">Senha</Label>
+                  <Label htmlFor="senha">
+                    Senha
+                  </Label>
 
                   <Input
                     id="senha"
@@ -185,17 +273,35 @@ function AuthPage() {
                     autoComplete="current-password"
                     required
                     value={senha}
-                    onChange={(e) => setSenha(e.target.value)}
+                    onChange={(e) =>
+                      setSenha(
+                        e.target.value,
+                      )
+                    }
+                    onFocus={() =>
+                      setActiveField(
+                        "password",
+                      )
+                    }
+                    onBlur={() =>
+                      setActiveField(
+                        "none",
+                      )
+                    }
                   />
                 </div>
               ) : (
                 <p className="text-xs text-muted-foreground">
-                  Informe o e-mail cadastrado e enviaremos um link
-                  para você criar uma nova senha.
+                  Informe o e-mail cadastrado
+                  e enviaremos um link para
+                  você criar uma nova senha.
                 </p>
               )}
 
-              {/* Botão principal */}
+              {/* ================================
+                  BOTÃO
+              ================================= */}
+
               <Button
                 type="submit"
                 className="w-full"
@@ -208,17 +314,24 @@ function AuthPage() {
                     : "Enviar link de recuperação"}
               </Button>
 
-              {/* Recuperação */}
+              {/* ================================
+                  RECUPERAÇÃO
+              ================================= */}
+
               <button
                 type="button"
                 className="w-full text-center text-xs text-muted-foreground underline-offset-4 hover:underline"
-                onClick={() =>
+                onClick={() => {
+                  setActiveField(
+                    "none",
+                  );
+
                   setModo(
                     modo === "login"
                       ? "recuperar"
                       : "login",
-                  )
-                }
+                  );
+                }}
               >
                 {modo === "login"
                   ? "Esqueci minha senha"
@@ -227,7 +340,8 @@ function AuthPage() {
             </form>
 
             <p className="mt-6 text-center text-xs text-muted-foreground">
-              Novos acessos são criados pela gestão.
+              Novos acessos são criados pela
+              gestão.
             </p>
           </div>
         </div>
