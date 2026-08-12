@@ -542,7 +542,7 @@ function Dashboard() {
             <AlertTriangle className="size-4 text-chart-5" /> Negociações paradas
           </h2>
           <p className="mb-4 text-xs text-muted-foreground">
-            Jornadas em Proposta ou Fechamento sem movimentação há mais de 15 dias.
+            Jornadas em Proposta ou Fechamento sem movimentação há mais de 3 dias.
           </p>
           <ul className="space-y-3">
             {paradas.slice(0, 8).map((j) => (
