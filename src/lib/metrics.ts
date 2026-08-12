@@ -199,6 +199,8 @@ export function calcularIndicadores(jornadas: Jornada[]) {
     contratos,
     vgl: vglAssinado,
     vglTotal,
+    vglProposta,
+    propostasAbertas: emProposta.length,
     vglAssinado,
     intermediacao,
     ticketMedio: comValor.length ? vglTotal / comValor.length : 0,
