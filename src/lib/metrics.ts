@@ -152,11 +152,13 @@ const passouContrato = (j: Jornada) => j.etapa === "contrato_assinado";
 
 export function calcularIndicadores(jornadas: Jornada[]) {
   // Colunas atuais do painel de propostas.
+  const emProposta = jornadas.filter((j) => j.etapa === "proposta");
   const emFechamento = jornadas.filter((j) => j.etapa === "fechamento");
   const assinados = jornadas.filter((j) => j.etapa === "contrato_assinado");
   const comValor = [...emFechamento, ...assinados];
 
   const vglTotal = comValor.reduce((s, j) => s + valorCard(j), 0);
+  const vglProposta = emProposta.reduce((s, j) => s + valorCard(j), 0);
   const vglAssinado = assinados.reduce((s, j) => s + valorCard(j), 0);
   const intermediacao = comValor.reduce(
     (s, j) => s + (valorCard(j) * j.percentual_intermediacao) / 100,
@@ -197,6 +199,8 @@ export function calcularIndicadores(jornadas: Jornada[]) {
     contratos,
     vgl: vglAssinado,
     vglTotal,
+    vglProposta,
+    propostasAbertas: emProposta.length,
     vglAssinado,
     intermediacao,
     ticketMedio: comValor.length ? vglTotal / comValor.length : 0,

@@ -34,13 +34,14 @@ export function useBlobState(
      */
     if (activeField === "email") {
       setState("tracking");
-      return;
+      return undefined;
     }
 
     /*
      * NADA
      */
     setState("tracking");
+    return undefined;
   }, [activeField]);
 
   return state;
