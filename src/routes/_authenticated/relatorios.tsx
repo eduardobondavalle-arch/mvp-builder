@@ -507,14 +507,8 @@ function RelatoriosPage() {
               <section className="panel overflow-hidden p-6">
                 <h3 className="mb-4 text-base font-semibold">Conversão por canal de origem</h3>
                 <Tabela
-                  cabecalho={["Canal", "Propostas", "Contratos", "Conversão", "VGL"]}
-                  linhas={canaisConv.map((c) => [
-                    c.nome,
-                    String(c.propostas),
-                    String(c.contratos),
-                    pct(c.conversao, 0),
-                    brl(c.vgl),
-                  ])}
+                  cabecalho={["Canal", "Prop.", "VGL"]}
+                  linhas={canaisConv.map((c) => [c.nome, String(c.propostas), brl(c.vgl)])}
                 />
               </section>
 
