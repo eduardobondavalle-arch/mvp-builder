@@ -438,7 +438,7 @@ export function motivosDePerda(
 }
 
 /** Negociações paradas: sem movimentação há mais de N dias e ainda em andamento. */
-export function negociacoesParadas(jornadas: Jornada[], dias = 15) {
+export function negociacoesParadas(jornadas: Jornada[], dias = 3) {
   const limite = Date.now() - dias * 86400000;
   return jornadas
     .filter((j) => j.etapa === "proposta" || j.etapa === "fechamento")
