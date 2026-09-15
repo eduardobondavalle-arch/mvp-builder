@@ -25,6 +25,7 @@ dist-ssr
 artifacts/
 test-results/
 playwright-report/
+.vercel/
 
 # Editor directories and files
 .vscode/*

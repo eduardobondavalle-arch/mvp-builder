@@ -1,6 +1,6 @@
 # Plataforma Comercial + Fechamento Adim
 
-Integração do Comercial `mvp-builder` com os componentes do `fechamento-locacao`, conforme a especificação V1. A aplicação abre diretamente no painel, sem login.
+Integração do Comercial `mvp-builder` com os componentes do `fechamento-locacao`, conforme a especificação V1. A aplicação abre diretamente no painel, sem login. Produção: https://comercial-fechamento-adim.vercel.app.
 
 ## Executar
 
@@ -27,6 +27,6 @@ npm run test:e2e
 
 ## Documentação
 
-- [Publicação no GitHub e Cloudflare](docs/DEPLOY.md)
+- [Publicação no GitHub e Vercel](docs/DEPLOY.md)
 - [Guia de operação, persistência e contrato de integração](docs/GUIA-V1.md)
 - [Plano de migração e componentes reaproveitados](docs/PLANO-MIGRACAO-V1.md)

@@ -3,11 +3,14 @@
   "private": true,
   "sideEffects": false,
   "type": "module",
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
-    "deploy": "npm run build && npx --yes wrangler@4.131.2 deploy --config .output/server/wrangler.json",
-    "deploy:check": "npx --yes wrangler@4.131.2 deploy --config .output/server/wrangler.json --dry-run --outdir artifacts/worker",
+    "deploy": "npx --yes vercel@59.17.0 deploy --prod",
+    "deploy:check": "npm run build",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",

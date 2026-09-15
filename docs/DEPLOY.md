@@ -1,39 +1,51 @@
-# Publicação
+# Publicacao
 
-## Código
+## Codigo
 
-A integração está publicada na branch `main` de [mvp-builder](https://github.com/eduardobondavalle-arch/mvp-builder). A branch `integracao-adim-v1` conserva o commit da integração. O repositório `fechamento-locacao` permanece como origem dos componentes reaproveitados.
+A integracao esta publicada na branch `main` de [mvp-builder](https://github.com/eduardobondavalle-arch/mvp-builder). A branch `integracao-adim-v1` conserva o commit original da integracao. O repositorio `fechamento-locacao` permanece como origem dos componentes reaproveitados.
 
-## Hospedagem Cloudflare
+## Hospedagem Vercel
 
-O build gera um Worker chamado `eduardobondavalle-arch-mvp-builder`, com manifesto em `.output/server/wrangler.json` e arquivos públicos em `.output/public`. O domínio padrão será informado pela Cloudflare ao concluir a publicação.
+Producao:
 
-Com Node.js 22.12+ instalado, execute na raiz deste repositório:
+https://comercial-fechamento-adim.vercel.app
+
+Projeto Vercel:
+
+- Conta/equipe: `eduardo-0639`
+- Projeto: `comercial-fechamento-adim`
+- Framework: TanStack Start
+- Runtime: Node.js 22.x
+- Build: `npm run build`
+- Instalacao: `npm ci`
+
+Com Node.js 22 instalado, execute na raiz deste repositorio:
 
 ```sh
 npm ci
-npx --yes wrangler@4.131.2 login
+npm run build
 npm run deploy
 ```
 
-`npm run deploy` recompila o sistema e publica o manifesto gerado. A autorização OAuth do Wrangler pertence à conta de hospedagem; o aplicativo abre diretamente no painel sem autenticação própria. Escolha a conta Cloudflare que deve ser dona da aplicação quando houver mais de uma.
+`npm run deploy` publica em producao pela Vercel. A autorizacao da Vercel pertence a conta de hospedagem; o aplicativo abre diretamente no painel e nao cria login proprio.
 
-Para validar o pacote sem publicá-lo, depois de `npm run build`:
+Para validar sem publicar:
 
 ```sh
 npm run deploy:check
 ```
 
-A publicação não exige variáveis Supabase na versão com persistência local. O `.env` foi retirado do versionamento e permanece ignorado. Credenciais do Wrangler devem ficar no armazenamento local da ferramenta, fora do repositório.
+A publicacao nao exige variaveis Supabase na versao com persistencia local. O `.env` foi retirado do versionamento e permanece ignorado. Credenciais da Vercel ficam no armazenamento local da ferramenta, fora do repositorio.
 
-## Dados da aplicação
+## Dados da aplicacao
 
-O deploy disponibiliza a aplicação por HTTPS. Os registros continuam no armazenamento de cada navegador, vinculados ao domínio acessado. A base de `localhost` não é copiada automaticamente para o domínio publicado: exporte o backup local e importe na base vazia do domínio de destino, quando necessário.
+O deploy disponibiliza a aplicacao por HTTPS. Os registros continuam no armazenamento de cada navegador, vinculados ao dominio acessado. A base de `localhost` nao e copiada automaticamente para o dominio publicado: exporte o backup local e importe na base vazia do dominio de destino, quando necessario.
 
 Banco compartilhado, identidade do hospedeiro e armazenamento remoto de documentos continuam dependendo do adaptador descrito no [guia V1](GUIA-V1.md).
 
 ## Estado em 15/09/2026
 
-- GitHub: integração publicada em `main`, commit `6543a81`.
-- Pacote Cloudflare: validação com `--dry-run` aprovada.
-- Deploy público: aguardando autorização da conta Cloudflare.
+- GitHub: integracao publicada em `main`.
+- Vercel: deploy de producao concluido e pronto.
+- URL publica: https://comercial-fechamento-adim.vercel.app
+- Validacao de hospedagem: rotas `/`, `/dashboard`, `/kanban`, `/registro-diario`, `/cadastros`, `/relatorios` e `/tv` responderam `200`, sem marcador de tela de login.
