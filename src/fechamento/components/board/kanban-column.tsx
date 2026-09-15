@@ -30,7 +30,7 @@ export function KanbanColumn({
         <div className="min-w-0 flex-1">
           <h2
             id={`list-title-${list.id}`}
-            className="text-[11px] font-extrabold leading-4 tracking-[.025em] text-navy-900"
+            className="text-[11px] font-extrabold leading-4 tracking-[.025em] text-sky-300"
           >
             {list.name}
           </h2>
