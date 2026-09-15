@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
+    "deploy": "npm run build && npx --yes wrangler@4.131.2 deploy --config .output/server/wrangler.json",
+    "deploy:check": "npx --yes wrangler@4.131.2 deploy --config .output/server/wrangler.json --dry-run --outdir artifacts/worker",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",

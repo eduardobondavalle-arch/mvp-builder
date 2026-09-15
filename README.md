@@ -27,5 +27,6 @@ npm run test:e2e
 
 ## Documentação
 
+- [Publicação no GitHub e Cloudflare](docs/DEPLOY.md)
 - [Guia de operação, persistência e contrato de integração](docs/GUIA-V1.md)
 - [Plano de migração e componentes reaproveitados](docs/PLANO-MIGRACAO-V1.md)

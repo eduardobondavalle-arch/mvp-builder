@@ -53,7 +53,7 @@ O domínio em `src/fechamento/domain/operations.ts` é compartilhável com o ser
 
 O adaptador comercial deve usar a mesma origem de unidades/consultores/canais do snapshot para evitar cadastros divergentes. Notificações internas são registros persistentes; o hospedeiro pode entregá-las ao destinatário pelo mecanismo já existente. A V1 local não cria credenciais, RLS própria, matrizes de perfis nem disparos de e-mail.
 
-**Estado de implantação:** a experiência local é executável; persistência compartilhada, identidade real, anexos privados e entrega externa de notificações dependem da conexão do adaptador. Não houve alteração de banco remoto nem publicação nesta sessão.
+**Estado de implantação:** a experiência local é executável; persistência compartilhada, identidade real, anexos privados e entrega externa de notificações dependem da conexão do adaptador. Não houve alteração de banco remoto. Consulte o [estado da publicação](DEPLOY.md) para a situação da hospedagem.
 
 ## Migração
 
@@ -80,4 +80,4 @@ Resultados da validação local de 14/09/2026:
 
 O lint completo ainda encontra problemas nos arquivos legados fora do recorte alterado: predominantemente formatação e finais de linha CRLF, além de um `prefer-const`. As telas preservadas não foram reformatadas em massa.
 
-As alterações estão na branch local `integracao-adim-v1`. O repositório de referência permaneceu intacto. Os testes usam o armazenamento de sessões isoladas do navegador; não validam uma implantação remota, migração de clientes reais ou conexão com banco compartilhado.
+As alterações foram publicadas nas branches `main` e `integracao-adim-v1` do GitHub em 15/09/2026. Consulte o [estado da publicação](DEPLOY.md). O repositório de referência permaneceu intacto. Os testes usam o armazenamento de sessões isoladas do navegador; não validam migração de clientes reais ou conexão com banco compartilhado.
