@@ -1,17 +1,10 @@
-const KEY = "adim.usuario";
-
-/** Nome/e-mail registrado na auditoria — preenchido pela sessão autenticada. */
-export function getUsuario(): string {
-  if (typeof window === "undefined") return "Gestão";
-  return window.localStorage.getItem(KEY) || "Gestão";
+import { currentActor } from "@/fechamento/host";
+export function getUsuario() {
+  return currentActor().name;
 }
-
-export function setUsuario(nome: string) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(KEY, nome.trim() || "Gestão");
+export function setUsuario(_nome: string) {
+  /* Identidade pertence ao hospedeiro. */
 }
-
 export function limparUsuario() {
-  if (typeof window === "undefined") return;
-  window.localStorage.removeItem(KEY);
+  /* Sessão pertence ao hospedeiro. */
 }

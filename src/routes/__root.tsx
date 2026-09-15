@@ -1,3 +1,4 @@
+import { subscribe } from "@/fechamento/persistence/repository";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
@@ -14,7 +15,6 @@ import { GlowFundo } from "@/components/glow-fundo";
 import { supabase } from "@/integrations/supabase/client";
 import { limparUsuario, setUsuario } from "@/lib/usuario";
 import { TemaProvider } from "@/lib/tema";
-
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -73,21 +73,6 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
           >
             Go home
           </a>
-          <button
-            onClick={async () => {
-              try {
-                await supabase.auth.signOut({ scope: "local" });
-              } catch {
-                /* sessão já inválida */
-              }
-              limparUsuario();
-              window.location.href = "/auth";
-            }}
-            className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
-          >
-            Entrar novamente
-          </button>
-
         </div>
       </div>
     </div>
@@ -109,15 +94,28 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:title", content: "Inteligência Comercial | Adim Aluguéis" },
       {
         property: "og:description",
-        content: "Painel executivo da operação de locação da Adim Aluguéis: VGL, contratos, funil completo, metas, rankings e conversão por canal.",
+        content:
+          "Painel executivo da operação de locação da Adim Aluguéis: VGL, contratos, funil completo, metas, rankings e conversão por canal.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@Lovable" },
       { name: "twitter:title", content: "Inteligência Comercial | Adim Aluguéis" },
-      { name: "twitter:description", content: "Painel executivo da operação de locação da Adim Aluguéis: VGL, contratos, funil completo, metas, rankings e conversão por canal." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/90a8bc00-1198-4edb-93c4-8f0245494516/id-preview-40448a32--d3ea8d19-10c5-4b09-adc3-58e26e9c9e2a.lovable.app-1785884531411.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/90a8bc00-1198-4edb-93c4-8f0245494516/id-preview-40448a32--d3ea8d19-10c5-4b09-adc3-58e26e9c9e2a.lovable.app-1785884531411.png" },
+      {
+        name: "twitter:description",
+        content:
+          "Painel executivo da operação de locação da Adim Aluguéis: VGL, contratos, funil completo, metas, rankings e conversão por canal.",
+      },
+      {
+        property: "og:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/90a8bc00-1198-4edb-93c4-8f0245494516/id-preview-40448a32--d3ea8d19-10c5-4b09-adc3-58e26e9c9e2a.lovable.app-1785884531411.png",
+      },
+      {
+        name: "twitter:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/90a8bc00-1198-4edb-93c4-8f0245494516/id-preview-40448a32--d3ea8d19-10c5-4b09-adc3-58e26e9c9e2a.lovable.app-1785884531411.png",
+      },
     ],
     links: [
       {
@@ -131,7 +129,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap",
       },
-
     ],
   }),
   shellComponent: RootShell,
@@ -142,7 +139,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="pt-BR">
       <head>
         <HeadContent />
       </head>
@@ -158,21 +155,13 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
 
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (data.user?.email) setUsuario(data.user.email);
-    });
-
-    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
-      if (session?.user?.email) setUsuario(session.user.email);
-      else limparUsuario();
-      router.invalidate();
-      if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
-    });
-
-    return () => sub.subscription.unsubscribe();
-  }, [queryClient, router]);
+  useEffect(
+    () =>
+      subscribe(() => {
+        void queryClient.invalidateQueries();
+      }),
+    [queryClient],
+  );
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -185,4 +174,3 @@ function RootComponent() {
     </QueryClientProvider>
   );
 }
-

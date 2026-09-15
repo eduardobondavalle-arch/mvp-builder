@@ -1,9 +1,13 @@
-import { QueryClient } from "@tanstack/react-query";
+import { QueryCache, QueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { createRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
 
 export const getRouter = () => {
   const queryClient = new QueryClient({
+    queryCache: new QueryCache({
+      onError: (error) => toast.error(`Não foi possível carregar os dados: ${error.message}`),
+    }),
     defaultOptions: {
       queries: {
         staleTime: 60_000,

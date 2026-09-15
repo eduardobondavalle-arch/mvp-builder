@@ -1,10 +1,17 @@
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
+@import "./fechamento/styles.css";
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  --color-navy-900: #142035;
+  --color-accent-50: #fff7ed;
+  --color-accent-100: #ffedd5;
+  --color-accent-500: var(--primary);
+  --color-accent-700: #c2410c;
+  --shadow-card: var(--elev-1);
   --radius-sm: calc(var(--radius) - 6px);
   --radius-md: calc(var(--radius) - 3px);
   --radius-lg: var(--radius);
@@ -278,7 +285,6 @@
   filter: none !important;
 }
 
-
 /* ---------- Superfícies ---------- */
 
 @utility panel {
@@ -442,5 +448,3 @@
 .pdf-exportando .glow-fundo {
   display: none !important;
 }
-
-

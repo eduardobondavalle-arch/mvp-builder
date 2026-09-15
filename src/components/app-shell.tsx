@@ -1,3 +1,4 @@
+import { currentActor } from "@/fechamento/host";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -25,56 +26,22 @@ import { limparUsuario } from "@/lib/usuario";
 
 const nav = [
   { to: "/dashboard", label: "Geral", icon: ChartLineUp },
-  { to: "/kanban", label: "Painel de Propostas", icon: Kanban },
+  { to: "/kanban", label: "Fechamento", icon: Kanban },
   { to: "/registro-diario", label: "Registro Diário", icon: CalendarCheck },
   { to: "/ciclos", label: "Ciclos e Metas", icon: Target },
   { to: "/cadastros", label: "Cadastros", icon: SlidersHorizontal },
   { to: "/relatorios", label: "Relatórios", icon: FileText },
   { to: "/auditoria", label: "Auditoria", icon: ClipboardText },
-  { to: "/acessos", label: "Acessos", icon: UsersThree },
   { to: "/tv", label: "TV", icon: Television },
 ] as const;
 
-
 function UsuarioAtual() {
-  const [email, setEmail] = useState("");
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
-
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setEmail(data.user?.email ?? ""));
-  }, []);
-
-  async function sair() {
-    await queryClient.cancelQueries();
-    queryClient.clear();
-    limparUsuario();
-    await supabase.auth.signOut();
-    navigate({ to: "/auth", replace: true });
-  }
-
+  const actor = currentActor();
   return (
-    <Popover>
-      <PopoverTrigger className="press flex h-10 max-w-[180px] items-center gap-2 rounded-full border border-border/60 bg-secondary/60 px-3 text-xs text-muted-foreground hover:text-foreground">
-        <UserCircle size={18} weight="fill" className="shrink-0" />
-        <span className="hidden truncate sm:inline">{email || "Conta"}</span>
-      </PopoverTrigger>
-      <PopoverContent align="end" className="w-72 space-y-3">
-        <div>
-          <p className="label-caps">Usuário conectado</p>
-          <p className="mt-1 break-all text-xs text-muted-foreground">
-            {email || "Sessão ativa"}
-          </p>
-        </div>
-        <p className="text-xs text-muted-foreground">
-          Este e-mail é registrado na auditoria de todas as alterações realizadas.
-        </p>
-        <Button variant="outline" size="sm" className="w-full rounded-full" onClick={sair}>
-          <SignOut size={16} weight="bold" />
-          Sair
-        </Button>
-      </PopoverContent>
-    </Popover>
+    <span className="flex h-10 max-w-[180px] items-center gap-2 rounded-full border border-border/60 bg-secondary/60 px-3 text-xs text-muted-foreground">
+      <UserCircle size={18} weight="fill" />
+      <span className="hidden truncate sm:inline">{actor.name}</span>
+    </span>
   );
 }
 

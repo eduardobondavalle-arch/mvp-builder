@@ -1,24 +1,31 @@
-# MVP Builder
+# Plataforma Comercial + Fechamento Adim
 
-Use esse PRD e gere um MVP
+Integração do Comercial `mvp-builder` com os componentes do `fechamento-locacao`, conforme a especificação V1. A aplicação abre diretamente no painel, sem login.
 
-This project was built with [Lovable](https://lovable.dev).
+## Executar
 
-## Build with Lovable
-
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/d3ea8d19-10c5-4b09-adc3-58e26e9c9e2a).
-
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
-
-## Development
-
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+Requer Node.js 22.12+ e npm.
 
 ```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
-npm run dev
+npm ci
+npm run dev -- --host 127.0.0.1 --port 5173
 ```
+
+Abra http://127.0.0.1:5173. Cadastre consultores e canais em **Cadastros** e configure as regras em **Fechamento → Configurações**.
+
+A execução local armazena dados neste navegador. Exporte backups em **Dados e migração**. Persistência compartilhada depende do adaptador da plataforma; nenhum banco remoto foi migrado ou publicado.
+
+## Verificar
+
+```sh
+npm test
+npm run typecheck
+npm run build
+# Com a aplicação em execução e Google Chrome instalado:
+npm run test:e2e
+```
+
+## Documentação
+
+- [Guia de operação, persistência e contrato de integração](docs/GUIA-V1.md)
+- [Plano de migração e componentes reaproveitados](docs/PLANO-MIGRACAO-V1.md)

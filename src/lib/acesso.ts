@@ -1,3 +1,4 @@
+import { currentActor, platform } from "@/fechamento/host";
 import { useQuery } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -19,44 +20,28 @@ export const acessoVazio: Acesso = {
 export const acessoQuery = () => ({
   queryKey: ["acesso"],
   queryFn: async (): Promise<Acesso> => {
-    const { data: sessao } = await supabase.auth.getUser();
-    const user = sessao.user;
-    if (!user) return acessoVazio;
-
-    const { data, error } = await supabase
-      .from("user_roles")
-      .select("role, equipe_id")
-      .eq("user_id", user.id);
-    if (error) throw new Error(error.message);
-
-    const papeis = data ?? [];
+    const actor = currentActor();
+    const scope = platform()?.commercialScope;
     return {
-      userId: user.id,
-      email: user.email ?? "",
-      isGestor: papeis.some((p) => p.role === "gestor"),
-      equipesPermitidas: papeis
-        .map((p) => p.equipe_id)
-        .filter((id): id is string => Boolean(id)),
+      userId: actor.id,
+      email: actor.name,
+      isGestor: scope?.companyWide ?? !platform(),
+      equipesPermitidas: scope?.unitIds ?? [],
     };
   },
 });
-
 export function useAcesso(): Acesso {
   const { data } = useQuery(acessoQuery());
   return data ?? acessoVazio;
 }
-
 export function filtrarEquipes<T extends { id: string }>(equipes: T[], acesso: Acesso): T[] {
-  if (acesso.isGestor) return equipes;
-  return equipes.filter((e) => acesso.equipesPermitidas.includes(e.id));
+  return acesso.isGestor ? equipes : equipes.filter((e) => acesso.equipesPermitidas.includes(e.id));
 }
-
 export function filtrarConsultores<T extends { equipe_id: string | null }>(
   consultores: T[],
   acesso: Acesso,
 ): T[] {
-  if (acesso.isGestor) return consultores;
-  return consultores.filter(
-    (c) => c.equipe_id && acesso.equipesPermitidas.includes(c.equipe_id),
-  );
+  return acesso.isGestor
+    ? consultores
+    : consultores.filter((c) => c.equipe_id && acesso.equipesPermitidas.includes(c.equipe_id));
 }

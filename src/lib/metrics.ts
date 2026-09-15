@@ -34,7 +34,6 @@ export const filtrosVazios: Filtros = {
   baseData: "competencia",
 };
 
-
 /** Intervalo efetivo do recorte: período informado ou período do ciclo. */
 export function periodoEfetivo(filtros: Filtros, ciclos: Ciclo[]) {
   const ciclo = ciclos.find((c) => c.id === filtros.cicloId);
@@ -57,12 +56,12 @@ const hojeISO = () => new Date().toISOString().slice(0, 10);
 
 /**
  * Data que posiciona o card no período:
- * - Contrato assinado: data da assinatura (é o que compõe o valor do ciclo).
+ * - Marco de contrato assinado: primeira assinatura, inclusive após perda ou recuperação.
  * - Negócio perdido: data da perda.
  * - Proposta e Fechamento: ainda em aberto, contam no período vigente.
  */
 export function dataDeCompetencia(j: Jornada) {
-  if (j.etapa === "contrato_assinado") return j.data_assinatura ?? j.data_proposta;
+  if (j.atingiu_contrato) return j.data_assinatura ?? j.data_proposta;
   if (j.etapa === "negocio_perdido") return j.data_perda ?? j.data_proposta;
   return null;
 }
@@ -89,9 +88,7 @@ export function aplicarFiltros(
   return jornadas.filter((j) => {
     if (de || ate) {
       const ok =
-        filtros.baseData === "proposta"
-          ? dentro(j.data_proposta, de, ate)
-          : noPeriodo(j, de, ate);
+        filtros.baseData === "proposta" ? dentro(j.data_proposta, de, ate) : noPeriodo(j, de, ate);
       if (!ok) return false;
     }
     if (filtros.consultorId !== "all" && j.consultor_id !== filtros.consultorId) return false;
@@ -101,7 +98,6 @@ export function aplicarFiltros(
     return true;
   });
 }
-
 
 export function filtrarRegistros(
   registros: RegistroDiario[],
@@ -141,21 +137,17 @@ export function somarRegistros(registros: RegistroDiario[]) {
 }
 
 /** Valor comercial de um card conforme a etapa alcançada. */
-const valorCard = (j: Jornada) =>
-  j.valor_final ?? j.valor_atualizado ?? j.valor_proposta ?? 0;
+const valorCard = (j: Jornada) => j.valor_final ?? j.valor_atualizado ?? j.valor_proposta ?? 0;
 
-// Contagem sempre pela coluna atual do Kanban do painel de propostas.
-const passouFechamento = (j: Jornada) =>
-  j.etapa === "fechamento" || j.etapa === "contrato_assinado";
-const passouContrato = (j: Jornada) => j.etapa === "contrato_assinado";
-
+// Marcos permanentes do processo; perdas e recuperações não retiram ocorrências do funil.
+const passouFechamento = (j: Jornada) => j.atingiu_fechamento;
+const passouContrato = (j: Jornada) => j.atingiu_contrato;
 
 export function calcularIndicadores(jornadas: Jornada[]) {
   // Colunas atuais do painel de propostas.
   const emProposta = jornadas.filter((j) => j.etapa === "proposta");
-  const emFechamento = jornadas.filter((j) => j.etapa === "fechamento");
-  const assinados = jornadas.filter((j) => j.etapa === "contrato_assinado");
-  const comValor = [...emFechamento, ...assinados];
+  const assinados = jornadas.filter(passouContrato);
+  const comValor = jornadas.filter(passouFechamento);
 
   const vglTotal = comValor.reduce((s, j) => s + valorCard(j), 0);
   const vglProposta = emProposta.reduce((s, j) => s + valorCard(j), 0);
@@ -215,7 +207,6 @@ export function calcularIndicadores(jornadas: Jornada[]) {
   };
 }
 
-
 /** Funil completo: Pré Lead e Lead→Visita vêm do registro diário; Proposta→Contrato vêm do Kanban. */
 export function funilCompleto(
   jornadas: Jornada[],
@@ -260,7 +251,11 @@ export function conversaoLais(preLeads: PreLead[], registros: RegistroDiario[]) 
   return { preLeads: pre, leads, conversao: pre ? (leads / pre) * 100 : 0 };
 }
 
-export function metaDe(metas: Meta[], cicloId: string, alvo: { equipeId?: string; consultorId?: string }) {
+export function metaDe(
+  metas: Meta[],
+  cicloId: string,
+  alvo: { equipeId?: string; consultorId?: string },
+) {
   const m = metas.find(
     (x) =>
       x.ciclo_id === cicloId &&
@@ -286,9 +281,9 @@ export function rankingConsultores(
       const ind = calcularIndicadores(minhas);
       const op = somarRegistros(registros.filter((r) => r.consultor_id === c.id));
       const meta = metaDe(metas, cicloId, { consultorId: c.id });
-      // Ranking considera VGL de Proposta, Fechamento e Contrato assinado.
+      // Preserva os marcos de fechamento mesmo após perda; propostas abertas também entram.
       const vglRanking = minhas
-        .filter((j) => ["proposta", "fechamento", "contrato_assinado"].includes(j.etapa))
+        .filter((j) => j.etapa === "proposta" || passouFechamento(j) || passouContrato(j))
         .reduce((s, j) => s + valorCard(j), 0);
       return {
         id: c.id,
@@ -310,9 +305,7 @@ export function rankingConsultores(
         metaContratos: meta.meta_contratos,
         // Metas consideram tudo que está em Fechamento e Contrato Assinado.
         pctMetaVgl: meta.meta_vgl ? (ind.vglTotal / meta.meta_vgl) * 100 : 0,
-        pctMetaContratos: meta.meta_contratos
-          ? (ind.fechamentos / meta.meta_contratos) * 100
-          : 0,
+        pctMetaContratos: meta.meta_contratos ? (ind.fechamentos / meta.meta_contratos) * 100 : 0,
       };
     })
     .sort((a, b) => b.vgl - a.vgl);
@@ -342,9 +335,7 @@ export function rankingEquipes(
         metaContratos: meta.meta_contratos,
         // Metas consideram tudo que está em Fechamento e Contrato Assinado.
         pctMetaVgl: meta.meta_vgl ? (ind.vglTotal / meta.meta_vgl) * 100 : 0,
-        pctMetaContratos: meta.meta_contratos
-          ? (ind.fechamentos / meta.meta_contratos) * 100
-          : 0,
+        pctMetaContratos: meta.meta_contratos ? (ind.fechamentos / meta.meta_contratos) * 100 : 0,
       };
     })
     .sort((a, b) => b.pctMetaVgl - a.pctMetaVgl);
@@ -375,11 +366,10 @@ export const grupoDoCanal = (nome: string) =>
 
 /**
  * Conversão por canal com os canais da imobiliária agrupados.
- * Considera apenas cards em Proposta, Fechamento e Contrato assinado.
+ * Considera propostas e marcos históricos, inclusive processos perdidos.
  */
 export function conversaoPorCanalAgrupado(jornadas: Jornada[], canais: Canal[]) {
-  const etapasValidas = new Set(["proposta", "fechamento", "contrato_assinado"]);
-  const validas = jornadas.filter((j) => etapasValidas.has(j.etapa));
+  const validas = jornadas;
   const grupoPorCanal = new Map(canais.map((c) => [c.id, grupoDoCanal(c.nome)]));
 
   const mapa = new Map<string, Jornada[]>();
@@ -423,10 +413,7 @@ export function conversaoPorCanal(jornadas: Jornada[], canais: Canal[]) {
     .sort((a, b) => b.propostas - a.propostas);
 }
 
-export function motivosDePerda(
-  jornadas: Jornada[],
-  motivos: { id: string; nome: string }[],
-) {
+export function motivosDePerda(jornadas: Jornada[], motivos: { id: string; nome: string }[]) {
   const perdidas = jornadas.filter((j) => j.etapa === "negocio_perdido");
   return motivos
     .map((m) => ({
@@ -447,11 +434,18 @@ export function negociacoesParadas(jornadas: Jornada[], dias = 3) {
 }
 
 export function produtividadeDiaria(registros: RegistroDiario[]) {
-  const mapa = new Map<string, { data: string; leads: number; atendimentos: number; agendamentos: number; visitas: number }>();
+  const mapa = new Map<
+    string,
+    { data: string; leads: number; atendimentos: number; agendamentos: number; visitas: number }
+  >();
   for (const r of registros) {
-    const atual =
-      mapa.get(r.data) ??
-      { data: r.data, leads: 0, atendimentos: 0, agendamentos: 0, visitas: 0 };
+    const atual = mapa.get(r.data) ?? {
+      data: r.data,
+      leads: 0,
+      atendimentos: 0,
+      agendamentos: 0,
+      visitas: 0,
+    };
     atual.leads += r.leads;
     atual.atendimentos += r.atendimentos;
     atual.agendamentos += r.agendamentos;

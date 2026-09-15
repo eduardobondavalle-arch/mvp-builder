@@ -19,6 +19,12 @@ dist-ssr
 # Wrangler / Cloudflare
 .wrangler/
 .dev.vars
+.env
+.env.*
+!.env.example
+artifacts/
+test-results/
+playwright-report/
 
 # Editor directories and files
 .vscode/*

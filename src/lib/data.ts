@@ -1,3 +1,5 @@
+import { loadData } from "@/fechamento/persistence/repository";
+import { projectJornadas } from "@/fechamento/domain/operations";
 import { supabase } from "@/integrations/supabase/client";
 import { getUsuario } from "@/lib/usuario";
 
@@ -111,10 +113,7 @@ async function unwrap<T>(p: PromiseLike<{ data: unknown; error: { message: strin
 export const dataQueries = {
   jornadas: () => ({
     queryKey: ["jornadas"],
-    queryFn: () =>
-      unwrap<Jornada[]>(
-        supabase.from("jornadas").select("*").order("created_at", { ascending: false }),
-      ),
+    queryFn: async () => projectJornadas(await loadData()),
   }),
   consultores: () => ({
     queryKey: ["consultores"],
@@ -179,11 +178,7 @@ export const dataQueries = {
     queryKey: ["auditoria"],
     queryFn: () =>
       unwrap<Auditoria[]>(
-        supabase
-          .from("auditoria")
-          .select("*")
-          .order("created_at", { ascending: false })
-          .limit(500),
+        supabase.from("auditoria").select("*").order("created_at", { ascending: false }).limit(500),
       ),
   }),
 };
@@ -223,8 +218,7 @@ export async function registrarAuditoria(
   }[],
 ) {
   if (!entradas.length) return;
-  const { data: sessao } = await supabase.auth.getUser();
-  const usuario = sessao.user?.email ?? getUsuario();
+  const usuario = getUsuario();
 
   const { error } = await supabase.from("auditoria").insert(
     entradas.map((e) => ({
@@ -246,7 +240,13 @@ export async function registrarAuditoria(
 export function diffAuditoria<T extends Record<string, unknown>>(
   antes: T,
   depois: Partial<T>,
-  base: { entidade: string; entidade_id?: string | null; referencia?: string | null; acao: string; justificativa?: string | null },
+  base: {
+    entidade: string;
+    entidade_id?: string | null;
+    referencia?: string | null;
+    acao: string;
+    justificativa?: string | null;
+  },
 ) {
   return Object.entries(depois)
     .filter(([campo, valor]) => String(antes[campo] ?? "") !== String(valor ?? ""))
