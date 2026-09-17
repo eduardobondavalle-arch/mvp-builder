@@ -1,5 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { createInitialData } from "../src-fixture";
+import { execute, emptyPerson } from "../../src/fechamento/domain/operations";
+import type { Actor } from "../../src/fechamento/domain/types";
 
 test.beforeEach(async ({ page }) => {
   const data = createInitialData();
@@ -52,7 +54,7 @@ test("cria proposta, move, registra análise e comentário, cancela e recupera o
   await modal.getByLabel("CPF", { exact: true }).fill("52998224725");
   await modal.getByRole("button", { name: "Enviar proposta", exact: true }).click();
   await expect(
-    page.getByRole("dialog").getByText("Cliente de teste E2E", { exact: true }),
+    page.getByRole("dialog").getByRole("heading", { name: /Cliente de teste E2E/ }),
   ).toBeVisible();
   await page.getByLabel("Etapa atual", { exact: true }).selectOption("fechamento_enviado");
   await page.getByRole("button", { name: "Confirmar movimento", exact: true }).click();
@@ -62,6 +64,7 @@ test("cria proposta, move, registra análise e comentário, cancela e recupera o
   await page.getByRole("button", { name: "Comentar", exact: true }).click();
   await expect(page.getByText("Decisão operacional registrada", { exact: true })).toBeVisible();
   await page.getByRole("tab", { name: "Análise", exact: true }).click();
+  await page.getByRole("button", { name: "Editar análise" }).click();
   await page
     .getByLabel("Pendência de documentação / Aprovação da Direção", { exact: true })
     .fill("Análise documental registrada");
@@ -117,6 +120,94 @@ test("configura campos, documentos e tarefas sem editor de colunas", async ({ pa
   await page.getByRole("button", { name: "Adicionar campo", exact: true }).click();
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem("adim-platform:v1")!));
   expect(saved.fields.some((f: { name: string }) => f.name === "Detalhe adicional")).toBe(true);
+});
+test("roda troca a tarefa atual e exclusão do card exige confirmação", async ({ page }) => {
+  const actor: Actor = {
+    id: "e2e",
+    name: "Teste",
+    permissions: ["read", "write", "configure", "delete"],
+  };
+  const source = createInitialData();
+  source.tasks.push(
+    {
+      id: "task-1",
+      stage: "proposta",
+      name: "Conferir proposta",
+      slaHours: 2,
+      position: 1,
+      active: true,
+      required: false,
+    },
+    {
+      id: "task-2",
+      stage: "proposta",
+      name: "Validar documentos",
+      slaHours: 3,
+      position: 2,
+      active: true,
+      required: false,
+    },
+  );
+  const snapshot = execute(
+    source,
+    {
+      type: "create",
+      values: {
+        unitId: source.tables["equipes"]![0]!.id,
+        consultor_id: "consultant",
+        canal_id: "channel",
+        imovel: "18592",
+        valor_original: 3200,
+        valor_proposta: 3000,
+        percentual_intermediacao: 50,
+      },
+      people: [
+        { ...emptyPerson(), name: "Cliente da roda", cpf: "52998224725", phone: "47999990000" },
+      ],
+    },
+    actor,
+    new Date(),
+  );
+  await page.goto("/kanban");
+  await page.evaluate(
+    (data) => localStorage.setItem("adim-platform:v1", JSON.stringify(data)),
+    snapshot,
+  );
+  await page.reload();
+  await page.getByRole("button", { name: "Abrir card de Cliente da roda" }).click();
+  await expect(page.getByRole("group", { name: "Seletor da tarefa atual" })).toBeVisible();
+  await page.screenshot({ path: "artifacts/task-wheel.png" });
+  await expect(page.getByRole("button", { name: "Conferir proposta, tarefa atual" })).toBeVisible();
+  await page.getByRole("button", { name: "Validar documentos" }).click();
+  await expect(
+    page.getByRole("button", { name: "Validar documentos, tarefa atual" }),
+  ).toBeVisible();
+  const wheel = page.getByRole("group", { name: "Seletor da tarefa atual" });
+  await wheel.hover();
+  await page.waitForTimeout(220);
+  await page.mouse.wheel(0, -120);
+  await expect(page.getByRole("button", { name: "Conferir proposta, tarefa atual" })).toBeVisible();
+  await wheel.focus();
+  await page.keyboard.press("ArrowDown");
+  await expect(
+    page.getByRole("button", { name: "Validar documentos, tarefa atual" }),
+  ).toBeVisible();
+  await expect(page.getByRole("button", { name: "Editar dados do fechamento" })).toBeVisible();
+  await page.getByRole("button", { name: "Editar dados do fechamento" }).click();
+  await page.getByLabel("Valor da Proposta", { exact: true }).fill("3100");
+  await page.getByRole("button", { name: "Salvar dados do fechamento" }).click();
+  await page.getByRole("button", { name: "Excluir card de teste" }).click();
+  await expect(page.getByRole("alert").last()).toContainText("Excluir o card");
+  await page.getByRole("button", { name: "Cancelar" }).last().click();
+  await expect(page.getByRole("button", { name: "Excluir card de teste" })).toBeVisible();
+  await page.getByRole("button", { name: "Excluir card de teste" }).click();
+  await page.getByLabel("Justificativa da exclusão").fill("Card criado para teste");
+  await page.getByRole("button", { name: "Confirmar exclusão" }).click();
+  await expect(page.getByRole("button", { name: "Abrir card de Cliente da roda" })).toHaveCount(0);
+  const result = await page.evaluate(() => JSON.parse(localStorage.getItem("adim-platform:v1")!));
+  expect(result.cards[0].deletedAt).not.toBeNull();
+  expect(result.cards[0].valor_proposta).toBe(3100);
+  expect(result.taskExecutions).toHaveLength(4);
 });
 test("mantém navegação e rolagem do Kanban no celular", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });

@@ -56,6 +56,7 @@ export function FieldControl({
   data,
   values = {},
   disabled = false,
+  readOnly = false,
 }: {
   field: FieldDefinition;
   value: Value | undefined;
@@ -63,9 +64,31 @@ export function FieldControl({
   data: AppData;
   values?: Record<string, Value>;
   disabled?: boolean;
+  readOnly?: boolean;
 }) {
   if (field.type === "attachment") return null;
   const name = field.name;
+  if (readOnly) {
+    const shown =
+      value == null || value === ""
+        ? "—"
+        : field.type === "select"
+          ? (fieldOptions(data, field, values).find((option) => option.id === value)?.name ??
+            String(value))
+          : field.type === "boolean"
+            ? value
+              ? "Sim"
+              : "Não"
+            : field.type === "currency" && typeof value === "number"
+              ? new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value)
+              : String(value);
+    return (
+      <div className="min-w-0 rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2">
+        <p className="field-label">{name}</p>
+        <p className="mt-1 break-words text-sm normal-case text-[var(--foreground)]">{shown}</p>
+      </div>
+    );
+  }
   const control = {
     className: "input mt-1 text-sm normal-case tracking-normal",
     disabled,
@@ -153,6 +176,7 @@ export function GeneralFields({
   onChange,
   onCustom,
   includeIdentity = true,
+  readOnly = false,
 }: {
   data: AppData;
   values: Record<string, Value>;
@@ -160,6 +184,7 @@ export function GeneralFields({
   onChange: (key: string, value: Value) => void;
   onCustom: (key: string, value: Value) => void;
   includeIdentity?: boolean;
+  readOnly?: boolean;
 }) {
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -193,6 +218,7 @@ export function GeneralFields({
                   : custom[field.id]
             }
             disabled={field.id === "supervisorId"}
+            readOnly={readOnly}
             onChange={(value) =>
               field.native ? onChange(field.id, value) : onCustom(field.id, value)
             }

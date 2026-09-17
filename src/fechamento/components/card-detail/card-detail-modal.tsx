@@ -1,10 +1,11 @@
 import { useState, type FormEvent } from "react";
-import { Clock3, History, MessageSquare, Send, Trash2 } from "lucide-react";
+import { Clock3, History, MessageSquare, Pencil, Send, Trash2 } from "lucide-react";
 import { useBoard } from "../providers/board-provider";
 import { Modal } from "../ui/modal";
 import { TransitionDialog } from "../board/transition-dialog";
 import { GeneralFields, PeopleEditor, FieldControl } from "./fields";
 import { Attachments } from "./attachments";
+import { TaskWheelSelector } from "./task-wheel-selector";
 import {
   activeTask,
   canRecover,
@@ -38,6 +39,10 @@ export function CardDetailModal({ cardId, onClose }: { cardId: string; onClose: 
   const task = activeTask(data, card);
   const tasks = taskSequence(data, card);
   const canWrite = currentActor().permissions.includes("write");
+  const taskExecutions = data.taskExecutions.filter(
+    (entry) => entry.stageRunId === card.stageRunId,
+  );
+  const taskSla = slaState(data, card, now);
   return (
     <Modal
       title={
@@ -49,6 +54,25 @@ export function CardDetailModal({ cardId, onClose }: { cardId: string; onClose: 
         </span>
       }
       description={stageName(card.listId)}
+      headerAction={
+        <TaskWheelSelector
+          tasks={tasks}
+          activeTaskId={task?.taskId ?? null}
+          lastTaskId={taskExecutions.at(-1)?.taskId ?? null}
+          executedTaskIds={taskExecutions.map((entry) => entry.taskId)}
+          dueAt={taskSla.task}
+          now={now}
+          disabled={
+            !canWrite ||
+            pending ||
+            card.listId === "concluido" ||
+            ["cancelado", "reprovado"].includes(card.listId)
+          }
+          onSelect={async (taskId) =>
+            Boolean(await mutate({ type: "task", cardId, taskId }, "Tarefa atualizada."))
+          }
+        />
+      }
       onClose={onClose}
       size="fullscreen"
     >
@@ -133,24 +157,9 @@ export function CardDetailModal({ cardId, onClose }: { cardId: string; onClose: 
           <SlaPanel card={card} />
           <section>
             <h3 className="field-label mb-3">Tarefas da etapa</h3>
-            <div className="space-y-2">
-              {tasks.map((t) => (
-                <button
-                  key={t.id}
-                  disabled={!canWrite || pending || task?.taskId === t.id}
-                  className={cn(
-                    "button-secondary h-auto min-h-10 w-full justify-start text-left",
-                    task?.taskId === t.id && "border-primary text-primary",
-                  )}
-                  onClick={() =>
-                    void mutate({ type: "task", cardId, taskId: t.id }, "Tarefa atualizada.")
-                  }
-                >
-                  {task?.taskId === t.id ? "● " : "○ "}
-                  {t.name} · {t.slaHours}h
-                </button>
-              ))}
-            </div>
+            <p className="text-xs text-muted-foreground">
+              {task ? `${task.name} · ${task.slaHours}h` : "Nenhuma tarefa ativa."}
+            </p>
             {task && (
               <button
                 disabled={pending || !canWrite}
@@ -230,7 +239,7 @@ export function CardDetailModal({ cardId, onClose }: { cardId: string; onClose: 
           {currentActor().permissions.includes("delete") && (
             <button className="button-ghost w-full text-rose-700" onClick={() => setDeleting(true)}>
               <Trash2 size={14} />
-              Exclusão administrativa
+              Excluir card de teste
             </button>
           )}
         </aside>
@@ -251,7 +260,7 @@ export function CardDetailModal({ cardId, onClose }: { cardId: string; onClose: 
         />
       )}
       {deleting && (
-        <Modal title="Exclusão administrativa" onClose={() => setDeleting(false)} size="medium">
+        <Modal title="Confirmar exclusão do card" onClose={() => setDeleting(false)} size="medium">
           <form
             className="space-y-4 p-5"
             onSubmit={async (e) => {
@@ -265,8 +274,15 @@ export function CardDetailModal({ cardId, onClose }: { cardId: string; onClose: 
                 onClose();
             }}
           >
+            <p
+              role="alert"
+              className="rounded-xl border border-rose-300 bg-rose-50 p-3 text-sm text-rose-900"
+            >
+              Excluir o card de {card.cliente_nome}? Ele sairá do Kanban e a ação será registrada na
+              auditoria.
+            </p>
             <label className="field-label">
-              Justificativa
+              Justificativa da exclusão
               <textarea
                 required
                 className="input mt-1"
@@ -274,9 +290,14 @@ export function CardDetailModal({ cardId, onClose }: { cardId: string; onClose: 
                 onChange={(e) => setDeleteReason(e.target.value)}
               />
             </label>
-            <button className="button-primary" disabled={pending}>
-              Confirmar exclusão lógica
-            </button>
+            <div className="flex justify-end gap-2">
+              <button type="button" className="button-secondary" onClick={() => setDeleting(false)}>
+                Cancelar
+              </button>
+              <button className="button-primary" disabled={pending || !deleteReason.trim()}>
+                Confirmar exclusão
+              </button>
+            </div>
           </form>
         </Modal>
       )}
@@ -285,6 +306,7 @@ export function CardDetailModal({ cardId, onClose }: { cardId: string; onClose: 
 }
 function GeneralEditor({ card }: { card: Card }) {
   const { data, mutate, notify, pending } = useBoard();
+  const [editing, setEditing] = useState(false);
   const [changes, setChanges] = useState<Record<string, Value>>({});
   const [custom, setCustom] = useState<Record<string, Value>>({});
   const saved = Object.fromEntries(
@@ -308,26 +330,45 @@ function GeneralEditor({ card }: { card: Card }) {
       if (!(await mutate({ type: "custom", cardId: card.id, fieldId, value }))) return;
     setChanges({});
     setCustom({});
+    setEditing(false);
     notify("Dados do fechamento salvos.");
   }
   return (
     <>
+      {currentActor().permissions.includes("write") && !editing && (
+        <button type="button" className="button-secondary" onClick={() => setEditing(true)}>
+          <Pencil size={14} /> Editar dados do fechamento
+        </button>
+      )}
       <form onSubmit={(e) => void save(e)} className="space-y-4">
-        <fieldset disabled={!currentActor().permissions.includes("write") || pending}>
+        <fieldset disabled={!editing || pending}>
           <GeneralFields
             data={data}
             values={{ ...saved, ...changes }}
             custom={{ ...card.custom, ...custom }}
             onChange={(key, value) => setChanges((c) => ({ ...c, [key]: value }))}
             onCustom={(key, value) => setCustom((c) => ({ ...c, [key]: value }))}
+            readOnly={!editing}
           />
         </fieldset>
-        <button
-          disabled={pending || !currentActor().permissions.includes("write")}
-          className="button-primary"
-        >
-          Salvar dados do fechamento
-        </button>
+        {editing && (
+          <div className="flex flex-wrap gap-2">
+            <button disabled={pending} className="button-primary">
+              Salvar dados do fechamento
+            </button>
+            <button
+              type="button"
+              className="button-secondary"
+              onClick={() => {
+                setChanges({});
+                setCustom({});
+                setEditing(false);
+              }}
+            >
+              Cancelar
+            </button>
+          </div>
+        )}
       </form>
       <AttachmentSection card={card} />
     </>
@@ -335,27 +376,62 @@ function GeneralEditor({ card }: { card: Card }) {
 }
 function PeopleSection({ card }: { card: Card }) {
   const { data, mutate, pending } = useBoard();
+  const [editing, setEditing] = useState(false);
   const [people, setPeople] = useState<PersonDraft[]>(() =>
     data.people.filter((p) => p.cardId === card.id).map(({ cardId: _cardId, ...p }) => p),
   );
+  const savedPeople = data.people.filter((person) => person.cardId === card.id && person.active);
   return (
     <>
+      {currentActor().permissions.includes("write") && !editing && (
+        <button type="button" className="button-secondary" onClick={() => setEditing(true)}>
+          <Pencil size={14} /> Editar pessoas
+        </button>
+      )}
       <form
         className="space-y-4"
         onSubmit={async (e) => {
           e.preventDefault();
-          await mutate({ type: "people", cardId: card.id, people }, "Pessoas atualizadas.");
+          if (await mutate({ type: "people", cardId: card.id, people }, "Pessoas atualizadas."))
+            setEditing(false);
         }}
       >
-        <fieldset disabled={!currentActor().permissions.includes("write") || pending}>
-          <PeopleEditor data={data} people={people} onChange={setPeople} />
-        </fieldset>
-        <button
-          className="button-primary"
-          disabled={pending || !currentActor().permissions.includes("write")}
-        >
-          Salvar pessoas
-        </button>
+        {editing ? (
+          <>
+            <fieldset disabled={pending}>
+              <PeopleEditor data={data} people={people} onChange={setPeople} />
+            </fieldset>
+            <div className="flex gap-2">
+              <button className="button-primary" disabled={pending}>
+                Salvar pessoas
+              </button>
+              <button
+                type="button"
+                className="button-secondary"
+                onClick={() => {
+                  setPeople(savedPeople.map(({ cardId: _cardId, ...person }) => person));
+                  setEditing(false);
+                }}
+              >
+                Cancelar
+              </button>
+            </div>
+          </>
+        ) : (
+          <div className="grid gap-3 sm:grid-cols-2">
+            {savedPeople.map((person) => (
+              <div
+                key={person.id}
+                className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-3 text-sm"
+              >
+                <p className="font-semibold">{person.name || "Sem nome"}</p>
+                <p className="text-xs text-muted-foreground">
+                  {person.role} · CPF {person.cpf || "—"} · {person.phone || "Sem telefone"}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
       </form>
       <AttachmentSection card={card} />
     </>
@@ -383,60 +459,78 @@ function AttachmentSection({ card }: { card: Card }) {
 }
 function AnalysisEditor({ card }: { card: Card }) {
   const { data, mutate, pending } = useBoard();
+  const [editing, setEditing] = useState(false);
   const [analysis, setAnalysis] = useState<Analysis>(card.analysis);
   return (
-    <form
-      className="space-y-4"
-      onSubmit={async (e) => {
-        e.preventDefault();
-        await mutate({ type: "analysis", cardId: card.id, analysis }, "Análise registrada.");
-      }}
-    >
-      <fieldset
+    <div className="space-y-4">
+      {currentActor().permissions.includes("write") && !editing && (
+        <button type="button" className="button-secondary" onClick={() => setEditing(true)}>
+          <Pencil size={14} /> Editar análise
+        </button>
+      )}
+      <form
         className="space-y-4"
-        disabled={!currentActor().permissions.includes("write") || pending}
+        onSubmit={async (e) => {
+          e.preventDefault();
+          if (await mutate({ type: "analysis", cardId: card.id, analysis }, "Análise registrada."))
+            setEditing(false);
+        }}
       >
-        {data.fields
-          .filter(
-            (f) =>
-              f.active &&
-              f.section === "analise" &&
-              ["analise.reasonId", "analise.explanation", "analise.opinion"].includes(f.id),
-          )
-          .sort(
-            (a, b) =>
-              ["analise.reasonId", "analise.explanation", "analise.opinion"].indexOf(a.id) -
-              ["analise.reasonId", "analise.explanation", "analise.opinion"].indexOf(b.id),
-          )
-          .map((field) => (
-            <FieldControl
-              key={field.id}
-              field={
-                field.id === "analise.opinion"
-                  ? { ...field, name: "Pendência de documentação / Aprovação da Direção" }
-                  : field
-              }
-              data={data}
-              value={
-                field.native
-                  ? (analysis as unknown as Record<string, Value>)[field.id.split(".").at(-1)!]
-                  : card.custom[field.id]
-              }
-              onChange={(value) =>
-                field.native
-                  ? setAnalysis((a) => ({ ...a, [field.id.split(".").at(-1)!]: value }))
-                  : void mutate({ type: "custom", cardId: card.id, fieldId: field.id, value })
-              }
-            />
-          ))}
-      </fieldset>
-      <button
-        className="button-primary"
-        disabled={pending || !currentActor().permissions.includes("write")}
-      >
-        Salvar análise
-      </button>
-    </form>
+        <fieldset className="space-y-4" disabled={!editing || pending}>
+          {data.fields
+            .filter(
+              (f) =>
+                f.active &&
+                f.section === "analise" &&
+                ["analise.reasonId", "analise.explanation", "analise.opinion"].includes(f.id),
+            )
+            .sort(
+              (a, b) =>
+                ["analise.reasonId", "analise.explanation", "analise.opinion"].indexOf(a.id) -
+                ["analise.reasonId", "analise.explanation", "analise.opinion"].indexOf(b.id),
+            )
+            .map((field) => (
+              <FieldControl
+                key={field.id}
+                field={
+                  field.id === "analise.opinion"
+                    ? { ...field, name: "Pendência de documentação / Aprovação da Direção" }
+                    : field
+                }
+                data={data}
+                readOnly={!editing}
+                value={
+                  field.native
+                    ? (analysis as unknown as Record<string, Value>)[field.id.split(".").at(-1)!]
+                    : card.custom[field.id]
+                }
+                onChange={(value) =>
+                  field.native
+                    ? setAnalysis((a) => ({ ...a, [field.id.split(".").at(-1)!]: value }))
+                    : void mutate({ type: "custom", cardId: card.id, fieldId: field.id, value })
+                }
+              />
+            ))}
+        </fieldset>
+        {editing && (
+          <div className="flex gap-2">
+            <button className="button-primary" disabled={pending}>
+              Salvar análise
+            </button>
+            <button
+              type="button"
+              className="button-secondary"
+              onClick={() => {
+                setAnalysis(card.analysis);
+                setEditing(false);
+              }}
+            >
+              Cancelar
+            </button>
+          </div>
+        )}
+      </form>
+    </div>
   );
 }
 function Comments({ cardId }: { cardId: string }) {

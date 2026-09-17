@@ -180,3 +180,171 @@
   background: var(--glass-strong);
   backdrop-filter: blur(24px) saturate(150%);
 }
+
+.task-wheel {
+  width: min(224px, 48vw);
+  flex: none;
+  outline: none;
+  touch-action: none;
+}
+.task-wheel:focus-visible .task-wheel__surface {
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
+}
+.task-wheel--empty {
+  width: min(176px, 42vw);
+}
+.task-wheel--empty .task-wheel__surface {
+  height: 48px;
+}
+.task-wheel--empty .task-wheel__indicator,
+.task-wheel--empty .task-wheel__surface::before,
+.task-wheel--empty .task-wheel__surface::after {
+  display: none;
+}
+.task-wheel__caption {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--muted-foreground);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-align: center;
+  text-transform: uppercase;
+}
+.task-wheel__surface {
+  position: relative;
+  height: 105px;
+  overflow: hidden;
+  border: 1px solid color-mix(in oklab, var(--border) 80%, var(--foreground));
+  border-radius: 18px;
+  background:
+    repeating-linear-gradient(
+      115deg,
+      transparent 0 3px,
+      color-mix(in oklab, var(--foreground) 2%, transparent) 3px 4px
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in oklab, var(--secondary) 86%, var(--card)),
+      var(--card) 48%,
+      color-mix(in oklab, var(--secondary) 65%, var(--card))
+    );
+  box-shadow:
+    inset 0 7px 14px -9px color-mix(in oklab, var(--foreground) 25%, transparent),
+    inset 0 -7px 14px -9px color-mix(in oklab, var(--foreground) 25%, transparent),
+    var(--elev-1);
+  perspective: 280px;
+}
+.task-wheel__surface::before,
+.task-wheel__surface::after {
+  position: absolute;
+  right: 10px;
+  left: 10px;
+  z-index: 2;
+  height: 1px;
+  background: color-mix(in oklab, var(--border) 72%, transparent);
+  content: "";
+}
+.task-wheel__surface::before {
+  top: 29px;
+}
+.task-wheel__surface::after {
+  bottom: 29px;
+}
+.task-wheel__indicator {
+  position: absolute;
+  top: 48px;
+  left: 8px;
+  z-index: 5;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--primary);
+  box-shadow:
+    0 0 0 3px color-mix(in oklab, var(--primary) 17%, transparent),
+    0 0 12px color-mix(in oklab, var(--primary) 55%, transparent);
+}
+.task-wheel__item {
+  position: absolute;
+  top: 30px;
+  right: 10px;
+  left: 22px;
+  z-index: 3;
+  display: flex;
+  height: 45px;
+  align-items: center;
+  gap: 6px;
+  border-radius: 8px;
+  color: var(--foreground);
+  text-align: left;
+  transition:
+    transform 0.65s cubic-bezier(0.19, 1, 0.22, 1),
+    opacity 0.65s cubic-bezier(0.19, 1, 0.22, 1),
+    filter 0.65s cubic-bezier(0.19, 1, 0.22, 1);
+}
+.task-wheel__item--previous {
+  transform: translateY(-31px) rotateX(-46deg) scale(0.83);
+  opacity: 0.42;
+  filter: blur(0.55px);
+}
+.task-wheel__item--next {
+  transform: translateY(31px) rotateX(46deg) scale(0.83);
+  opacity: 0.42;
+  filter: blur(0.55px);
+}
+.task-wheel__item--active {
+  transform: translateY(0) rotateX(0);
+  opacity: 1;
+  font-weight: 800;
+}
+.task-wheel__item:not(:disabled):hover {
+  opacity: 0.9;
+}
+.task-wheel__number {
+  flex: none;
+  color: var(--primary);
+  font-size: 10px;
+  font-weight: 900;
+}
+.task-wheel__name {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  font-size: 11px;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+  text-transform: uppercase;
+}
+.task-wheel__glass {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  background: linear-gradient(
+    130deg,
+    color-mix(in oklab, white 25%, transparent),
+    transparent 38%,
+    color-mix(in oklab, var(--foreground) 5%, transparent)
+  );
+  pointer-events: none;
+}
+.task-wheel__empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--muted-foreground);
+  font-size: 11px;
+}
+.task-wheel__sla {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted-foreground);
+  font-size: 10px;
+  text-align: center;
+}
+.task-wheel__sla--late {
+  color: var(--destructive);
+  font-weight: 700;
+}

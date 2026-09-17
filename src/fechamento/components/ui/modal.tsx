@@ -9,12 +9,14 @@ const modalStack: string[] = [];
 export function Modal({
   title,
   description,
+  headerAction,
   onClose,
   children,
   size = "large",
 }: {
   title: ReactNode;
   description?: string;
+  headerAction?: ReactNode;
   onClose: () => void;
   children: ReactNode;
   size?: "medium" | "large" | "fullscreen";
@@ -82,7 +84,7 @@ export function Modal({
             : `max-h-[94vh] rounded-3xl ${size === "large" ? "max-w-6xl" : "max-w-2xl"}`
         }`}
       >
-        <div className="flex items-start justify-between border-b border-[var(--border)] px-5 py-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border)] px-5 py-4">
           <div className="min-w-0">
             <h2
               id={`${modalId}-title`}
@@ -96,14 +98,17 @@ export function Modal({
               </p>
             )}
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="icon-button ml-3"
-            aria-label="Fechar diálogo"
-          >
-            <X size={19} />
-          </button>
+          <div className="ml-auto flex items-center gap-3">
+            {headerAction}
+            <button
+              type="button"
+              onClick={onClose}
+              className="icon-button"
+              aria-label="Fechar diálogo"
+            >
+              <X size={19} />
+            </button>
+          </div>
         </div>
         {children}
       </div>

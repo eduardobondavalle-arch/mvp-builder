@@ -22,6 +22,6 @@ export const platform = () => (typeof window === "undefined" ? undefined : windo
 export const localActor: Actor = {
   id: "local-operation",
   name: "Operação local",
-  permissions: ["read", "write", "configure"],
+  permissions: ["read", "write", "configure", "delete"],
 };
 export const currentActor = () => platform()?.actor ?? localActor;
