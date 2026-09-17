@@ -100,9 +100,16 @@ test("cria proposta, move, registra análise e comentário, cancela e recupera o
   });
   const cardBounds = await cardContent.boundingBox();
   expect(cardBounds).not.toBeNull();
-  await page.mouse.move(cardBounds!.x + cardBounds!.width / 2, cardBounds!.y + cardBounds!.height / 2);
+  await page.mouse.move(
+    cardBounds!.x + cardBounds!.width / 2,
+    cardBounds!.y + cardBounds!.height / 2,
+  );
   await page.mouse.down();
-  await page.mouse.move(cardBounds!.x + cardBounds!.width / 2 + 25, cardBounds!.y + cardBounds!.height / 2 + 10, { steps: 5 });
+  await page.mouse.move(
+    cardBounds!.x + cardBounds!.width / 2 + 25,
+    cardBounds!.y + cardBounds!.height / 2 + 10,
+    { steps: 5 },
+  );
   await expect(page.locator(".kanban-card-wobble")).toBeVisible();
   await page.mouse.up();
   const result = await page.evaluate(() => JSON.parse(localStorage.getItem("adim-platform:v1")!));

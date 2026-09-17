@@ -126,8 +126,12 @@
 }
 
 @keyframes kanban-card-wobble {
-  from { rotate: -2deg; }
-  to { rotate: 2deg; }
+  from {
+    rotate: -2deg;
+  }
+  to {
+    rotate: 2deg;
+  }
 }
 
 .kanban-board {

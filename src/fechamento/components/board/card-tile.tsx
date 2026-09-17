@@ -64,6 +64,7 @@ export function CardTile({
       ref={setNodeRef}
       {...attributes}
       {...listeners}
+      aria-label={`Arrastar card de ${card.cliente_nome}`}
       style={style}
       className={cn(
         "kanban-card group relative overflow-hidden rounded-xl border border-slate-200 bg-white p-3 shadow-card transition hover:border-slate-300 hover:shadow-md",
