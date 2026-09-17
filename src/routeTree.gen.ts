@@ -20,6 +20,7 @@ import { Route as AuthenticatedCiclosRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedKanbanRouteImport } from './routes/_authenticated/kanban'
 import { Route as AuthenticatedRegistroDiarioRouteImport } from './routes/_authenticated/registro-diario'
+import { Route as AuthenticatedRelatorioFechamentoRouteImport } from './routes/_authenticated/relatorio-fechamento'
 import { Route as AuthenticatedRelatoriosRouteImport } from './routes/_authenticated/relatorios'
 import { Route as AuthenticatedTvRouteImport } from './routes/_authenticated/tv'
 
@@ -78,6 +79,12 @@ const AuthenticatedRegistroDiarioRoute =
     path: '/registro-diario',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedRelatorioFechamentoRoute =
+  AuthenticatedRelatorioFechamentoRouteImport.update({
+    id: '/relatorio-fechamento',
+    path: '/relatorio-fechamento',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedRelatoriosRoute = AuthenticatedRelatoriosRouteImport.update({
   id: '/relatorios',
   path: '/relatorios',
@@ -100,6 +107,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/kanban': typeof AuthenticatedKanbanRoute
   '/registro-diario': typeof AuthenticatedRegistroDiarioRoute
+  '/relatorio-fechamento': typeof AuthenticatedRelatorioFechamentoRoute
   '/relatorios': typeof AuthenticatedRelatoriosRoute
   '/tv': typeof AuthenticatedTvRoute
 }
@@ -114,6 +122,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/kanban': typeof AuthenticatedKanbanRoute
   '/registro-diario': typeof AuthenticatedRegistroDiarioRoute
+  '/relatorio-fechamento': typeof AuthenticatedRelatorioFechamentoRoute
   '/relatorios': typeof AuthenticatedRelatoriosRoute
   '/tv': typeof AuthenticatedTvRoute
 }
@@ -130,6 +139,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/kanban': typeof AuthenticatedKanbanRoute
   '/_authenticated/registro-diario': typeof AuthenticatedRegistroDiarioRoute
+  '/_authenticated/relatorio-fechamento': typeof AuthenticatedRelatorioFechamentoRoute
   '/_authenticated/relatorios': typeof AuthenticatedRelatoriosRoute
   '/_authenticated/tv': typeof AuthenticatedTvRoute
 }
@@ -146,6 +156,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/kanban'
     | '/registro-diario'
+    | '/relatorio-fechamento'
     | '/relatorios'
     | '/tv'
   fileRoutesByTo: FileRoutesByTo
@@ -160,6 +171,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/kanban'
     | '/registro-diario'
+    | '/relatorio-fechamento'
     | '/relatorios'
     | '/tv'
   id:
@@ -175,6 +187,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/kanban'
     | '/_authenticated/registro-diario'
+    | '/_authenticated/relatorio-fechamento'
     | '/_authenticated/relatorios'
     | '/_authenticated/tv'
   fileRoutesById: FileRoutesById
@@ -265,6 +278,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRegistroDiarioRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/relatorio-fechamento': {
+      id: '/_authenticated/relatorio-fechamento'
+      path: '/relatorio-fechamento'
+      fullPath: '/relatorio-fechamento'
+      preLoaderRoute: typeof AuthenticatedRelatorioFechamentoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/relatorios': {
       id: '/_authenticated/relatorios'
       path: '/relatorios'
@@ -290,6 +310,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedKanbanRoute: typeof AuthenticatedKanbanRoute
   AuthenticatedRegistroDiarioRoute: typeof AuthenticatedRegistroDiarioRoute
+  AuthenticatedRelatorioFechamentoRoute: typeof AuthenticatedRelatorioFechamentoRoute
   AuthenticatedRelatoriosRoute: typeof AuthenticatedRelatoriosRoute
   AuthenticatedTvRoute: typeof AuthenticatedTvRoute
 }
@@ -302,6 +323,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedKanbanRoute: AuthenticatedKanbanRoute,
   AuthenticatedRegistroDiarioRoute: AuthenticatedRegistroDiarioRoute,
+  AuthenticatedRelatorioFechamentoRoute: AuthenticatedRelatorioFechamentoRoute,
   AuthenticatedRelatoriosRoute: AuthenticatedRelatoriosRoute,
   AuthenticatedTvRoute: AuthenticatedTvRoute,
 }

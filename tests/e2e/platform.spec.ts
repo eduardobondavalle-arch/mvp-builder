@@ -21,6 +21,7 @@ test("abre sem login e mantém as telas comerciais", async ({ page }) => {
     "/ciclos",
     "/cadastros",
     "/relatorios",
+    "/relatorio-fechamento",
     "/auditoria",
     "/tv",
     "/kanban",
@@ -208,6 +209,72 @@ test("roda troca a tarefa atual e exclusão do card exige confirmação", async 
   expect(result.cards[0].deletedAt).not.toBeNull();
   expect(result.cards[0].valor_proposta).toBe(3100);
   expect(result.taskExecutions).toHaveLength(4);
+});
+test("relatório de fechamento usa os cards que alcançaram a etapa e filtra a coorte", async ({
+  page,
+}) => {
+  const actor: Actor = {
+    id: "e2e",
+    name: "Teste",
+    permissions: ["read", "write", "configure", "delete"],
+  };
+  const source = createInitialData();
+  const created = execute(
+    source,
+    {
+      type: "create",
+      values: {
+        unitId: source.tables["equipes"]![0]!.id,
+        consultor_id: "consultant",
+        canal_id: "channel",
+        imovel: "R-01",
+        valor_original: 3200,
+        valor_proposta: 3000,
+        percentual_intermediacao: 50,
+      },
+      people: [
+        {
+          ...emptyPerson(),
+          name: "Cliente do relatório",
+          cpf: "52998224725",
+          phone: "47999990000",
+        },
+      ],
+    },
+    actor,
+    new Date(),
+  );
+  const snapshot = execute(
+    created,
+    {
+      type: "move",
+      cardId: created.cards[0]!.id,
+      destination: "fechamento_enviado",
+      explanation: "",
+      reasonId: "",
+    },
+    actor,
+    new Date(),
+  );
+  await page.goto("/relatorio-fechamento");
+  await page.evaluate(
+    (data) => localStorage.setItem("adim-platform:v1", JSON.stringify(data)),
+    snapshot,
+  );
+  await page.reload();
+  await expect(page.getByRole("heading", { name: "Relatório de Fechamento" })).toBeVisible({
+    timeout: 20_000,
+  });
+  const totalCards = page
+    .getByRole("article")
+    .filter({ has: page.getByText("Cards analisados", { exact: true }) });
+  await expect(totalCards).toContainText("1");
+  await expect(page.getByText("FECHAMENTO ENVIADO", { exact: true }).first()).toBeVisible();
+  const downloaded = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Exportar PDF" }).click();
+  expect((await downloaded).suggestedFilename()).toBe("relatorio-fechamento-adim.pdf");
+  await page.getByLabel("Entrada em Fechamento: de").fill("2099-01-01");
+  await expect(totalCards).toContainText("0");
 });
 test("mantém navegação e rolagem do Kanban no celular", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });

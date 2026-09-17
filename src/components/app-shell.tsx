@@ -27,6 +27,7 @@ import { limparUsuario } from "@/lib/usuario";
 const nav = [
   { to: "/dashboard", label: "Geral", icon: ChartLineUp },
   { to: "/kanban", label: "Fechamento", icon: Kanban },
+  { to: "/relatorio-fechamento", label: "Relatório Fechamento", icon: FileText },
   { to: "/registro-diario", label: "Registro Diário", icon: CalendarCheck },
   { to: "/ciclos", label: "Ciclos e Metas", icon: Target },
   { to: "/cadastros", label: "Cadastros", icon: SlidersHorizontal },
