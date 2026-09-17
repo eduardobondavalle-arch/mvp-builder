@@ -111,7 +111,7 @@ export function CardDetailModal({ cardId, onClose }: { cardId: string; onClose: 
               </>
             )}
             {tab === "pessoas" && <PeopleSection card={card} />}
-            {tab === "analise" && <AnalysisEditor card={card} />}
+            {tab === "analise" && <AnalysisEditor key={card.listId} card={card} />}
             {tab === "auditoria" && (
               <div className="space-y-5">
                 <h3 className="flex items-center gap-2 text-sm font-bold">
@@ -397,11 +397,25 @@ function AnalysisEditor({ card }: { card: Card }) {
         disabled={!currentActor().permissions.includes("write") || pending}
       >
         {data.fields
-          .filter((f) => f.active && f.section === "analise")
+          .filter(
+            (f) =>
+              f.active &&
+              f.section === "analise" &&
+              ["analise.reasonId", "analise.explanation", "analise.opinion"].includes(f.id),
+          )
+          .sort(
+            (a, b) =>
+              ["analise.reasonId", "analise.explanation", "analise.opinion"].indexOf(a.id) -
+              ["analise.reasonId", "analise.explanation", "analise.opinion"].indexOf(b.id),
+          )
           .map((field) => (
             <FieldControl
               key={field.id}
-              field={field}
+              field={
+                field.id === "analise.opinion"
+                  ? { ...field, name: "Pendência de documentação / Aprovação da Direção" }
+                  : field
+              }
               data={data}
               value={
                 field.native

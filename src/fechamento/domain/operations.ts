@@ -3,6 +3,7 @@ import {
   STAGES,
   NATIVE_FIELDS,
   stageName,
+  supervisorForUnit,
   type AppData,
   type Actor,
   type Stage,
@@ -93,7 +94,7 @@ export const TRANSITIONS: Record<Stage, Stage[]> = {
   proposta: ["fechamento_enviado", "cancelado"],
   fechamento_enviado: ["pendencia", "direcao", "aprovado", "cancelado", "reprovado"],
   pendencia: ["fechamento_enviado"],
-  direcao: ["fechamento_enviado", "aprovado", "cancelado", "reprovado"],
+  direcao: ["fechamento_enviado"],
   aprovado: ["entrega_chaves", "pendencia", "direcao", "cancelado", "reprovado"],
   entrega_chaves: ["concluido", "cancelado"],
   concluido: [],
@@ -680,6 +681,14 @@ function patchCard(card: Card, values: CardPatch, data: AppData) {
     if (empty) card.providedFields = card.providedFields.filter((provided) => provided !== key);
     else if (!card.providedFields.includes(key)) card.providedFields.push(key);
   }
+  if (Object.prototype.hasOwnProperty.call(values, "unitId")) {
+    const unit = data.tables["equipes"]?.find((row) => row.id === card.unitId);
+    card.supervisorId = supervisorForUnit(unit);
+    if (card.supervisorId && !card.providedFields.includes("supervisorId"))
+      card.providedFields.push("supervisorId");
+    if (!card.supervisorId)
+      card.providedFields = card.providedFields.filter((field) => field !== "supervisorId");
+  }
   validateCard(data, card);
 }
 export function emptyPerson(
@@ -1043,6 +1052,7 @@ export function execute(source: AppData, input: Command, actor: Actor, now = new
           }
         }
         if (destination === "pendencia") {
+          card.analysis.opinion = command.explanation;
           event(data, actor, now, card.id, "documentation.pending", "Pendência de documentação", {
             justification: command.explanation,
           });
@@ -1060,6 +1070,7 @@ export function execute(source: AppData, input: Command, actor: Actor, now = new
               readAt: null,
             });
         }
+        if (destination === "direcao") card.analysis.opinion = command.explanation;
         if (destination === "direcao" || card.listId === "direcao")
           event(
             data,

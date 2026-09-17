@@ -20,6 +20,9 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { dataQueries, registrarAuditoria } from "@/lib/data";
+import { BoardProvider } from "@/fechamento/components/providers/board-provider";
+import { CaptorSettings } from "@/fechamento/components/board/board-settings-panel";
+import { supervisorForUnit } from "@/fechamento/domain/types";
 
 export const Route = createFileRoute("/_authenticated/cadastros")({
   head: () => ({
@@ -27,8 +30,7 @@ export const Route = createFileRoute("/_authenticated/cadastros")({
       { title: "Cadastros | Adim Aluguéis" },
       {
         name: "description",
-        content:
-          "Cadastros base da plataforma: equipes, consultores, canais de origem, motivos de perda e motivos de transferência.",
+        content: "Cadastros base da plataforma: unidades, supervisão, consultores e captadores.",
       },
       { property: "og:title", content: "Cadastros | Adim Aluguéis" },
       {
@@ -49,6 +51,7 @@ function CadastrosPage() {
   const qc = useQueryClient();
   const [nome, setNome] = useState<Record<string, string>>({});
   const [equipeNovoConsultor, setEquipeNovoConsultor] = useState("");
+  const [supervisorNovaUnidade, setSupervisorNovaUnidade] = useState("");
 
   const results = useQueries({
     queries: [
@@ -103,6 +106,7 @@ function CadastrosPage() {
     onSuccess: (tabela) => {
       setNome((p) => ({ ...p, [tabela]: "" }));
       setEquipeNovoConsultor("");
+      if (tabela === "equipes") setSupervisorNovaUnidade("");
       invalidar(tabela);
       toast.success("Cadastro criado.");
     },
@@ -123,7 +127,10 @@ function CadastrosPage() {
       patch: Record<string, unknown>;
       anterior: Record<string, unknown>;
     }) => {
-      const { error } = await supabase.from(tabela).update(patch as never).eq("id", id);
+      const { error } = await supabase
+        .from(tabela)
+        .update(patch as never)
+        .eq("id", id);
       if (error) throw new Error(error.message);
       await registrarAuditoria(
         Object.entries(patch).map(([campo, valor]) => ({
@@ -208,6 +215,7 @@ function CadastrosPage() {
     </section>
   );
 
+  const supervisorSugerida = supervisorForUnit({ id: "nova", nome: nome["equipes"] ?? "" });
   return (
     <AppShell
       title="Cadastros"
@@ -221,145 +229,197 @@ function CadastrosPage() {
       )}
 
       {!carregando && (
-      <Tabs defaultValue="pessoas">
-        <TabsList className="mb-6">
-          <TabsTrigger value="pessoas">Equipes e consultores</TabsTrigger>
-          <TabsTrigger value="canais">Canais</TabsTrigger>
-          <TabsTrigger value="motivos">Motivos</TabsTrigger>
-        </TabsList>
+        <Tabs defaultValue="pessoas">
+          <TabsList className="mb-6">
+            <TabsTrigger value="pessoas">Equipes, consultores e captadores</TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="pessoas" className="grid gap-6 lg:grid-cols-2">
-          {listaSimples("equipes", "Equipes", "Unidades de negócio da operação.", equipes)}
+          <TabsContent value="pessoas" className="grid gap-6 lg:grid-cols-2">
+            <section className="panel p-6">
+              <h2 className="text-lg font-semibold">Unidades e supervisão</h2>
+              <p className="mb-4 text-xs text-muted-foreground">
+                A supervisão da unidade é atribuída automaticamente aos cards.
+              </p>
+              <div className="mb-5 flex flex-wrap gap-2">
+                <Input
+                  className="min-w-48 flex-1"
+                  placeholder="Nome da unidade"
+                  aria-label="Nome da nova unidade"
+                  value={nome["equipes"] ?? ""}
+                  onChange={(e) => setNome((p) => ({ ...p, equipes: e.target.value }))}
+                />
+                <Input
+                  className="min-w-48 flex-1"
+                  placeholder="Supervisora"
+                  aria-label="Supervisora da nova unidade"
+                  value={supervisorNovaUnidade || supervisorSugerida}
+                  onChange={(e) => setSupervisorNovaUnidade(e.target.value)}
+                />
+                <Button
+                  disabled={
+                    !nome["equipes"]?.trim() ||
+                    !(supervisorNovaUnidade.trim() || supervisorSugerida)
+                  }
+                  onClick={() =>
+                    criar.mutate({
+                      tabela: "equipes",
+                      extra: { supervisor: supervisorNovaUnidade.trim() || supervisorSugerida },
+                    })
+                  }
+                >
+                  <Plus className="size-4" /> Adicionar
+                </Button>
+              </div>
+              <ul className="divide-y divide-border/60">
+                {equipes.map((e) => (
+                  <li key={e.id} className="grid gap-2 py-3 sm:grid-cols-2">
+                    <Input
+                      defaultValue={e.nome}
+                      aria-label={`Nome de ${e.nome}`}
+                      onBlur={(event) => {
+                        const value = event.target.value.trim();
+                        if (value && value !== e.nome)
+                          atualizar.mutate({
+                            tabela: "equipes",
+                            id: e.id,
+                            referencia: e.nome,
+                            patch: { nome: value },
+                            anterior: { nome: e.nome },
+                          });
+                      }}
+                    />
+                    <Input
+                      key={`${e.id}-${supervisorForUnit(e)}`}
+                      defaultValue={supervisorForUnit(e)}
+                      placeholder="Supervisora"
+                      aria-label={`Supervisão de ${e.nome}`}
+                      onBlur={(event) => {
+                        const value = event.target.value.trim();
+                        const old = supervisorForUnit(e);
+                        if (value !== old)
+                          atualizar.mutate({
+                            tabela: "equipes",
+                            id: e.id,
+                            referencia: e.nome,
+                            patch: { supervisor: value },
+                            anterior: { supervisor: old },
+                          });
+                      }}
+                    />
+                  </li>
+                ))}
+              </ul>
+            </section>
 
-          <section className="panel p-6">
-            <h2 className="text-lg font-semibold">Consultores</h2>
-            <p className="mb-4 text-xs text-muted-foreground">
-              Consultores inativos deixam de receber metas e lançamentos diários, mas continuam nos
-              indicadores históricos.
-            </p>
-            <div className="mb-5 grid gap-2 sm:grid-cols-[1fr_auto_auto]">
-              <Input
-                placeholder="Nome do consultor"
-                aria-label="Nome do novo consultor"
-                value={nome["consultores"] ?? ""}
-                onChange={(e) => setNome((p) => ({ ...p, consultores: e.target.value }))}
-              />
-              <Select value={equipeNovoConsultor} onValueChange={setEquipeNovoConsultor}>
-                <SelectTrigger className="sm:w-44">
-                  <SelectValue placeholder="Equipe" />
-                </SelectTrigger>
-                <SelectContent>
-                  {equipes.map((e) => (
-                    <SelectItem key={e.id} value={e.id}>
-                      {e.nome}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Button
-                onClick={() =>
-                  criar.mutate({
-                    tabela: "consultores",
-                    extra: { equipe_id: equipeNovoConsultor || null },
-                  })
-                }
-              >
-                <Plus className="size-4" /> Adicionar
-              </Button>
-            </div>
-            <ul className="divide-y divide-border/60">
-              {consultores.map((c) => (
-                <li key={c.id} className="flex flex-wrap items-center gap-3 py-3">
-                  <Input
-                    className="h-9 flex-1"
-                    defaultValue={c.nome}
-                    aria-label={`Nome de ${c.nome}`}
-                    onBlur={(e) => {
-                      const valor = e.target.value.trim();
-                      if (!valor || valor === c.nome) return;
-                      atualizar.mutate({
-                        tabela: "consultores",
-                        id: c.id,
-                        referencia: c.nome,
-                        patch: { nome: valor },
-                        anterior: { nome: c.nome },
-                      });
-                    }}
-                  />
-                  <Select
-                    value={c.equipe_id ?? ""}
-                    onValueChange={(v) =>
-                      atualizar.mutate({
-                        tabela: "consultores",
-                        id: c.id,
-                        referencia: c.nome,
-                        patch: { equipe_id: v },
-                        anterior: { equipe_id: c.equipe_id },
-                      })
-                    }
-                  >
-                    <SelectTrigger className="h-9 w-40">
-                      <SelectValue placeholder="Sem equipe" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {equipes.map((e) => (
-                        <SelectItem key={e.id} value={e.id}>
-                          {e.nome}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <label className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Switch
-                      checked={c.ativo}
-                      onCheckedChange={(v) =>
+            <section className="panel p-6">
+              <h2 className="text-lg font-semibold">Consultores</h2>
+              <p className="mb-4 text-xs text-muted-foreground">
+                Consultores inativos deixam de receber metas e lançamentos diários, mas continuam
+                nos indicadores históricos.
+              </p>
+              <div className="mb-5 grid gap-2 sm:grid-cols-[1fr_auto_auto]">
+                <Input
+                  placeholder="Nome do consultor"
+                  aria-label="Nome do novo consultor"
+                  value={nome["consultores"] ?? ""}
+                  onChange={(e) => setNome((p) => ({ ...p, consultores: e.target.value }))}
+                />
+                <Select value={equipeNovoConsultor} onValueChange={setEquipeNovoConsultor}>
+                  <SelectTrigger className="sm:w-44">
+                    <SelectValue placeholder="Equipe" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {equipes.map((e) => (
+                      <SelectItem key={e.id} value={e.id}>
+                        {e.nome}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button
+                  onClick={() =>
+                    criar.mutate({
+                      tabela: "consultores",
+                      extra: { equipe_id: equipeNovoConsultor || null },
+                    })
+                  }
+                >
+                  <Plus className="size-4" /> Adicionar
+                </Button>
+              </div>
+              <ul className="divide-y divide-border/60">
+                {consultores.map((c) => (
+                  <li key={c.id} className="flex flex-wrap items-center gap-3 py-3">
+                    <Input
+                      className="h-9 flex-1"
+                      defaultValue={c.nome}
+                      aria-label={`Nome de ${c.nome}`}
+                      onBlur={(e) => {
+                        const valor = e.target.value.trim();
+                        if (!valor || valor === c.nome) return;
                         atualizar.mutate({
                           tabela: "consultores",
                           id: c.id,
                           referencia: c.nome,
-                          patch: { ativo: v },
-                          anterior: { ativo: c.ativo },
+                          patch: { nome: valor },
+                          anterior: { nome: c.nome },
+                        });
+                      }}
+                    />
+                    <Select
+                      value={c.equipe_id ?? ""}
+                      onValueChange={(v) =>
+                        atualizar.mutate({
+                          tabela: "consultores",
+                          id: c.id,
+                          referencia: c.nome,
+                          patch: { equipe_id: v },
+                          anterior: { equipe_id: c.equipe_id },
                         })
                       }
-                    />
-                    {c.ativo ? "Ativo" : "Inativo"}
-                  </label>
-                </li>
-              ))}
-              {consultores.length === 0 && (
-                <li className="py-3 text-sm text-muted-foreground">Nenhum consultor cadastrado.</li>
-              )}
-            </ul>
-          </section>
-        </TabsContent>
-
-        <TabsContent value="canais">
-          <div className="lg:max-w-2xl">
-            {listaSimples(
-              "canais",
-              "Canais de origem",
-              "Origem do lead usada na análise de conversão por canal.",
-              canais,
-            )}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="motivos" className="grid gap-6 lg:grid-cols-2">
-          <Label className="sr-only">Motivos</Label>
-          {listaSimples(
-            "motivos_perda",
-            "Motivos de perda",
-            "Obrigatórios ao mover uma jornada para Negócio Perdido.",
-            motivos,
-          )}
-          {listaSimples(
-            "motivos_transferencia",
-            "Motivos de transferência",
-            "Obrigatórios na transferência de jornada entre consultores.",
-            motivosTransf,
-          )}
-        </TabsContent>
-      </Tabs>
+                    >
+                      <SelectTrigger className="h-9 w-40">
+                        <SelectValue placeholder="Sem equipe" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {equipes.map((e) => (
+                          <SelectItem key={e.id} value={e.id}>
+                            {e.nome}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Switch
+                        checked={c.ativo}
+                        onCheckedChange={(v) =>
+                          atualizar.mutate({
+                            tabela: "consultores",
+                            id: c.id,
+                            referencia: c.nome,
+                            patch: { ativo: v },
+                            anterior: { ativo: c.ativo },
+                          })
+                        }
+                      />
+                      {c.ativo ? "Ativo" : "Inativo"}
+                    </label>
+                  </li>
+                ))}
+                {consultores.length === 0 && (
+                  <li className="py-3 text-sm text-muted-foreground">
+                    Nenhum consultor cadastrado.
+                  </li>
+                )}
+              </ul>
+            </section>
+            <div className="lg:col-span-2">
+              <BoardProvider>
+                <CaptorSettings />
+              </BoardProvider>
+            </div>
+          </TabsContent>
+        </Tabs>
       )}
     </AppShell>
   );

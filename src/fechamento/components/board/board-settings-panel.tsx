@@ -1,5 +1,8 @@
 import { useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { registrarAuditoria } from "@/lib/data";
 import { ArrowDown, ArrowUp, Plus, Save, Settings2 } from "lucide-react";
 import { useBoard } from "../providers/board-provider";
 import {
@@ -33,7 +36,7 @@ export function BoardSettingsPanel() {
             ["tasks", "Gerar Tarefas"],
             ["fields", "Campos do Card"],
             ["documents", "Documentos Obrigatórios"],
-            ["directories", "Cadastros e Motivos"],
+            ["directories", "Itens do Kanban"],
             ["data", "Dados e migração"],
           ].map(([key, label]) => (
             <button
@@ -53,7 +56,10 @@ export function BoardSettingsPanel() {
           ) : tab === "documents" ? (
             <DocumentSettings />
           ) : tab === "directories" ? (
-            <CatalogSettings />
+            <>
+              <CatalogSettings />
+              <CommercialTableSettings />
+            </>
           ) : (
             <DataTransfer />
           )}
@@ -528,13 +534,13 @@ function DocumentEditor({
 }
 function CatalogSettings() {
   const { data } = useBoard();
-  const [kind, setKind] = useState("captor");
+  const [kind, setKind] = useState("property_type");
   const [newId, setNewId] = useState(() => crypto.randomUUID());
   const draft: Catalog = { id: newId, kind, name: "", unitId: "", active: true, definitive: false };
   return (
     <section className="space-y-4">
       <Link to="/cadastros" className="button-secondary">
-        Administrar unidades, consultores e canais
+        Administrar unidades, consultores e captadores
       </Link>
       <Label title="Catálogo">
         <select
@@ -545,11 +551,13 @@ function CatalogSettings() {
             setNewId(crypto.randomUUID());
           }}
         >
-          {Object.entries(CATALOGS).map(([id, name]) => (
-            <option key={id} value={id}>
-              {name}
-            </option>
-          ))}
+          {Object.entries(CATALOGS)
+            .filter(([id]) => id !== "captor" && id !== "reason")
+            .map(([id, name]) => (
+              <option key={id} value={id}>
+                {name}
+              </option>
+            ))}
         </select>
       </Label>
       <CatalogEditor
@@ -564,6 +572,164 @@ function CatalogSettings() {
           <CatalogEditor key={catalog.id} catalog={catalog} />
         ))}
     </section>
+  );
+}
+export function CaptorSettings() {
+  const { data } = useBoard();
+  const [newId, setNewId] = useState(() => crypto.randomUUID());
+  const draft: Catalog = {
+    id: newId,
+    kind: "captor",
+    name: "",
+    unitId: "",
+    active: true,
+    definitive: false,
+  };
+  return (
+    <section className="panel space-y-4 p-6">
+      <h2 className="text-lg font-semibold">Captadores</h2>
+      <CatalogEditor
+        key={newId}
+        catalog={draft}
+        isNew
+        onSaved={() => setNewId(crypto.randomUUID())}
+      />
+      {data.catalogs
+        .filter((item) => item.kind === "captor")
+        .map((item) => (
+          <CatalogEditor key={item.id} catalog={item} />
+        ))}
+    </section>
+  );
+}
+
+function CommercialTableSettings() {
+  const { data } = useBoard();
+  const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const [busy, setBusy] = useState(false);
+  const tables = [
+    ["canais", "Canais de origem"],
+    ["motivos_perda", "Motivos de perda / reprovação"],
+    ["motivos_transferencia", "Motivos de transferência"],
+  ] as const;
+  async function save(
+    table: (typeof tables)[number][0],
+    name: string,
+    id?: string,
+    previous?: string,
+  ) {
+    const value = name.trim();
+    if (!value || busy) return;
+    setBusy(true);
+    try {
+      const query = id
+        ? supabase
+            .from(table)
+            .update({ nome: value } as never)
+            .eq("id", id)
+        : supabase.from(table).insert({ nome: value } as never);
+      const { error } = await query;
+      if (error) throw new Error(error.message);
+      await registrarAuditoria([
+        {
+          entidade: table,
+          entidade_id: id ?? "novo",
+          referencia: value,
+          acao: id ? "edicao" : "criacao",
+          campo: "nome",
+          valor_anterior: previous ?? null,
+          valor_novo: value,
+        },
+      ]);
+      setDrafts((current) => ({ ...current, [table]: "" }));
+      toast.success("Cadastro salvo.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Falha ao salvar.");
+    } finally {
+      setBusy(false);
+    }
+  }
+  async function toggle(
+    table: (typeof tables)[number][0],
+    row: { id: string; nome: unknown; ativo: unknown },
+  ) {
+    if (busy) return;
+    setBusy(true);
+    try {
+      const { error } = await supabase
+        .from(table)
+        .update({ ativo: row.ativo === false } as never)
+        .eq("id", row.id);
+      if (error) throw new Error(error.message);
+      await registrarAuditoria([
+        {
+          entidade: table,
+          entidade_id: row.id,
+          referencia: String(row.nome),
+          acao: "edicao",
+          campo: "ativo",
+          valor_anterior: String(row.ativo !== false),
+          valor_novo: String(row.ativo === false),
+        },
+      ]);
+      toast.success("Cadastro atualizado.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Falha ao salvar.");
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <div className="mt-8 grid gap-4 lg:grid-cols-2">
+      {tables.map(([table, title]) => (
+        <section key={table} className="rounded-xl border border-border bg-card p-4">
+          <h3 className="mb-3 text-sm font-bold">{title}</h3>
+          <div className="mb-3 flex gap-2">
+            <input
+              className="input"
+              aria-label={`Novo item em ${title}`}
+              value={drafts[table] ?? ""}
+              onChange={(event) =>
+                setDrafts((current) => ({ ...current, [table]: event.target.value }))
+              }
+            />
+            <button
+              className="button-primary"
+              disabled={busy || !drafts[table]?.trim()}
+              onClick={() => void save(table, drafts[table] ?? "")}
+            >
+              Adicionar
+            </button>
+          </div>
+          {(data.tables[table] ?? []).map((row) => (
+            <div key={row.id} className="mb-2 flex items-center gap-2">
+              <input
+                key={String(row["nome"])}
+                className="input"
+                aria-label={`Nome de ${String(row["nome"])}`}
+                defaultValue={String(row["nome"])}
+                onBlur={(event) => {
+                  const value = event.target.value.trim();
+                  if (value && value !== row["nome"])
+                    void save(table, value, row.id, String(row["nome"]));
+                }}
+              />
+              <label className="flex items-center gap-1 text-xs">
+                <input
+                  type="checkbox"
+                  checked={row["ativo"] !== false}
+                  disabled={busy}
+                  onChange={() =>
+                    void toggle(table, { id: row.id, nome: row["nome"], ativo: row["ativo"] })
+                  }
+                />{" "}
+                Ativo
+              </label>
+            </div>
+          ))}
+        </section>
+      ))}
+    </div>
   );
 }
 function CatalogEditor({

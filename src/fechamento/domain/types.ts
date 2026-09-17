@@ -189,6 +189,18 @@ export type Notification = {
   readAt: string | null;
 };
 export type Row = Record<string, unknown> & { id: string };
+export function supervisorForUnit(unit?: Row) {
+  if (!unit) return "";
+  const configured = String(unit["supervisor"] ?? "").trim();
+  if (configured) return configured;
+  const name = String(unit["nome"] ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+  if (name === "balneario camboriu") return "Mayara";
+  if (name === "itapema") return "Jenifer";
+  return "";
+}
 export type AppData = {
   schemaVersion: 1;
   revision: number;
@@ -284,8 +296,8 @@ const nativeFields: [string, string, FieldType, Section?][] = [
   ["captureOriginId", "Origem da captação", "select"],
   ["guaranteeId", "Garantia utilizada", "select"],
   ["guaranteeDetails", "Detalhes da garantia", "long_text"],
-  ["valor_original", "Valor original / anunciado", "currency"],
-  ["valor_proposta", "Valor da proposta", "currency"],
+  ["valor_original", "Valor Original", "currency"],
+  ["valor_proposta", "Valor da Proposta", "currency"],
   ["valor_atualizado", "Valor atualizado", "currency"],
   ["valor_final", "Valor final", "currency"],
   ["percentual_intermediacao", "% de intermediação", "percentage"],
@@ -307,9 +319,7 @@ const nativeFields: [string, string, FieldType, Section?][] = [
   ["income", "Renda", "currency", "locatario"],
   ["maritalStatus", "Estado civil", "text", "locatario"],
   ["phone", "Telefone", "phone", "locatario"],
-  ["opinion", "Observações / parecer da análise", "long_text", "analise"],
-  ["result", "Resultado / status da análise", "text", "analise"],
-  ["reviewed", "O que foi analisado", "long_text", "analise"],
+  ["opinion", "Pendência de documentação / Aprovação da Direção", "long_text", "analise"],
   ["reasonId", "Motivo da reprovação", "select", "analise"],
   ["explanation", "Justificativa da reprovação", "long_text", "analise"],
 ];

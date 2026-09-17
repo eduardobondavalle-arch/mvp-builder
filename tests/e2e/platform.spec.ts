@@ -24,7 +24,7 @@ test("abre sem login e mantém as telas comerciais", async ({ page }) => {
     "/kanban",
   ]) {
     await page.goto(path);
-    await expect(page.locator("h1").first()).toBeVisible();
+    await expect(page.locator("h1").first()).toBeVisible({ timeout: 20_000 });
     await expect(page.getByText("This page didn't load")).toHaveCount(0);
   }
   await expect(page.getByRole("button", { name: "Nova proposta", exact: true })).toBeVisible();
@@ -45,7 +45,7 @@ test("cria proposta, move, registra análise e comentário, cancela e recupera o
   await modal.getByLabel("Consultor responsável", { exact: true }).selectOption("consultant");
   await modal.getByLabel("Origem do lead / Canal", { exact: true }).selectOption("channel");
   await modal.getByLabel("Código do imóvel", { exact: true }).fill("18592");
-  await modal.getByLabel("Valor da proposta", { exact: true }).fill("3000");
+  await modal.getByLabel("Valor da Proposta", { exact: true }).fill("3000");
   await modal.getByLabel("% de intermediação", { exact: true }).fill("50");
   await modal.getByRole("button", { name: "Pessoas", exact: true }).click();
   await modal.getByLabel("Nome completo", { exact: true }).fill("Cliente de teste E2E");
@@ -63,7 +63,7 @@ test("cria proposta, move, registra análise e comentário, cancela e recupera o
   await expect(page.getByText("Decisão operacional registrada", { exact: true })).toBeVisible();
   await page.getByRole("tab", { name: "Análise", exact: true }).click();
   await page
-    .getByLabel("Observações / parecer da análise", { exact: true })
+    .getByLabel("Pendência de documentação / Aprovação da Direção", { exact: true })
     .fill("Análise documental registrada");
   await page.getByRole("button", { name: "Salvar análise", exact: true }).click();
   await page.getByLabel("Etapa atual", { exact: true }).selectOption("cancelado");

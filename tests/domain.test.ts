@@ -99,6 +99,27 @@ const signed = () =>
   move(move(move(proposal(), "fechamento_enviado"), "aprovado", 2), "entrega_chaves", 3);
 
 describe("workflow e marcos permanentes", () => {
+  it("atribui supervisão pela unidade e atualiza quando a unidade muda", () => {
+    let data = proposal();
+    expect(data.cards[0]!.supervisorId).toBe("Jenifer");
+    data.tables["consultores"]!.push({
+      id: "consultant-bc",
+      nome: "Consultor BC",
+      equipe_id: data.tables["equipes"]![1]!.id,
+      ativo: true,
+    });
+    data = command(data, {
+      type: "edit",
+      values: { unitId: data.tables["equipes"]![1]!.id, consultor_id: "consultant-bc" },
+    });
+    expect(data.cards[0]!.supervisorId).toBe("Mayara");
+  });
+  it("retorna da aprovação da direção somente para Fechamento Enviado", () => {
+    const data = move(move(proposal(), "fechamento_enviado"), "direcao");
+    expect(data.cards[0]!.analysis.opinion).toBe("Parecer operacional de teste");
+    expect(() => move(data, "aprovado")).toThrow("Transição não permitida");
+    expect(move(data, "fechamento_enviado").cards[0]!.listId).toBe("fechamento_enviado");
+  });
   it("possui exatamente nove etapas e nasce em proposta com uma ocorrência", () => {
     const data = proposal();
     expect(STAGES).toHaveLength(9);

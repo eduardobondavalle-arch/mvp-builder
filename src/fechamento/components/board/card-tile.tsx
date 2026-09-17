@@ -44,7 +44,7 @@ export function CardTile({
   const recoverable = canRecover(card, new Date(now));
   const checklistItems = taskSequence(data, card);
   const completedItems = checklistItems.filter((t) => isTaskCompleted(data, card, t.id)).length;
-  const rent = card.valor_final ?? card.valor_atualizado ?? card.valor_proposta;
+  const rent = card.valor_proposta;
   const comments = data.comments.filter((item) => item.cardId === card.id).length;
   const attachments = data.attachments.filter(
     (item) => item.cardId === card.id && !item.removedAt,

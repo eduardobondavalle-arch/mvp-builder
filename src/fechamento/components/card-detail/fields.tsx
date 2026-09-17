@@ -1,4 +1,10 @@
-import type { AppData, FieldDefinition, Person, Value } from "../../domain/types";
+import {
+  supervisorForUnit,
+  type AppData,
+  type FieldDefinition,
+  type Person,
+  type Value,
+} from "../../domain/types";
 import type { PersonDraft } from "../../domain/operations";
 import { emptyPerson } from "../../domain/operations";
 import { Plus, UserRound, UsersRound, ShieldCheck } from "lucide-react";
@@ -30,6 +36,10 @@ export function fieldOptions(
       "analise.reasonId": "reason",
     } as Record<string, string>
   )[field.id];
+  if (field.id === "analise.reasonId")
+    return (data.tables["motivos_perda"] ?? [])
+      .filter((row) => row["ativo"] !== false)
+      .map((row) => ({ id: row.id, name: String(row["nome"]) }));
   if (kind)
     return data.catalogs.filter(
       (c) =>
@@ -158,15 +168,31 @@ export function GeneralFields({
           (f) =>
             f.active &&
             f.section === "geral" &&
+            !["valor_atualizado", "valor_final"].includes(f.id) &&
             (includeIdentity || !["cliente_nome", "cpf", "telefone"].includes(f.id)),
         )
         .map((field) => (
           <FieldControl
             key={field.id}
-            field={field}
+            field={
+              field.id === "valor_original"
+                ? { ...field, name: "Valor Original" }
+                : field.id === "valor_proposta"
+                  ? { ...field, name: "Valor da Proposta" }
+                  : field
+            }
             data={data}
             values={values}
-            value={field.native ? values[field.id] : custom[field.id]}
+            value={
+              field.id === "supervisorId"
+                ? supervisorForUnit(
+                    data.tables["equipes"]?.find((row) => row.id === values["unitId"]),
+                  )
+                : field.native
+                  ? values[field.id]
+                  : custom[field.id]
+            }
+            disabled={field.id === "supervisorId"}
             onChange={(value) =>
               field.native ? onChange(field.id, value) : onCustom(field.id, value)
             }
