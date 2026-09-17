@@ -22,6 +22,7 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from "react";
 import { filterCards } from "@/fechamento/domain/filters";
+import { emptyPerson } from "@/fechamento/domain/operations";
 import { TransitionDialog } from "./transition-dialog";
 import { LISTS, EMPTY_FILTERS, type CardFilters, type Stage } from "@/fechamento/domain/types";
 import { useBoard } from "../providers/board-provider";
@@ -33,7 +34,7 @@ import { CreateClosingModal } from "./create-closing-modal";
 import { KanbanColumn } from "./kanban-column";
 
 export function KanbanBoard() {
-  const { data, mutate } = useBoard();
+  const { data, mutate, pending } = useBoard();
   const [transition, setTransition] = useState<{ cardId: string; destination: Stage } | null>(null);
   const [filters, setFilters] = useState<CardFilters>(EMPTY_FILTERS);
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
@@ -135,6 +136,56 @@ export function KanbanBoard() {
   }, []);
 
   const onDragStart = (event: DragStartEvent) => setActiveCardId(String(event.active.id));
+  const createTestCard = async () => {
+    const sequence =
+      1 +
+      data.cards.filter((card) => card.cliente_nome.startsWith("[TESTE] Cliente Exemplo ")).length;
+    const unit = (data.tables["equipes"] ?? []).find((row) => row["ativo"] !== false);
+    const consultant = (data.tables["consultores"] ?? []).find(
+      (row) => row["ativo"] !== false && (!unit || row["equipe_id"] === unit.id),
+    );
+    const channel = (data.tables["canais"] ?? []).find((row) => row["ativo"] !== false);
+    const captor = data.catalogs.find(
+      (item) => item.kind === "captor" && item.active && (!item.unitId || item.unitId === unit?.id),
+    );
+    const name = `[TESTE] Cliente Exemplo ${sequence}`;
+    const today = new Date().toISOString().slice(0, 10);
+    const result = await mutate(
+      {
+        type: "create",
+        values: {
+          unitId: unit?.id ?? "",
+          consultor_id: consultant?.id ?? "",
+          canal_id: channel?.id ?? "",
+          captorId: captor?.id ?? "",
+          leaseType: "Residencial",
+          imovel: `TESTE-${sequence}`,
+          address: "Rua Exemplo, 123 - Centro",
+          valor_original: 3200,
+          valor_proposta: 3000,
+          percentual_intermediacao: 50,
+          data_primeiro_contato: today,
+          context: "Card fictício para treinamento. Não representa uma locação real.",
+        },
+        people: [
+          {
+            ...emptyPerson(),
+            name,
+            cpf: "52998224725",
+            phone: "(47) 99999-0000",
+            profession: "Profissional de exemplo",
+            income: 9000,
+          },
+        ],
+      },
+      "Card teste criado.",
+    );
+    if (result) {
+      setFilters(EMPTY_FILTERS);
+      setActiveView("board");
+      setSelectedCardId(result.cards.at(-1)!.id);
+    }
+  };
   const onDragEnd = (event: DragEndEvent) => {
     setActiveCardId(null);
     if (!event.over) return;
@@ -168,6 +219,8 @@ export function KanbanBoard() {
         activeView={activeView}
         onViewChange={setActiveView}
         onAddClosing={() => setCreateClosingOpen(true)}
+        onAddTestCard={() => void createTestCard()}
+        pending={pending}
       />
       <main className="min-h-0 flex-1">
         {activeView === "settings" ? (

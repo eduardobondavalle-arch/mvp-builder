@@ -34,6 +34,21 @@ test("abre sem login e mantém as telas comerciais", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "PROPOSTA", exact: true })).toBeVisible();
   expect(errors).toEqual([]);
 });
+test("cria card teste com dados fictícios e abre o card", async ({ page }) => {
+  await page.goto("/kanban");
+  await page.getByRole("button", { name: "Criar card teste" }).click();
+  const modal = page.getByRole("dialog");
+  await expect(modal.getByRole("heading", { name: /\[TESTE\] Cliente Exemplo 1/ })).toBeVisible();
+  await expect(modal.getByText("Rua Exemplo, 123 - Centro")).toBeVisible();
+  await modal.getByRole("button", { name: "Fechar diálogo" }).click();
+  await expect(
+    page.getByRole("button", { name: "Abrir card de [TESTE] Cliente Exemplo 1" }),
+  ).toBeVisible();
+  const snapshot = await page.evaluate(() => JSON.parse(localStorage.getItem("adim-platform:v1")!));
+  expect(snapshot.cards[0].imovel).toBe("TESTE-1");
+  expect(snapshot.cards[0].valor_proposta).toBe(3000);
+  expect(snapshot.people[0].name).toBe("[TESTE] Cliente Exemplo 1");
+});
 test("cria proposta, move, registra análise e comentário, cancela e recupera o mesmo card", async ({
   page,
 }) => {

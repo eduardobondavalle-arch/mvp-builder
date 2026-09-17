@@ -7,6 +7,7 @@ import {
   HandCoins,
   KanbanSquare,
   Plus,
+  FlaskConical,
   Search,
   Settings2,
   UserRound,
@@ -21,12 +22,16 @@ export function BoardToolbar({
   activeView,
   onViewChange,
   onAddClosing,
+  onAddTestCard,
+  pending,
 }: {
   filters: CardFilters;
   onFiltersChange: (filters: CardFilters) => void;
   activeView: "board" | "settings";
   onViewChange: (view: "board" | "settings") => void;
   onAddClosing: () => void;
+  onAddTestCard: () => void;
+  pending: boolean;
 }) {
   const { data } = useBoard();
   const board = { name: "Fechamentos", description: "Da proposta à conclusão" };
@@ -59,9 +64,19 @@ export function BoardToolbar({
         )}
         <Notifications />
         {currentActor().permissions.includes("write") && (
-          <button type="button" onClick={onAddClosing} className="button-primary ml-auto">
-            <Plus size={16} /> Nova proposta
-          </button>
+          <div className="ml-auto flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={onAddTestCard}
+              className="button-secondary"
+              disabled={pending}
+            >
+              <FlaskConical size={16} /> Criar card teste
+            </button>
+            <button type="button" onClick={onAddClosing} className="button-primary">
+              <Plus size={16} /> Nova proposta
+            </button>
+          </div>
         )}
       </header>
 
