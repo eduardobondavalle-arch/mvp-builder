@@ -193,7 +193,7 @@ export function GeneralFields({
           (f) =>
             f.active &&
             f.section === "geral" &&
-            !["valor_atualizado", "valor_final"].includes(f.id) &&
+            !["valor_atualizado", "valor_final", "closingOwnerId"].includes(f.id) &&
             (includeIdentity || !["cliente_nome", "cpf", "telefone"].includes(f.id)),
         )
         .map((field) => (

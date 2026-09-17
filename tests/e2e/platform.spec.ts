@@ -42,6 +42,7 @@ test("cria proposta, move, registra análise e comentário, cancela e recupera o
   await page.goto("/kanban");
   await page.getByRole("button", { name: "Nova proposta", exact: true }).click();
   const modal = page.getByRole("dialog");
+  await expect(modal.getByLabel("Responsável do Fechamento")).toHaveCount(0);
   await modal
     .getByLabel("Unidade", { exact: true })
     .selectOption("70000000-0000-4000-8000-000000000001");
@@ -93,6 +94,17 @@ test("cria proposta, move, registra análise e comentário, cancela e recupera o
   await expect(
     page.getByRole("button", { name: "Abrir card de Cliente de teste E2E", exact: true }),
   ).toBeVisible();
+  const cardContent = page.getByRole("button", {
+    name: "Abrir card de Cliente de teste E2E",
+    exact: true,
+  });
+  const cardBounds = await cardContent.boundingBox();
+  expect(cardBounds).not.toBeNull();
+  await page.mouse.move(cardBounds!.x + cardBounds!.width / 2, cardBounds!.y + cardBounds!.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(cardBounds!.x + cardBounds!.width / 2 + 25, cardBounds!.y + cardBounds!.height / 2 + 10, { steps: 5 });
+  await expect(page.locator(".kanban-card-wobble")).toBeVisible();
+  await page.mouse.up();
   const result = await page.evaluate(() => JSON.parse(localStorage.getItem("adim-platform:v1")!));
   expect(result.cards).toHaveLength(1);
   expect(result.cards[0].recovered).toBe(true);

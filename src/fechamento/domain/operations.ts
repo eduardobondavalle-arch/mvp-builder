@@ -283,7 +283,9 @@ const missing = (value: unknown) =>
   value === null || value === undefined || (typeof value === "string" && !value.trim());
 export function transitionGaps(data: AppData, card: Card, destination: Stage) {
   const gaps: string[] = [];
-  for (const field of data.fields.filter((f) => f.active && f.requiredAt.includes(destination))) {
+  for (const field of data.fields.filter(
+    (f) => f.id !== "closingOwnerId" && f.active && f.requiredAt.includes(destination),
+  )) {
     if (field.section === "geral" || field.section === "analise") {
       const value = fieldValue(data, card, field);
       if (missing(value) || (field.id === "contractCreated" && value !== true))

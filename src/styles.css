@@ -448,3 +448,174 @@
 .pdf-exportando .glow-fundo {
   display: none !important;
 }
+
+/* ---------- Botão de Modo Claro / Escuro ---------- */
+
+.theme-toggle-switch {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+}
+
+.theme-toggle-switch .crescent {
+  -webkit-transform: scale(0);
+  -ms-transform: scale(0);
+  transform: scale(0);
+  -webkit-transform-origin: top right;
+  -ms-transform-origin: top right;
+  transform-origin: top right;
+  -webkit-transition: -webkit-transform 0.6s cubic-bezier(0.645, 0.045, 0.355, 1);
+  transition: -webkit-transform 0.6s cubic-bezier(0.645, 0.045, 0.355, 1);
+  transition: transform 0.6s cubic-bezier(0.645, 0.045, 0.355, 1);
+  transition:
+    transform 0.6s cubic-bezier(0.645, 0.045, 0.355, 1),
+    -webkit-transform 0.6s cubic-bezier(0.645, 0.045, 0.355, 1);
+}
+
+.theme-toggle-switch label,
+.theme-toggle-switch .toggle {
+  height: 2.35rem;
+  border-radius: 100px;
+}
+
+.theme-toggle-switch label {
+  width: 136px;
+  background-color: rgba(0, 0, 0, 0.08);
+  border-radius: 100px;
+  position: relative;
+  margin: 0;
+  cursor: pointer;
+  display: block;
+  user-select: none;
+  border: 1px solid color-mix(in oklab, var(--color-border) 70%, transparent);
+}
+
+.dark .theme-toggle-switch label {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.theme-toggle-switch .toggle {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50%;
+  height: 100%;
+  background-color: #fff;
+  -webkit-box-shadow: 0 2px 15px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.15);
+  -webkit-transition: -webkit-transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: -webkit-transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition:
+    transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    -webkit-transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.theme-toggle-switch .names {
+  font-size: 0.725rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  color: black;
+  width: 80%;
+  left: 10%;
+  top: 50%;
+  transform: translateY(-50%);
+  position: absolute;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: justify;
+  -ms-flex-pack: justify;
+  justify-content: space-between;
+  align-items: center;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.theme-toggle-switch .dark {
+  opacity: 0.5;
+  transition: opacity 0.3s ease, color 0.3s ease;
+}
+
+.theme-toggle-switch .light {
+  opacity: 0.95;
+  transition: opacity 0.3s ease, color 0.3s ease;
+}
+
+.theme-toggle-switch .mark {
+  border-radius: 100px;
+  background-color: black;
+}
+
+.theme-toggle-switch .time {
+  color: black;
+}
+
+/* -------- Switch Styles ------------*/
+.theme-toggle-switch [type="checkbox"] {
+  display: none;
+}
+
+/* Toggle */
+.theme-toggle-switch [type="checkbox"]:checked + .app .toggle {
+  -webkit-transform: translateX(100%);
+  -ms-transform: translateX(100%);
+  transform: translateX(100%);
+  background-color: #34323d;
+}
+
+.theme-toggle-switch [type="checkbox"]:checked + .app .dark {
+  opacity: 1;
+  color: white;
+}
+
+.theme-toggle-switch [type="checkbox"]:checked + .app .light {
+  opacity: 0.5;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* App */
+.theme-toggle-switch [type="checkbox"]:checked + .app .body {
+  background-color: #26242e;
+  color: white;
+}
+
+/* Circle */
+.theme-toggle-switch [type="checkbox"]:checked + .app .crescent {
+  -webkit-transform: scale(1);
+  -ms-transform: scale(1);
+  transform: scale(1);
+  background: #26242e;
+}
+
+.theme-toggle-switch [type="checkbox"]:checked + .app .circle {
+  background: linear-gradient(40deg, #8983f7, #a3dafb 70%);
+}
+
+.theme-toggle-switch [type="checkbox"]:checked + .app .main-circle {
+  background: linear-gradient(40deg, #8983f7, #a3dafb 70%);
+}
+
+.theme-toggle-switch [type="checkbox"]:checked + .time {
+  color: white;
+}
+
+.theme-toggle-switch .menu {
+  font-size: 80%;
+  opacity: 0.4;
+  padding: 0.8rem 1.8rem;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: justify;
+  -ms-flex-pack: justify;
+  justify-content: space-between;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+}
+

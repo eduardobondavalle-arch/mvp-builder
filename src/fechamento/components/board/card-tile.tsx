@@ -12,7 +12,6 @@ import {
   Building2,
   CheckSquare2,
   ClockAlert,
-  GripVertical,
   MessageSquare,
   Paperclip,
   UserRound,
@@ -63,28 +62,22 @@ export function CardTile({
   return (
     <article
       ref={setNodeRef}
+      {...attributes}
+      {...listeners}
       style={style}
       className={cn(
         "kanban-card group relative overflow-hidden rounded-xl border border-slate-200 bg-white p-3 shadow-card transition hover:border-slate-300 hover:shadow-md",
+        !overlay && "cursor-grab touch-none active:cursor-grabbing",
         overdue && "border-rose-400 pt-4",
         recoverable && "recovery-active border-amber-400 bg-amber-50",
         isDragging && "opacity-30",
-        overlay && "rotate-2 shadow-xl",
+        overlay && "kanban-card-wobble shadow-xl",
         Boolean(card.deletedAt) && "opacity-70",
       )}
     >
       {overdue && (
         <div className="absolute inset-x-0 top-0 h-1.5 bg-rose-600" aria-label="SLA atrasado" />
       )}
-      <button
-        type="button"
-        {...attributes}
-        {...listeners}
-        className="absolute right-1.5 top-2 cursor-grab rounded p-1 text-slate-300 opacity-0 hover:bg-slate-100 hover:text-slate-600 focus:opacity-100 active:cursor-grabbing group-hover:opacity-100 dark:hover:bg-slate-800"
-        aria-label={`Arrastar card de ${card.cliente_nome}`}
-      >
-        <GripVertical size={15} />
-      </button>
       <button
         type="button"
         onClick={onOpen}

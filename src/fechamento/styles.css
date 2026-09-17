@@ -120,6 +120,16 @@
   transform: translateY(-1px);
 }
 
+.kanban-card-wobble {
+  animation: kanban-card-wobble 600ms ease-in-out infinite alternate;
+  transform-origin: center center;
+}
+
+@keyframes kanban-card-wobble {
+  from { rotate: -2deg; }
+  to { rotate: 2deg; }
+}
+
 .kanban-board {
   scrollbar-color: #94a3b8 transparent;
   scrollbar-width: thin;

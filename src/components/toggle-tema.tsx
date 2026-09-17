@@ -7,22 +7,28 @@ export function ToggleTema({ className = "" }: { className?: string }) {
   const escuro = tema === "dark";
 
   return (
-    <button
-      type="button"
-      onClick={alternar}
-      aria-label={escuro ? "Ativar modo claro" : "Ativar modo escuro"}
-      className={`relative flex size-9 items-center justify-center rounded-full border border-border bg-secondary/60 text-muted-foreground transition-all duration-300 hover:text-foreground active:scale-95 ${className}`}
-    >
-      <Sun
-        size={18}
-        weight="fill"
-        className={`absolute transition-all duration-300 ${escuro ? "scale-50 rotate-90 opacity-0" : "scale-100 rotate-0 opacity-100"}`}
-      />
-      <Moon
-        size={18}
-        weight="fill"
-        className={`absolute transition-all duration-300 ${escuro ? "scale-100 rotate-0 opacity-100" : "scale-50 -rotate-90 opacity-0"}`}
-      />
-    </button>
+    <div className={`theme-toggle-switch ${className}`}>
+      <label>
+        <input
+          type="checkbox"
+          checked={escuro}
+          onChange={alternar}
+          aria-label={escuro ? "Alternar para modo claro" : "Alternar para modo escuro"}
+        />
+        <div className="app">
+          <div className="toggle" />
+          <div className="names">
+            <span className="light flex items-center gap-1">
+              <Sun size={13} weight="fill" />
+              CLARO
+            </span>
+            <span className="dark flex items-center gap-1">
+              <Moon size={13} weight="fill" />
+              ESCURO
+            </span>
+          </div>
+        </div>
+      </label>
+    </div>
   );
 }

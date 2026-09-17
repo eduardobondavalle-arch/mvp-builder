@@ -137,7 +137,7 @@ function FieldSettings() {
         </select>
       </Label>
       {data.fields
-        .filter((f) => f.section === section)
+        .filter((f) => f.section === section && f.id !== "closingOwnerId")
         .map((field) => (
           <FieldEditor key={field.id} field={field} />
         ))}
